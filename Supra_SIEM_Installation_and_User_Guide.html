@@ -1,0 +1,1718 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Supra SIEM Platform - Installation and User Guide</title>
+    <style>
+        @page {
+            size: A4;
+            margin: 20mm;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 960px;
+            margin: 0 auto;
+            padding: 20px 40px;
+            background: #fff;
+        }
+        h1 {
+            color: #1a237e;
+            border-bottom: 3px solid #1a237e;
+            padding-bottom: 10px;
+            font-size: 2em;
+        }
+        h2 {
+            color: #283593;
+            border-bottom: 2px solid #c5cae9;
+            padding-bottom: 8px;
+            margin-top: 40px;
+            font-size: 1.5em;
+            page-break-after: avoid;
+        }
+        h3 {
+            color: #3949ab;
+            margin-top: 25px;
+            font-size: 1.2em;
+            page-break-after: avoid;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 15px 0;
+            font-size: 0.9em;
+            page-break-inside: avoid;
+        }
+        th {
+            background-color: #1a237e;
+            color: white;
+            padding: 10px 12px;
+            text-align: left;
+            font-weight: 600;
+        }
+        td {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+        }
+        tr:nth-child(even) {
+            background-color: #f5f5f5;
+        }
+        tr:hover {
+            background-color: #e8eaf6;
+        }
+        code {
+            background-color: #f5f5f5;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+            font-size: 0.9em;
+            color: #c62828;
+        }
+        pre {
+            background-color: #263238;
+            color: #eeffff;
+            padding: 16px 20px;
+            border-radius: 6px;
+            overflow-x: auto;
+            font-size: 0.85em;
+            line-height: 1.5;
+            page-break-inside: avoid;
+        }
+        pre code {
+            background: none;
+            color: #eeffff;
+            padding: 0;
+            font-size: 1em;
+        }
+        blockquote {
+            border-left: 4px solid #ff6f00;
+            margin: 15px 0;
+            padding: 10px 20px;
+            background-color: #fff8e1;
+            color: #e65100;
+            font-weight: 500;
+        }
+        blockquote strong {
+            color: #bf360c;
+        }
+        a {
+            color: #1565c0;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        hr {
+            border: none;
+            border-top: 2px solid #e0e0e0;
+            margin: 30px 0;
+        }
+        ul, ol {
+            padding-left: 25px;
+        }
+        li {
+            margin-bottom: 4px;
+        }
+        .header-bar {
+            background: linear-gradient(135deg, #1a237e, #283593);
+            color: white;
+            padding: 30px 40px;
+            margin: -20px -40px 30px -40px;
+            text-align: center;
+        }
+        .header-bar h1 {
+            color: white;
+            border: none;
+            margin: 0;
+            font-size: 2.2em;
+        }
+        .header-bar p {
+            color: #c5cae9;
+            margin: 5px 0 0 0;
+            font-size: 1.1em;
+        }
+        .toc {
+            background: #f5f5f5;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            padding: 20px 30px;
+            margin: 20px 0;
+        }
+        .toc a {
+            color: #1a237e;
+        }
+        @media print {
+            body {
+                padding: 0;
+                max-width: none;
+            }
+            .header-bar {
+                margin: 0 0 30px 0;
+            }
+            pre {
+                white-space: pre-wrap;
+                word-wrap: break-word;
+            }
+            h2 {
+                page-break-before: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header-bar">
+        <h1>Supra SIEM Platform</h1>
+        <p>Installation and User Guide | Version 3.6.0 | March 2026</p>
+    </div>
+    <h1 id="supra-siem-platform-installation-and-user-guide">Supra SIEM Platform - Installation and User Guide</h1>
+<p><strong>Version:</strong> 3.6.0<br />
+<strong>Date:</strong> March 2026<br />
+<strong>Platform:</strong> Linux x64 (Ubuntu/Debian/RHEL/CentOS)</p>
+<hr />
+<h2 id="table-of-contents">Table of Contents</h2>
+<ol>
+<li><a href="#1-overview">Overview</a></li>
+<li><a href="#2-architecture">Architecture</a></li>
+<li><a href="#3-prerequisites">Prerequisites</a></li>
+<li><a href="#4-installation">Installation</a></li>
+<li><a href="#5-post-installation-verification">Post-Installation Verification</a></li>
+<li><a href="#6-syslog-configuration-on-devices">Syslog Configuration on Devices</a></li>
+<li><a href="#7-fluentd-configuration">Fluentd Configuration</a></li>
+<li><a href="#8-index-management">Index Management</a></li>
+<li><a href="#9-creating-users-and-roles">Creating Users and Roles</a></li>
+<li><a href="#10-dashboards-setup">Dashboards Setup</a></li>
+<li><a href="#11-alerts-and-notifications">Alerts and Notifications</a></li>
+<li><a href="#12-reports">Reports</a></li>
+<li><a href="#13-security-analytics-siem">Security Analytics (SIEM)</a></li>
+<li><a href="#14-service-management">Service Management</a></li>
+<li><a href="#15-backup-and-restore">Backup and Restore</a></li>
+<li><a href="#16-troubleshooting">Troubleshooting</a></li>
+<li><a href="#17-appendix">Appendix</a></li>
+</ol>
+<hr />
+<h2 id="1-overview">1. Overview</h2>
+<p>Supra SIEM is a centralized log management and security analytics platform built on:</p>
+<table>
+<thead>
+<tr>
+<th>Component</th>
+<th>Purpose</th>
+<th>Port</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>OpenSearch 3.6.0</strong></td>
+<td>Log storage, indexing, and search engine</td>
+<td>9200 (HTTPS)</td>
+</tr>
+<tr>
+<td><strong>OpenSearch Dashboards</strong></td>
+<td>Web UI for visualization, dashboards, and alerts</td>
+<td>5601 (HTTP)</td>
+</tr>
+<tr>
+<td><strong>Fluentd</strong></td>
+<td>Log collector - receives syslog from devices</td>
+<td>5140 (syslog), 24224 (forward)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>What it does:</strong><br />
+- Collects syslog from network devices (routers, switches, firewalls, IEDs, servers)<br />
+- Stores and indexes logs in OpenSearch<br />
+- Provides dashboards, alerts, reports, and security analytics via the web UI</p>
+<hr />
+<h2 id="2-architecture">2. Architecture</h2>
+<div class="code"><pre><span></span><code>+------------------+     +------------------+     +------------------+
+|  Network Devices |     |   Servers/Apps   |     |   IED Devices    |
+|  (Routers, FW,   |     |  (Linux, Windows)|     |  (IEC 61850)     |
+|   Switches)      |     |                  |     |                  |
++--------+---------+     +--------+---------+     +--------+---------+
+         |                        |                        |
+         |    Syslog (UDP/TCP)    |     Syslog (UDP/TCP)   |
+         |    Port 5140           |     Port 5140          |
+         +----------+------------+----------+--------------+
+                    |                       |
+                    v                       v
+           +--------+-----------------------+--------+
+           |              Fluentd                     |
+           |  - Receives syslog on port 5140          |
+           |  - Receives forwarded logs on port 24224 |
+           |  - Parses and tags logs                  |
+           +-------------------+----------------------+
+                               |
+                               | HTTPS (port 9200)
+                               v
+           +-------------------+----------------------+
+           |             OpenSearch                    |
+           |  - Indexes and stores logs               |
+           |  - Full-text search                      |
+           |  - Security analytics                    |
+           +-------------------+----------------------+
+                               |
+                               v
+           +-------------------+----------------------+
+           |       OpenSearch Dashboards               |
+           |  - Web UI (port 5601)                    |
+           |  - Dashboards &amp; Visualizations           |
+           |  - Alerts &amp; Notifications                |
+           |  - Reports &amp; Security Analytics          |
+           +------------------------------------------+
+</code></pre></div>
+
+<hr />
+<h2 id="3-prerequisites">3. Prerequisites</h2>
+<h3 id="hardware-requirements">Hardware Requirements</h3>
+<table>
+<thead>
+<tr>
+<th>Component</th>
+<th>Minimum</th>
+<th>Recommended</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>CPU</td>
+<td>4 cores</td>
+<td>8+ cores</td>
+</tr>
+<tr>
+<td>RAM</td>
+<td>8 GB</td>
+<td>16+ GB</td>
+</tr>
+<tr>
+<td>Disk</td>
+<td>100 GB</td>
+<td>500+ GB (SSD recommended)</td>
+</tr>
+<tr>
+<td>Network</td>
+<td>1 Gbps</td>
+<td>1 Gbps</td>
+</tr>
+</tbody>
+</table>
+<h3 id="software-requirements">Software Requirements</h3>
+<ul>
+<li>Linux x64 (Ubuntu 20.04+, RHEL 8+, CentOS 8+, Debian 10+)</li>
+<li>Ruby 3.0+ (for Fluentd)</li>
+<li>Root/sudo access</li>
+</ul>
+<h3 id="network-requirements">Network Requirements</h3>
+<p>Ensure the following ports are open on the Supra server:</p>
+<table>
+<thead>
+<tr>
+<th>Port</th>
+<th>Protocol</th>
+<th>Direction</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>5140</td>
+<td>UDP/TCP</td>
+<td>Inbound</td>
+<td>Syslog from devices</td>
+</tr>
+<tr>
+<td>24224</td>
+<td>TCP</td>
+<td>Inbound</td>
+<td>Fluentd forward protocol</td>
+</tr>
+<tr>
+<td>9200</td>
+<td>TCP</td>
+<td>Localhost</td>
+<td>OpenSearch API</td>
+</tr>
+<tr>
+<td>5601</td>
+<td>TCP</td>
+<td>Inbound</td>
+<td>Dashboards Web UI</td>
+</tr>
+</tbody>
+</table>
+<h3 id="firewall-rules-on-the-supra-server">Firewall Rules (on the Supra server)</h3>
+<div class="code"><pre><span></span><code><span class="c1"># Ubuntu/Debian (ufw)</span>
+sudo<span class="w"> </span>ufw<span class="w"> </span>allow<span class="w"> </span><span class="m">5140</span>/udp<span class="w"> </span>comment<span class="w"> </span><span class="s2">&quot;Syslog UDP&quot;</span>
+sudo<span class="w"> </span>ufw<span class="w"> </span>allow<span class="w"> </span><span class="m">5140</span>/tcp<span class="w"> </span>comment<span class="w"> </span><span class="s2">&quot;Syslog TCP&quot;</span>
+sudo<span class="w"> </span>ufw<span class="w"> </span>allow<span class="w"> </span><span class="m">5601</span>/tcp<span class="w"> </span>comment<span class="w"> </span><span class="s2">&quot;Supra Dashboards&quot;</span>
+
+<span class="c1"># RHEL/CentOS (firewalld)</span>
+sudo<span class="w"> </span>firewall-cmd<span class="w"> </span>--permanent<span class="w"> </span>--add-port<span class="o">=</span><span class="m">5140</span>/udp
+sudo<span class="w"> </span>firewall-cmd<span class="w"> </span>--permanent<span class="w"> </span>--add-port<span class="o">=</span><span class="m">5140</span>/tcp
+sudo<span class="w"> </span>firewall-cmd<span class="w"> </span>--permanent<span class="w"> </span>--add-port<span class="o">=</span><span class="m">5601</span>/tcp
+sudo<span class="w"> </span>firewall-cmd<span class="w"> </span>--reload
+</code></pre></div>
+
+<hr />
+<h2 id="4-installation">4. Installation</h2>
+<h3 id="step-1-transfer-the-installer">Step 1: Transfer the Installer</h3>
+<p>Copy the installer tarball to the target server:</p>
+<div class="code"><pre><span></span><code>scp<span class="w"> </span>supra-installer-3.6.0-linux-x64.tar.gz<span class="w"> </span>user@&lt;server-ip&gt;:/tmp/
+</code></pre></div>
+
+<h3 id="step-2-extract-the-installer">Step 2: Extract the Installer</h3>
+<div class="code"><pre><span></span><code><span class="nb">cd</span><span class="w"> </span>/tmp
+tar<span class="w"> </span>-xzf<span class="w"> </span>supra-installer-3.6.0-linux-x64.tar.gz
+</code></pre></div>
+
+<h3 id="step-3-run-the-installer">Step 3: Run the Installer</h3>
+<div class="code"><pre><span></span><code><span class="nb">cd</span><span class="w"> </span>supra-installer
+sudo<span class="w"> </span>bash<span class="w"> </span>install.sh
+</code></pre></div>
+
+<p>The installer will automatically:<br />
+1. Create a <code>supra</code> system user<br />
+2. Apply system tuning (<code>vm.max_map_count=262144</code>)<br />
+3. Install OpenSearch to <code>/opt/supra/opensearch</code><br />
+4. Initialize security certificates and default credentials<br />
+5. Install OpenSearch Dashboards to <code>/opt/supra/dashboards</code><br />
+6. Install extra plugins (Security Analytics, Index Management, Notifications)<br />
+7. Install Fluentd and configure it<br />
+8. Create and enable systemd services<br />
+9. Start all services</p>
+<h3 id="step-4-verify-installation">Step 4: Verify Installation</h3>
+<div class="code"><pre><span></span><code><span class="c1"># Check OpenSearch</span>
+curl<span class="w"> </span>-sk<span class="w"> </span>-u<span class="w"> </span>admin:admin<span class="w"> </span>https://localhost:9200
+
+<span class="c1"># Check Dashboards (wait 1-2 minutes for startup)</span>
+curl<span class="w"> </span>-s<span class="w"> </span>-o<span class="w"> </span>/dev/null<span class="w"> </span>-w<span class="w"> </span><span class="s2">&quot;%{http_code}&quot;</span><span class="w"> </span>http://localhost:5601
+
+<span class="c1"># Check all services</span>
+sudo<span class="w"> </span>systemctl<span class="w"> </span>status<span class="w"> </span>opensearch<span class="w"> </span>opensearch-dashboards<span class="w"> </span>fluentd
+</code></pre></div>
+
+<h3 id="default-credentials">Default Credentials</h3>
+<table>
+<thead>
+<tr>
+<th>Service</th>
+<th>Username</th>
+<th>Password</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>OpenSearch / Dashboards</td>
+<td><code>admin</code></td>
+<td><code>admin</code></td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>IMPORTANT:</strong> Change the default password immediately after installation. See <a href="#9-creating-users-and-roles">Section 9</a>.</p>
+</blockquote>
+<hr />
+<h2 id="5-post-installation-verification">5. Post-Installation Verification</h2>
+<h3 id="51-access-the-web-ui">5.1 Access the Web UI</h3>
+<p>Open a browser and navigate to:</p>
+<div class="code"><pre><span></span><code>http://&lt;server-ip&gt;:5601
+</code></pre></div>
+
+<p>Login with <code>admin</code> / <code>admin</code>.</p>
+<h3 id="52-verify-opensearch-health">5.2 Verify OpenSearch Health</h3>
+<div class="code"><pre><span></span><code>curl<span class="w"> </span>-sk<span class="w"> </span>-u<span class="w"> </span>admin:admin<span class="w"> </span>https://localhost:9200/_cluster/health?pretty
+</code></pre></div>
+
+<p>Expected output should show <code>"status": "green"</code> or <code>"yellow"</code> (yellow is normal for single-node).</p>
+<h3 id="53-verify-fluentd-is-running">5.3 Verify Fluentd is Running</h3>
+<div class="code"><pre><span></span><code>sudo<span class="w"> </span>systemctl<span class="w"> </span>status<span class="w"> </span>fluentd
+
+<span class="c1"># Test syslog reception</span>
+logger<span class="w"> </span>-n<span class="w"> </span><span class="m">127</span>.0.0.1<span class="w"> </span>-P<span class="w"> </span><span class="m">5140</span><span class="w"> </span>-d<span class="w"> </span><span class="s2">&quot;Test syslog message from Supra&quot;</span>
+</code></pre></div>
+
+<h3 id="54-verify-logs-are-being-indexed">5.4 Verify Logs are Being Indexed</h3>
+<div class="code"><pre><span></span><code><span class="c1"># Check for fluentd indices</span>
+curl<span class="w"> </span>-sk<span class="w"> </span>-u<span class="w"> </span>admin:admin<span class="w"> </span>https://localhost:9200/_cat/indices?v
+</code></pre></div>
+
+<p>You should see indices like <code>fluentd-YYYY.MM.DD</code>.</p>
+<hr />
+<h2 id="6-syslog-configuration-on-devices">6. Syslog Configuration on Devices</h2>
+<p>Configure your network devices, servers, and applications to send syslog to the Supra server on <strong>port 5140 (UDP)</strong>.</p>
+<h3 id="61-cisco-routers-and-switches-iosios-xe">6.1 Cisco Routers and Switches (IOS/IOS-XE)</h3>
+<div class="code"><pre><span></span><code><span class="nv">configure</span><span class="w"> </span><span class="nv">terminal</span>
+<span class="nv">logging</span><span class="w"> </span><span class="nv">host</span><span class="w"> </span><span class="o">&lt;</span><span class="nv">SUPRA_SERVER_IP</span><span class="o">&gt;</span><span class="w"> </span><span class="nv">transport</span><span class="w"> </span><span class="nv">udp</span><span class="w"> </span><span class="nv">port</span><span class="w"> </span><span class="mi">5140</span>
+<span class="nv">logging</span><span class="w"> </span><span class="nv">trap</span><span class="w"> </span><span class="nv">informational</span>
+<span class="nv">logging</span><span class="w"> </span><span class="nv">facility</span><span class="w"> </span><span class="nv">local7</span>
+<span class="nv">logging</span><span class="w"> </span><span class="nv">source</span><span class="o">-</span><span class="nv">interface</span><span class="w"> </span><span class="nv">Loopback0</span>
+<span class="nv">logging</span><span class="w"> </span><span class="nv">on</span>
+<span class="k">end</span>
+<span class="nv">write</span><span class="w"> </span><span class="nv">memory</span>
+</code></pre></div>
+
+<p><strong>Verify:</strong></p>
+<div class="code"><pre><span></span><code><span class="k">show</span><span class="w"> </span><span class="nv">logging</span>
+</code></pre></div>
+
+<h3 id="62-cisco-nexus-switches-nx-os">6.2 Cisco Nexus Switches (NX-OS)</h3>
+<div class="code"><pre><span></span><code><span class="nv">configure</span><span class="w"> </span><span class="nv">terminal</span>
+<span class="nv">logging</span><span class="w"> </span><span class="nv">server</span><span class="w"> </span><span class="o">&lt;</span><span class="nv">SUPRA_SERVER_IP</span><span class="o">&gt;</span><span class="w"> </span><span class="mi">6</span><span class="w"> </span><span class="nv">port</span><span class="w"> </span><span class="mi">5140</span><span class="w"> </span><span class="nv">facility</span><span class="w"> </span><span class="nv">local7</span>
+<span class="nv">logging</span><span class="w"> </span><span class="nv">source</span><span class="o">-</span><span class="nv">interface</span><span class="w"> </span><span class="nv">loopback0</span>
+<span class="nv">logging</span><span class="w"> </span><span class="nv">timestamp</span><span class="w"> </span><span class="nv">milliseconds</span>
+<span class="k">end</span>
+<span class="nv">copy</span><span class="w"> </span><span class="nv">running</span><span class="o">-</span><span class="nv">config</span><span class="w"> </span><span class="nv">startup</span><span class="o">-</span><span class="nv">config</span>
+</code></pre></div>
+
+<h3 id="63-juniper-routers-and-switches-junos">6.3 Juniper Routers and Switches (Junos)</h3>
+<div class="code"><pre><span></span><code>set system syslog host &lt;SUPRA_SERVER_IP&gt; port 5140
+set system syslog host &lt;SUPRA_SERVER_IP&gt; any info
+set system syslog host &lt;SUPRA_SERVER_IP&gt; authorization any
+set system syslog host &lt;SUPRA_SERVER_IP&gt; firewall any
+set system syslog host &lt;SUPRA_SERVER_IP&gt; interactive-commands any
+commit
+</code></pre></div>
+
+<p><strong>Verify:</strong></p>
+<div class="code"><pre><span></span><code><span class="k">show</span><span class="w"> </span><span class="nv">system</span><span class="w"> </span><span class="nv">syslog</span>
+</code></pre></div>
+
+<h3 id="64-palo-alto-firewalls-pan-os">6.4 Palo Alto Firewalls (PAN-OS)</h3>
+<ol>
+<li>Navigate to <strong>Device &gt; Server Profiles &gt; Syslog</strong></li>
+<li>Click <strong>Add</strong> and configure:</li>
+<li><strong>Name:</strong> <code>Supra-SIEM</code></li>
+<li><strong>Syslog Server:</strong> <code>&lt;SUPRA_SERVER_IP&gt;</code></li>
+<li><strong>Transport:</strong> <code>UDP</code></li>
+<li><strong>Port:</strong> <code>5140</code></li>
+<li><strong>Facility:</strong> <code>LOG_LOCAL7</code></li>
+<li>Navigate to <strong>Objects &gt; Log Forwarding</strong> and create a profile using the syslog server</li>
+<li>Apply the log forwarding profile to security rules under <strong>Policies &gt; Security</strong></li>
+<li><strong>Commit</strong> the changes</li>
+</ol>
+<h3 id="65-fortinet-fortigate-firewalls">6.5 Fortinet FortiGate Firewalls</h3>
+<div class="code"><pre><span></span><code><span class="nv">config</span><span class="w"> </span><span class="nv">log</span><span class="w"> </span><span class="nv">syslogd</span><span class="w"> </span><span class="nv">setting</span>
+<span class="w">    </span><span class="nv">set</span><span class="w"> </span><span class="nv">status</span><span class="w"> </span><span class="nv">enable</span>
+<span class="w">    </span><span class="nv">set</span><span class="w"> </span><span class="nv">server</span><span class="w"> </span><span class="s2">&quot;&lt;SUPRA_SERVER_IP&gt;&quot;</span>
+<span class="w">    </span><span class="nv">set</span><span class="w"> </span><span class="nv">port</span><span class="w"> </span><span class="mi">5140</span>
+<span class="w">    </span><span class="nv">set</span><span class="w"> </span><span class="nv">facility</span><span class="w"> </span><span class="nv">local7</span>
+<span class="w">    </span><span class="nv">set</span><span class="w"> </span><span class="nv">source</span><span class="o">-</span><span class="nv">ip</span><span class="w"> </span><span class="s2">&quot;&quot;</span>
+<span class="w">    </span><span class="nv">set</span><span class="w"> </span><span class="nv">format</span><span class="w"> </span><span class="nv">default</span>
+<span class="k">end</span>
+</code></pre></div>
+
+<p><strong>Verify:</strong></p>
+<div class="code"><pre><span></span><code>diagnose log test
+get log syslogd setting
+</code></pre></div>
+
+<h3 id="66-linux-servers-rsyslog">6.6 Linux Servers (rsyslog)</h3>
+<p>Edit <code>/etc/rsyslog.conf</code> or create <code>/etc/rsyslog.d/supra.conf</code>:</p>
+<div class="code"><pre><span></span><code><span class="c1"># Send all logs to Supra via UDP</span>
+*.*<span class="w"> </span>@&lt;SUPRA_SERVER_IP&gt;:5140
+
+<span class="c1"># Or via TCP (more reliable)</span>
+*.*<span class="w"> </span>@@&lt;SUPRA_SERVER_IP&gt;:5140
+</code></pre></div>
+
+<p>Restart rsyslog:</p>
+<div class="code"><pre><span></span><code>sudo<span class="w"> </span>systemctl<span class="w"> </span>restart<span class="w"> </span>rsyslog
+</code></pre></div>
+
+<p><strong>Verify:</strong></p>
+<div class="code"><pre><span></span><code>logger<span class="w"> </span><span class="s2">&quot;Test message to Supra SIEM&quot;</span>
+</code></pre></div>
+
+<h3 id="67-linux-servers-syslog-ng">6.7 Linux Servers (syslog-ng)</h3>
+<p>Edit <code>/etc/syslog-ng/syslog-ng.conf</code>:</p>
+<div class="code"><pre><span></span><code>destination d_supra {
+    network(&quot;&lt;SUPRA_SERVER_IP&gt;&quot; port(5140) transport(&quot;udp&quot;));
+};
+
+log {
+    source(s_sys);
+    destination(d_supra);
+};
+</code></pre></div>
+
+<p>Restart syslog-ng:</p>
+<div class="code"><pre><span></span><code>sudo<span class="w"> </span>systemctl<span class="w"> </span>restart<span class="w"> </span>syslog-ng
+</code></pre></div>
+
+<h3 id="68-windows-servers">6.8 Windows Servers</h3>
+<p>Windows does not natively support syslog. Use one of these agents:</p>
+<p><strong>Option A: NXLog (Recommended)</strong></p>
+<ol>
+<li>Download and install NXLog Community Edition</li>
+<li>Edit <code>C:\Program Files\nxlog\conf\nxlog.conf</code>:</li>
+</ol>
+<div class="code"><pre><span></span><code><span class="nt">&lt;Input</span><span class="w"> </span><span class="err">in_eventlog</span><span class="nt">&gt;</span>
+<span class="w">    </span>Module<span class="w">      </span>im_msvistalog
+<span class="w">    </span>Query<span class="w">       </span><span class="nt">&lt;QueryList&gt;&lt;Query</span><span class="w"> </span><span class="na">Id=</span><span class="s">&quot;0&quot;</span><span class="nt">&gt;&lt;Select</span><span class="w"> </span><span class="na">Path=</span><span class="s">&quot;Security&quot;</span><span class="nt">&gt;</span>*<span class="nt">&lt;/Select&gt;</span>\
+<span class="w">                </span><span class="nt">&lt;Select</span><span class="w"> </span><span class="na">Path=</span><span class="s">&quot;System&quot;</span><span class="nt">&gt;</span>*<span class="nt">&lt;/Select&gt;</span>\
+<span class="w">                </span><span class="nt">&lt;Select</span><span class="w"> </span><span class="na">Path=</span><span class="s">&quot;Application&quot;</span><span class="nt">&gt;</span>*<span class="nt">&lt;/Select&gt;&lt;/Query&gt;&lt;/QueryList&gt;</span>
+<span class="nt">&lt;/Input&gt;</span>
+
+<span class="nt">&lt;Output</span><span class="w"> </span><span class="err">out_supra</span><span class="nt">&gt;</span>
+<span class="w">    </span>Module<span class="w">      </span>om_udp
+<span class="w">    </span>Host<span class="w">        </span><span class="nt">&lt;SUPRA_SERVER_IP&gt;</span>
+<span class="w">    </span>Port<span class="w">        </span>5140
+<span class="w">    </span>Exec<span class="w">        </span>to_syslog_bsd();
+<span class="nt">&lt;/Output&gt;</span>
+
+<span class="nt">&lt;Route</span><span class="w"> </span><span class="err">supra_route</span><span class="nt">&gt;</span>
+<span class="w">    </span>Path<span class="w">        </span>in_eventlog<span class="w"> </span>=&gt;<span class="w"> </span>out_supra
+<span class="nt">&lt;/Route&gt;</span>
+</code></pre></div>
+
+<ol>
+<li>Restart the NXLog service</li>
+</ol>
+<p><strong>Option B: Snare Agent</strong></p>
+<ol>
+<li>Download and install Snare for Windows</li>
+<li>Configure the syslog destination: <code>&lt;SUPRA_SERVER_IP&gt;:5140</code> (UDP)</li>
+<li>Select event log sources (Security, System, Application)</li>
+</ol>
+<h3 id="69-ied-devices-intelligent-electronic-devices-iec-61850">6.9 IED Devices (Intelligent Electronic Devices - IEC 61850)</h3>
+<p>IED configuration varies by manufacturer. General steps:</p>
+<p><strong>ABB REL670 / REB670:</strong><br />
+1. Access the IED via PCM600 engineering tool<br />
+2. Navigate to <strong>Communication &gt; Syslog</strong><br />
+3. Set <strong>Syslog Server IP:</strong> <code>&lt;SUPRA_SERVER_IP&gt;</code><br />
+4. Set <strong>Syslog Port:</strong> <code>5140</code><br />
+5. Set <strong>Severity Level:</strong> <code>Informational</code><br />
+6. Download configuration to IED</p>
+<p><strong>Siemens SIPROTEC 5:</strong><br />
+1. Open DIGSI 5 engineering tool<br />
+2. Navigate to <strong>Communication &gt; Syslog Client</strong><br />
+3. Configure:<br />
+   - Server Address: <code>&lt;SUPRA_SERVER_IP&gt;</code><br />
+   - Server Port: <code>5140</code><br />
+   - Protocol: UDP<br />
+4. Transfer settings to device</p>
+<p><strong>SEL (Schweitzer Engineering Laboratories):</strong><br />
+1. Connect via SEL terminal (serial or network)<br />
+2. Configure syslog:</p>
+<div class="code"><pre><span></span><code>SET SYSLOG_IP1 &lt;SUPRA_SERVER_IP&gt;
+SET SYSLOG_PORT1 5140
+SET SYSLOG_SEV INFO
+</code></pre></div>
+
+<p><strong>GE Multilin:</strong><br />
+1. Access via EnerVista software<br />
+2. Navigate to <strong>Settings &gt; Communications &gt; Syslog</strong><br />
+3. Set Server IP and Port (5140)</p>
+<blockquote>
+<p><strong>Note:</strong> If the IED does not support syslog natively, use a gateway/relay server running rsyslog to collect IED logs (serial, GOOSE, MMS) and forward them to Supra.</p>
+</blockquote>
+<h3 id="610-hparuba-switches">6.10 HP/Aruba Switches</h3>
+<div class="code"><pre><span></span><code>logging &lt;SUPRA_SERVER_IP&gt; transport udp 5140
+logging severity info
+logging facility local7
+</code></pre></div>
+
+<h3 id="611-vmware-esxi">6.11 VMware ESXi</h3>
+<div class="code"><pre><span></span><code>esxcli<span class="w"> </span>system<span class="w"> </span>syslog<span class="w"> </span>config<span class="w"> </span><span class="nb">set</span><span class="w"> </span>--loghost<span class="o">=</span><span class="s1">&#39;udp://&lt;SUPRA_SERVER_IP&gt;:5140&#39;</span>
+esxcli<span class="w"> </span>system<span class="w"> </span>syslog<span class="w"> </span>reload
+</code></pre></div>
+
+<p><strong>Verify:</strong></p>
+<div class="code"><pre><span></span><code>esxcli<span class="w"> </span>system<span class="w"> </span>syslog<span class="w"> </span>config<span class="w"> </span>get
+</code></pre></div>
+
+<hr />
+<h2 id="7-fluentd-configuration">7. Fluentd Configuration</h2>
+<p>The Fluentd configuration file is located at:</p>
+<div class="code"><pre><span></span><code>/opt/supra/fluentd/fluent.conf
+</code></pre></div>
+
+<h3 id="71-default-configuration">7.1 Default Configuration</h3>
+<div class="code"><pre><span></span><code>#<span class="w"> </span>Syslog<span class="w"> </span>input<span class="w"> </span>-<span class="w"> </span>receives<span class="w"> </span>syslog<span class="w"> </span>from<span class="w"> </span>all<span class="w"> </span>devices
+<span class="nt">&lt;source&gt;</span>
+<span class="w">  </span>@type<span class="w"> </span>syslog
+<span class="w">  </span>port<span class="w"> </span>5140
+<span class="w">  </span>tag<span class="w"> </span>system
+<span class="nt">&lt;/source&gt;</span>
+
+#<span class="w"> </span>Forward<span class="w"> </span>input<span class="w"> </span>-<span class="w"> </span>for<span class="w"> </span>Fluentd-to-Fluentd<span class="w"> </span>forwarding
+<span class="nt">&lt;source&gt;</span>
+<span class="w">  </span>@type<span class="w"> </span>forward
+<span class="w">  </span>port<span class="w"> </span>24224
+<span class="nt">&lt;/source&gt;</span>
+
+#<span class="w"> </span>Send<span class="w"> </span>all<span class="w"> </span>logs<span class="w"> </span>to<span class="w"> </span>OpenSearch
+<span class="nt">&lt;match</span><span class="w"> </span><span class="err">**</span><span class="nt">&gt;</span>
+<span class="w">  </span>@type<span class="w"> </span>opensearch
+<span class="w">  </span>host<span class="w"> </span>localhost
+<span class="w">  </span>port<span class="w"> </span>9200
+<span class="w">  </span>scheme<span class="w"> </span>https
+<span class="w">  </span>ssl_verify<span class="w"> </span>false
+<span class="w">  </span>user<span class="w"> </span>admin
+<span class="w">  </span>password<span class="w"> </span>admin
+<span class="w">  </span>logstash_format<span class="w"> </span>true
+<span class="w">  </span>logstash_prefix<span class="w"> </span>fluentd
+<span class="w">  </span>flush_interval<span class="w"> </span>10s
+<span class="nt">&lt;/match&gt;</span>
+</code></pre></div>
+
+<h3 id="72-advanced-separate-indices-per-device-type">7.2 Advanced: Separate Indices per Device Type</h3>
+<p>To create separate indices for different device types, update the Fluentd config:</p>
+<div class="code"><pre><span></span><code>#<span class="w"> </span>Syslog<span class="w"> </span>input<span class="w"> </span>with<span class="w"> </span>facility-based<span class="w"> </span>tagging
+<span class="nt">&lt;source&gt;</span>
+<span class="w">  </span>@type<span class="w"> </span>syslog
+<span class="w">  </span>port<span class="w"> </span>5140
+<span class="w">  </span>tag<span class="w"> </span>syslog
+<span class="w">  </span><span class="nt">&lt;parse&gt;</span>
+<span class="w">    </span>message_format<span class="w"> </span>auto
+<span class="w">  </span><span class="nt">&lt;/parse&gt;</span>
+<span class="nt">&lt;/source&gt;</span>
+
+#<span class="w"> </span>Tag<span class="w"> </span>logs<span class="w"> </span>by<span class="w"> </span>source<span class="w"> </span>IP<span class="w"> </span>for<span class="w"> </span>device<span class="w"> </span>identification
+<span class="nt">&lt;match</span><span class="w"> </span><span class="err">syslog.**</span><span class="nt">&gt;</span>
+<span class="w">  </span>@type<span class="w"> </span>rewrite_tag_filter
+<span class="w">  </span><span class="nt">&lt;rule&gt;</span>
+<span class="w">    </span>key<span class="w"> </span>source
+<span class="w">    </span>pattern<span class="w"> </span>/^10\.1\.1\./
+<span class="w">    </span>tag<span class="w"> </span>device.router
+<span class="w">  </span><span class="nt">&lt;/rule&gt;</span>
+<span class="w">  </span><span class="nt">&lt;rule&gt;</span>
+<span class="w">    </span>key<span class="w"> </span>source
+<span class="w">    </span>pattern<span class="w"> </span>/^10\.1\.2\./
+<span class="w">    </span>tag<span class="w"> </span>device.switch
+<span class="w">  </span><span class="nt">&lt;/rule&gt;</span>
+<span class="w">  </span><span class="nt">&lt;rule&gt;</span>
+<span class="w">    </span>key<span class="w"> </span>source
+<span class="w">    </span>pattern<span class="w"> </span>/^10\.1\.3\./
+<span class="w">    </span>tag<span class="w"> </span>device.firewall
+<span class="w">  </span><span class="nt">&lt;/rule&gt;</span>
+<span class="w">  </span><span class="nt">&lt;rule&gt;</span>
+<span class="w">    </span>key<span class="w"> </span>source
+<span class="w">    </span>pattern<span class="w"> </span>/^10\.1\.4\./
+<span class="w">    </span>tag<span class="w"> </span>device.ied
+<span class="w">  </span><span class="nt">&lt;/rule&gt;</span>
+<span class="w">  </span><span class="nt">&lt;rule&gt;</span>
+<span class="w">    </span>key<span class="w"> </span>source
+<span class="w">    </span>pattern<span class="w"> </span>/.+/
+<span class="w">    </span>tag<span class="w"> </span>device.other
+<span class="w">  </span><span class="nt">&lt;/rule&gt;</span>
+<span class="nt">&lt;/match&gt;</span>
+
+#<span class="w"> </span>Router<span class="w"> </span>logs
+<span class="nt">&lt;match</span><span class="w"> </span><span class="err">device.router</span><span class="nt">&gt;</span>
+<span class="w">  </span>@type<span class="w"> </span>opensearch
+<span class="w">  </span>host<span class="w"> </span>localhost
+<span class="w">  </span>port<span class="w"> </span>9200
+<span class="w">  </span>scheme<span class="w"> </span>https
+<span class="w">  </span>ssl_verify<span class="w"> </span>false
+<span class="w">  </span>user<span class="w"> </span>admin
+<span class="w">  </span>password<span class="w"> </span>admin
+<span class="w">  </span>logstash_format<span class="w"> </span>true
+<span class="w">  </span>logstash_prefix<span class="w"> </span>router-logs
+<span class="w">  </span>flush_interval<span class="w"> </span>10s
+<span class="nt">&lt;/match&gt;</span>
+
+#<span class="w"> </span>Switch<span class="w"> </span>logs
+<span class="nt">&lt;match</span><span class="w"> </span><span class="err">device.switch</span><span class="nt">&gt;</span>
+<span class="w">  </span>@type<span class="w"> </span>opensearch
+<span class="w">  </span>host<span class="w"> </span>localhost
+<span class="w">  </span>port<span class="w"> </span>9200
+<span class="w">  </span>scheme<span class="w"> </span>https
+<span class="w">  </span>ssl_verify<span class="w"> </span>false
+<span class="w">  </span>user<span class="w"> </span>admin
+<span class="w">  </span>password<span class="w"> </span>admin
+<span class="w">  </span>logstash_format<span class="w"> </span>true
+<span class="w">  </span>logstash_prefix<span class="w"> </span>switch-logs
+<span class="w">  </span>flush_interval<span class="w"> </span>10s
+<span class="nt">&lt;/match&gt;</span>
+
+#<span class="w"> </span>Firewall<span class="w"> </span>logs
+<span class="nt">&lt;match</span><span class="w"> </span><span class="err">device.firewall</span><span class="nt">&gt;</span>
+<span class="w">  </span>@type<span class="w"> </span>opensearch
+<span class="w">  </span>host<span class="w"> </span>localhost
+<span class="w">  </span>port<span class="w"> </span>9200
+<span class="w">  </span>scheme<span class="w"> </span>https
+<span class="w">  </span>ssl_verify<span class="w"> </span>false
+<span class="w">  </span>user<span class="w"> </span>admin
+<span class="w">  </span>password<span class="w"> </span>admin
+<span class="w">  </span>logstash_format<span class="w"> </span>true
+<span class="w">  </span>logstash_prefix<span class="w"> </span>firewall-logs
+<span class="w">  </span>flush_interval<span class="w"> </span>10s
+<span class="nt">&lt;/match&gt;</span>
+
+#<span class="w"> </span>IED<span class="w"> </span>logs
+<span class="nt">&lt;match</span><span class="w"> </span><span class="err">device.ied</span><span class="nt">&gt;</span>
+<span class="w">  </span>@type<span class="w"> </span>opensearch
+<span class="w">  </span>host<span class="w"> </span>localhost
+<span class="w">  </span>port<span class="w"> </span>9200
+<span class="w">  </span>scheme<span class="w"> </span>https
+<span class="w">  </span>ssl_verify<span class="w"> </span>false
+<span class="w">  </span>user<span class="w"> </span>admin
+<span class="w">  </span>password<span class="w"> </span>admin
+<span class="w">  </span>logstash_format<span class="w"> </span>true
+<span class="w">  </span>logstash_prefix<span class="w"> </span>ied-logs
+<span class="w">  </span>flush_interval<span class="w"> </span>10s
+<span class="nt">&lt;/match&gt;</span>
+
+#<span class="w"> </span>All<span class="w"> </span>other<span class="w"> </span>logs
+<span class="nt">&lt;match</span><span class="w"> </span><span class="err">device.other</span><span class="nt">&gt;</span>
+<span class="w">  </span>@type<span class="w"> </span>opensearch
+<span class="w">  </span>host<span class="w"> </span>localhost
+<span class="w">  </span>port<span class="w"> </span>9200
+<span class="w">  </span>scheme<span class="w"> </span>https
+<span class="w">  </span>ssl_verify<span class="w"> </span>false
+<span class="w">  </span>user<span class="w"> </span>admin
+<span class="w">  </span>password<span class="w"> </span>admin
+<span class="w">  </span>logstash_format<span class="w"> </span>true
+<span class="w">  </span>logstash_prefix<span class="w"> </span>other-logs
+<span class="w">  </span>flush_interval<span class="w"> </span>10s
+<span class="nt">&lt;/match&gt;</span>
+</code></pre></div>
+
+<p>Install the required plugin:</p>
+<div class="code"><pre><span></span><code>sudo<span class="w"> </span>gem<span class="w"> </span>install<span class="w"> </span>fluent-plugin-rewrite-tag-filter<span class="w"> </span>--no-document
+</code></pre></div>
+
+<p>After any config change:</p>
+<div class="code"><pre><span></span><code>sudo<span class="w"> </span>systemctl<span class="w"> </span>restart<span class="w"> </span>fluentd
+</code></pre></div>
+
+<h3 id="73-enable-tcp-syslog-in-addition-to-udp">7.3 Enable TCP Syslog (in addition to UDP)</h3>
+<div class="code"><pre><span></span><code><span class="nt">&lt;source&gt;</span>
+<span class="w">  </span>@type<span class="w"> </span>syslog
+<span class="w">  </span>port<span class="w"> </span>5140
+<span class="w">  </span>protocol_type<span class="w"> </span>udp
+<span class="w">  </span>tag<span class="w"> </span>syslog.udp
+<span class="nt">&lt;/source&gt;</span>
+
+<span class="nt">&lt;source&gt;</span>
+<span class="w">  </span>@type<span class="w"> </span>syslog
+<span class="w">  </span>port<span class="w"> </span>5140
+<span class="w">  </span>protocol_type<span class="w"> </span>tcp
+<span class="w">  </span>tag<span class="w"> </span>syslog.tcp
+<span class="nt">&lt;/source&gt;</span>
+</code></pre></div>
+
+<hr />
+<h2 id="8-index-management">8. Index Management</h2>
+<h3 id="81-view-indices">8.1 View Indices</h3>
+<p><strong>Via Dashboards UI:</strong><br />
+1. Go to <strong>Menu &gt; Index Management &gt; Indices</strong></p>
+<p><strong>Via API:</strong></p>
+<div class="code"><pre><span></span><code>curl<span class="w"> </span>-sk<span class="w"> </span>-u<span class="w"> </span>admin:admin<span class="w"> </span>https://localhost:9200/_cat/indices?v<span class="p">&amp;</span><span class="nv">s</span><span class="o">=</span>index
+</code></pre></div>
+
+<h3 id="82-create-an-index-pattern-required-for-dashboards">8.2 Create an Index Pattern (Required for Dashboards)</h3>
+<ol>
+<li>Go to <strong>Menu &gt; Stack Management &gt; Index Patterns</strong></li>
+<li>Click <strong>Create index pattern</strong></li>
+<li>Enter the pattern: <code>fluentd-*</code> (or <code>router-logs-*</code>, <code>firewall-logs-*</code>, etc.)</li>
+<li>Select <code>@timestamp</code> as the time field</li>
+<li>Click <strong>Create index pattern</strong></li>
+</ol>
+<p>Repeat for each log type if using separate indices.</p>
+<h3 id="83-index-lifecycle-policy-automatic-cleanup">8.3 Index Lifecycle Policy (Automatic Cleanup)</h3>
+<p>Create a policy to automatically delete old logs:</p>
+<ol>
+<li>Go to <strong>Menu &gt; Index Management &gt; Index Policies</strong></li>
+<li>Click <strong>Create Policy</strong></li>
+<li>Use this JSON policy (keeps logs for 90 days):</li>
+</ol>
+<div class="code"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;policy&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;description&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Delete logs older than 90 days&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;default_state&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;hot&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;states&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">      </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;hot&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;actions&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[],</span>
+<span class="w">        </span><span class="nt">&quot;transitions&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">          </span><span class="p">{</span>
+<span class="w">            </span><span class="nt">&quot;state_name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;delete&quot;</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">&quot;conditions&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">              </span><span class="nt">&quot;min_index_age&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;90d&quot;</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">          </span><span class="p">}</span>
+<span class="w">        </span><span class="p">]</span>
+<span class="w">      </span><span class="p">},</span>
+<span class="w">      </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;delete&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;actions&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">          </span><span class="p">{</span>
+<span class="w">            </span><span class="nt">&quot;delete&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{}</span>
+<span class="w">          </span><span class="p">}</span>
+<span class="w">        </span><span class="p">],</span>
+<span class="w">        </span><span class="nt">&quot;transitions&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[]</span>
+<span class="w">      </span><span class="p">}</span>
+<span class="w">    </span><span class="p">],</span>
+<span class="w">    </span><span class="nt">&quot;ism_template&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">      </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">&quot;index_patterns&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;fluentd-*&quot;</span><span class="p">],</span>
+<span class="w">        </span><span class="nt">&quot;priority&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">100</span>
+<span class="w">      </span><span class="p">}</span>
+<span class="w">    </span><span class="p">]</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+
+<p><strong>Via API:</strong></p>
+<div class="code"><pre><span></span><code>curl<span class="w"> </span>-sk<span class="w"> </span>-u<span class="w"> </span>admin:admin<span class="w"> </span>-X<span class="w"> </span>PUT<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>https://localhost:9200/_plugins/_ism/policies/delete-after-90d<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-H<span class="w"> </span><span class="s2">&quot;Content-Type: application/json&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-d<span class="w"> </span><span class="s1">&#39;{</span>
+<span class="s1">    &quot;policy&quot;: {</span>
+<span class="s1">      &quot;description&quot;: &quot;Delete logs older than 90 days&quot;,</span>
+<span class="s1">      &quot;default_state&quot;: &quot;hot&quot;,</span>
+<span class="s1">      &quot;states&quot;: [</span>
+<span class="s1">        {</span>
+<span class="s1">          &quot;name&quot;: &quot;hot&quot;,</span>
+<span class="s1">          &quot;actions&quot;: [],</span>
+<span class="s1">          &quot;transitions&quot;: [</span>
+<span class="s1">            {</span>
+<span class="s1">              &quot;state_name&quot;: &quot;delete&quot;,</span>
+<span class="s1">              &quot;conditions&quot;: { &quot;min_index_age&quot;: &quot;90d&quot; }</span>
+<span class="s1">            }</span>
+<span class="s1">          ]</span>
+<span class="s1">        },</span>
+<span class="s1">        {</span>
+<span class="s1">          &quot;name&quot;: &quot;delete&quot;,</span>
+<span class="s1">          &quot;actions&quot;: [{ &quot;delete&quot;: {} }],</span>
+<span class="s1">          &quot;transitions&quot;: []</span>
+<span class="s1">        }</span>
+<span class="s1">      ],</span>
+<span class="s1">      &quot;ism_template&quot;: [</span>
+<span class="s1">        { &quot;index_patterns&quot;: [&quot;fluentd-*&quot;], &quot;priority&quot;: 100 }</span>
+<span class="s1">      ]</span>
+<span class="s1">    }</span>
+<span class="s1">  }&#39;</span>
+</code></pre></div>
+
+<h3 id="84-index-templates">8.4 Index Templates</h3>
+<p>Create a template to control how new indices are configured:</p>
+<div class="code"><pre><span></span><code>curl<span class="w"> </span>-sk<span class="w"> </span>-u<span class="w"> </span>admin:admin<span class="w"> </span>-X<span class="w"> </span>PUT<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>https://localhost:9200/_index_template/syslog-template<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-H<span class="w"> </span><span class="s2">&quot;Content-Type: application/json&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-d<span class="w"> </span><span class="s1">&#39;{</span>
+<span class="s1">    &quot;index_patterns&quot;: [&quot;fluentd-*&quot;, &quot;router-logs-*&quot;, &quot;switch-logs-*&quot;, &quot;firewall-logs-*&quot;, &quot;ied-logs-*&quot;],</span>
+<span class="s1">    &quot;template&quot;: {</span>
+<span class="s1">      &quot;settings&quot;: {</span>
+<span class="s1">        &quot;number_of_shards&quot;: 1,</span>
+<span class="s1">        &quot;number_of_replicas&quot;: 0</span>
+<span class="s1">      },</span>
+<span class="s1">      &quot;mappings&quot;: {</span>
+<span class="s1">        &quot;properties&quot;: {</span>
+<span class="s1">          &quot;@timestamp&quot;: { &quot;type&quot;: &quot;date&quot; },</span>
+<span class="s1">          &quot;host&quot;: { &quot;type&quot;: &quot;keyword&quot; },</span>
+<span class="s1">          &quot;ident&quot;: { &quot;type&quot;: &quot;keyword&quot; },</span>
+<span class="s1">          &quot;message&quot;: { &quot;type&quot;: &quot;text&quot; },</span>
+<span class="s1">          &quot;pid&quot;: { &quot;type&quot;: &quot;keyword&quot; },</span>
+<span class="s1">          &quot;priority&quot;: { &quot;type&quot;: &quot;keyword&quot; },</span>
+<span class="s1">          &quot;facility&quot;: { &quot;type&quot;: &quot;keyword&quot; },</span>
+<span class="s1">          &quot;severity&quot;: { &quot;type&quot;: &quot;keyword&quot; }</span>
+<span class="s1">        }</span>
+<span class="s1">      }</span>
+<span class="s1">    }</span>
+<span class="s1">  }&#39;</span>
+</code></pre></div>
+
+<hr />
+<h2 id="9-creating-users-and-roles">9. Creating Users and Roles</h2>
+<h3 id="91-change-the-default-admin-password">9.1 Change the Default Admin Password</h3>
+<p><strong>Step 1:</strong> Generate a password hash:</p>
+<div class="code"><pre><span></span><code>sudo<span class="w"> </span>/opt/supra/opensearch/plugins/opensearch-security/tools/hash.sh<span class="w"> </span>-p<span class="w"> </span>YOUR_NEW_PASSWORD
+</code></pre></div>
+
+<p><strong>Step 2:</strong> Edit the internal users file:</p>
+<div class="code"><pre><span></span><code>sudo<span class="w"> </span>nano<span class="w"> </span>/opt/supra/opensearch/config/opensearch-security/internal_users.yml
+</code></pre></div>
+
+<p>Replace the <code>hash</code> value under the <code>admin</code> user with the new hash.</p>
+<p><strong>Step 3:</strong> Apply the changes:</p>
+<div class="code"><pre><span></span><code><span class="nb">export</span><span class="w"> </span><span class="nv">OPENSEARCH_JAVA_HOME</span><span class="o">=</span>/opt/supra/opensearch/jdk
+sudo<span class="w"> </span>-u<span class="w"> </span>supra<span class="w"> </span><span class="nv">$OPENSEARCH_JAVA_HOME</span>/bin/java<span class="w"> </span>-cp<span class="w"> </span><span class="s2">&quot;/opt/supra/opensearch/plugins/opensearch-security/*&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>/opt/supra/opensearch/plugins/opensearch-security/tools/securityadmin.sh<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-f<span class="w"> </span>/opt/supra/opensearch/config/opensearch-security/internal_users.yml<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-t<span class="w"> </span>internalusers<span class="w"> </span>-icl<span class="w"> </span>-nhnv<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-cacert<span class="w"> </span>/opt/supra/opensearch/config/root-ca.pem<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-cert<span class="w"> </span>/opt/supra/opensearch/config/kirk.pem<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-key<span class="w"> </span>/opt/supra/opensearch/config/kirk-key.pem
+</code></pre></div>
+
+<p><strong>Step 4:</strong> Update the Fluentd config with the new password:</p>
+<div class="code"><pre><span></span><code>sudo<span class="w"> </span>nano<span class="w"> </span>/opt/supra/fluentd/fluent.conf
+<span class="c1"># Change: password admin -&gt; password YOUR_NEW_PASSWORD</span>
+sudo<span class="w"> </span>systemctl<span class="w"> </span>restart<span class="w"> </span>fluentd
+</code></pre></div>
+
+<h3 id="92-create-a-new-role">9.2 Create a New Role</h3>
+<p><strong>Via Dashboards UI:</strong></p>
+<ol>
+<li>Go to <strong>Menu &gt; Security &gt; Roles</strong></li>
+<li>Click <strong>Create role</strong></li>
+<li>Configure:</li>
+</ol>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Example for "SOC Analyst"</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Role name</td>
+<td><code>soc_analyst</code></td>
+</tr>
+<tr>
+<td>Cluster permissions</td>
+<td><code>cluster_monitor</code></td>
+</tr>
+<tr>
+<td>Index patterns</td>
+<td><code>fluentd-*</code>, <code>firewall-logs-*</code>, <code>router-logs-*</code></td>
+</tr>
+<tr>
+<td>Index permissions</td>
+<td><code>read</code>, <code>search</code></td>
+</tr>
+<tr>
+<td>Tenant permissions</td>
+<td>Global (Read Only)</td>
+</tr>
+</tbody>
+</table>
+<ol>
+<li>Click <strong>Create</strong></li>
+</ol>
+<p><strong>Via API:</strong></p>
+<div class="code"><pre><span></span><code>curl<span class="w"> </span>-sk<span class="w"> </span>-u<span class="w"> </span>admin:admin<span class="w"> </span>-X<span class="w"> </span>PUT<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>https://localhost:9200/_plugins/_security/api/roles/soc_analyst<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-H<span class="w"> </span><span class="s2">&quot;Content-Type: application/json&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-d<span class="w"> </span><span class="s1">&#39;{</span>
+<span class="s1">    &quot;cluster_permissions&quot;: [&quot;cluster_monitor&quot;],</span>
+<span class="s1">    &quot;index_permissions&quot;: [</span>
+<span class="s1">      {</span>
+<span class="s1">        &quot;index_patterns&quot;: [&quot;fluentd-*&quot;, &quot;firewall-logs-*&quot;, &quot;router-logs-*&quot;, &quot;switch-logs-*&quot;, &quot;ied-logs-*&quot;],</span>
+<span class="s1">        &quot;allowed_actions&quot;: [&quot;read&quot;, &quot;search&quot;]</span>
+<span class="s1">      }</span>
+<span class="s1">    ],</span>
+<span class="s1">    &quot;tenant_permissions&quot;: [</span>
+<span class="s1">      {</span>
+<span class="s1">        &quot;tenant_patterns&quot;: [&quot;global_tenant&quot;],</span>
+<span class="s1">        &quot;allowed_actions&quot;: [&quot;kibana_all_read&quot;]</span>
+<span class="s1">      }</span>
+<span class="s1">    ]</span>
+<span class="s1">  }&#39;</span>
+</code></pre></div>
+
+<h3 id="93-create-a-new-user">9.3 Create a New User</h3>
+<p><strong>Via Dashboards UI:</strong></p>
+<ol>
+<li>Go to <strong>Menu &gt; Security &gt; Internal Users</strong></li>
+<li>Click <strong>Create internal user</strong></li>
+<li>Fill in:</li>
+<li><strong>Username:</strong> <code>john.doe</code></li>
+<li><strong>Password:</strong> (set a strong password)</li>
+<li>Click <strong>Create</strong></li>
+</ol>
+<p><strong>Via API:</strong></p>
+<div class="code"><pre><span></span><code>curl<span class="w"> </span>-sk<span class="w"> </span>-u<span class="w"> </span>admin:admin<span class="w"> </span>-X<span class="w"> </span>PUT<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>https://localhost:9200/_plugins/_security/api/internalusers/john.doe<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-H<span class="w"> </span><span class="s2">&quot;Content-Type: application/json&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-d<span class="w"> </span><span class="s1">&#39;{</span>
+<span class="s1">    &quot;password&quot;: &quot;SecureP@ssw0rd!&quot;,</span>
+<span class="s1">    &quot;backend_roles&quot;: [],</span>
+<span class="s1">    &quot;attributes&quot;: {</span>
+<span class="s1">      &quot;department&quot;: &quot;SOC&quot;,</span>
+<span class="s1">      &quot;full_name&quot;: &quot;John Doe&quot;</span>
+<span class="s1">    }</span>
+<span class="s1">  }&#39;</span>
+</code></pre></div>
+
+<h3 id="94-map-user-to-role">9.4 Map User to Role</h3>
+<p><strong>Via Dashboards UI:</strong></p>
+<ol>
+<li>Go to <strong>Menu &gt; Security &gt; Roles</strong></li>
+<li>Click on <code>soc_analyst</code></li>
+<li>Go to the <strong>Mapped users</strong> tab</li>
+<li>Click <strong>Map users</strong></li>
+<li>Add <code>john.doe</code> under <strong>Users</strong></li>
+<li>Click <strong>Map</strong></li>
+</ol>
+<p>Also map the user to <code>opensearch_dashboards_user</code> role so they can access the UI:</p>
+<ol>
+<li>Go to <strong>Roles &gt; opensearch_dashboards_user &gt; Mapped users</strong></li>
+<li>Map <code>john.doe</code></li>
+</ol>
+<p><strong>Via API:</strong></p>
+<div class="code"><pre><span></span><code><span class="c1"># Map to custom role</span>
+curl<span class="w"> </span>-sk<span class="w"> </span>-u<span class="w"> </span>admin:admin<span class="w"> </span>-X<span class="w"> </span>PUT<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>https://localhost:9200/_plugins/_security/api/rolesmapping/soc_analyst<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-H<span class="w"> </span><span class="s2">&quot;Content-Type: application/json&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-d<span class="w"> </span><span class="s1">&#39;{ &quot;users&quot;: [&quot;john.doe&quot;] }&#39;</span>
+
+<span class="c1"># Map to dashboards access role</span>
+curl<span class="w"> </span>-sk<span class="w"> </span>-u<span class="w"> </span>admin:admin<span class="w"> </span>-X<span class="w"> </span>PUT<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>https://localhost:9200/_plugins/_security/api/rolesmapping/opensearch_dashboards_user<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-H<span class="w"> </span><span class="s2">&quot;Content-Type: application/json&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-d<span class="w"> </span><span class="s1">&#39;{ &quot;users&quot;: [&quot;john.doe&quot;] }&#39;</span>
+</code></pre></div>
+
+<h3 id="95-recommended-roles">9.5 Recommended Roles</h3>
+<table>
+<thead>
+<tr>
+<th>Role</th>
+<th>Cluster Permissions</th>
+<th>Index Permissions</th>
+<th>Use Case</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>soc_analyst</code></td>
+<td><code>cluster_monitor</code></td>
+<td><code>read</code>, <code>search</code> on all log indices</td>
+<td>Read-only log analysis</td>
+</tr>
+<tr>
+<td><code>soc_manager</code></td>
+<td><code>cluster_monitor</code></td>
+<td><code>read</code>, <code>search</code>, <code>crud</code> on all log indices</td>
+<td>Log analysis + manage saved objects</td>
+</tr>
+<tr>
+<td><code>admin_full</code></td>
+<td><code>*</code> (all)</td>
+<td><code>*</code> on <code>*</code></td>
+<td>Full admin access</td>
+</tr>
+<tr>
+<td><code>report_viewer</code></td>
+<td><code>cluster_monitor</code></td>
+<td><code>read</code> on all log indices</td>
+<td>View dashboards and reports only</td>
+</tr>
+<tr>
+<td><code>device_admin</code></td>
+<td><code>cluster_monitor</code></td>
+<td><code>read</code>, <code>search</code> on specific device indices</td>
+<td>Per-device-type access</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="10-dashboards-setup">10. Dashboards Setup</h2>
+<h3 id="101-create-visualizations">10.1 Create Visualizations</h3>
+<ol>
+<li>Go to <strong>Menu &gt; Visualize</strong></li>
+<li>Click <strong>Create visualization</strong></li>
+<li>Select a visualization type:</li>
+</ol>
+<p><strong>Example 1: Log Volume Over Time (Area Chart)</strong><br />
+- Type: <strong>Area</strong><br />
+- Index pattern: <code>fluentd-*</code><br />
+- Y-axis: Count<br />
+- X-axis: Date Histogram on <code>@timestamp</code> (interval: hourly)<br />
+- Save as: "Log Volume Over Time"</p>
+<p><strong>Example 2: Top Log Sources (Pie Chart)</strong><br />
+- Type: <strong>Pie</strong><br />
+- Index pattern: <code>fluentd-*</code><br />
+- Slice: Terms aggregation on <code>host</code> (size: 10)<br />
+- Save as: "Top Log Sources"</p>
+<p><strong>Example 3: Severity Distribution (Bar Chart)</strong><br />
+- Type: <strong>Vertical Bar</strong><br />
+- Index pattern: <code>fluentd-*</code><br />
+- Y-axis: Count<br />
+- X-axis: Terms on <code>severity</code> or <code>priority</code><br />
+- Save as: "Log Severity Distribution"</p>
+<p><strong>Example 4: Recent Logs Table</strong><br />
+- Type: <strong>Data Table</strong><br />
+- Index pattern: <code>fluentd-*</code><br />
+- Columns: <code>@timestamp</code>, <code>host</code>, <code>ident</code>, <code>severity</code>, <code>message</code><br />
+- Save as: "Recent Log Events"</p>
+<h3 id="102-create-a-dashboard">10.2 Create a Dashboard</h3>
+<ol>
+<li>Go to <strong>Menu &gt; Dashboard</strong></li>
+<li>Click <strong>Create new dashboard</strong></li>
+<li>Click <strong>Add</strong> and select the visualizations created above</li>
+<li>Arrange the panels as needed</li>
+<li>Add time filter (top right) to set the default time range</li>
+<li>Click <strong>Save</strong> and name it: "Supra SIEM Overview"</li>
+</ol>
+<h3 id="103-recommended-dashboards">10.3 Recommended Dashboards</h3>
+<table>
+<thead>
+<tr>
+<th>Dashboard</th>
+<th>Visualizations to Include</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>SIEM Overview</strong></td>
+<td>Log volume over time, top sources, severity distribution, recent events table</td>
+</tr>
+<tr>
+<td><strong>Firewall Dashboard</strong></td>
+<td>Firewall log volume, top blocked IPs, allowed vs denied traffic, top rules triggered</td>
+</tr>
+<tr>
+<td><strong>Network Devices</strong></td>
+<td>Router/switch log volume, interface up/down events, top devices by log count</td>
+</tr>
+<tr>
+<td><strong>IED Monitoring</strong></td>
+<td>IED event timeline, protection trip events, communication failures</td>
+</tr>
+<tr>
+<td><strong>Authentication</strong></td>
+<td>Failed logins over time, top failed usernames, login sources, brute force patterns</td>
+</tr>
+</tbody>
+</table>
+<h3 id="104-importexport-dashboards">10.4 Import/Export Dashboards</h3>
+<p><strong>Export:</strong><br />
+1. Go to <strong>Menu &gt; Stack Management &gt; Saved Objects</strong><br />
+2. Select dashboards and visualizations<br />
+3. Click <strong>Export</strong> to download as JSON</p>
+<p><strong>Import:</strong><br />
+1. Go to <strong>Menu &gt; Stack Management &gt; Saved Objects</strong><br />
+2. Click <strong>Import</strong> and upload the JSON file</p>
+<hr />
+<h2 id="11-alerts-and-notifications">11. Alerts and Notifications</h2>
+<h3 id="111-configure-notification-channels">11.1 Configure Notification Channels</h3>
+<p>Before creating alerts, set up where notifications should be sent:</p>
+<ol>
+<li>Go to <strong>Menu &gt; Notifications &gt; Channels</strong></li>
+<li>Click <strong>Create channel</strong></li>
+</ol>
+<p><strong>Email Channel:</strong><br />
+- Name: <code>SOC-Email</code><br />
+- Type: Email<br />
+- SMTP Host: <code>smtp.yourcompany.com</code><br />
+- Port: <code>587</code><br />
+- Sender: <code>supra-alerts@yourcompany.com</code><br />
+- Recipients: <code>soc-team@yourcompany.com</code></p>
+<p><strong>Webhook Channel (e.g., Slack, Teams):</strong><br />
+- Name: <code>SOC-Slack</code><br />
+- Type: Webhook<br />
+- URL: <code>https://hooks.slack.com/services/YOUR/SLACK/WEBHOOK</code></p>
+<h3 id="112-create-alert-monitors">11.2 Create Alert Monitors</h3>
+<ol>
+<li>Go to <strong>Menu &gt; Alerting &gt; Monitors</strong></li>
+<li>Click <strong>Create monitor</strong></li>
+</ol>
+<p><strong>Example 1: High Volume Alert (DDoS/Log Storm)</strong><br />
+- Name: <code>High Log Volume Alert</code><br />
+- Method: Visual editor<br />
+- Index: <code>fluentd-*</code><br />
+- Time field: <code>@timestamp</code><br />
+- Frequency: Every 5 minutes<br />
+- Condition: Count is ABOVE <code>10000</code> in the last <code>5 minutes</code><br />
+- Action: Send notification to <code>SOC-Email</code></p>
+<p><strong>Example 2: Failed Login Detection</strong><br />
+- Name: <code>Multiple Failed Logins</code><br />
+- Method: Extraction query<br />
+- Query:</p>
+<div class="code"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;query&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;bool&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">&quot;must&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">        </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;match&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;message&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;authentication failure&quot;</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">},</span>
+<span class="w">        </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;range&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;@timestamp&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;gte&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;now-5m&quot;</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">}</span>
+<span class="w">      </span><span class="p">]</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+
+<ul>
+<li>Condition: Hits &gt; 5</li>
+<li>Action: Send notification to <code>SOC-Email</code></li>
+</ul>
+<p><strong>Example 3: Firewall Deny Spike</strong><br />
+- Name: <code>Firewall Deny Spike</code><br />
+- Index: <code>firewall-logs-*</code><br />
+- Condition: Count of <code>deny</code> or <code>drop</code> messages &gt; 500 in 10 minutes<br />
+- Action: Send notification to <code>SOC-Slack</code></p>
+<p><strong>Example 4: IED Protection Trip</strong><br />
+- Name: <code>IED Protection Trip Event</code><br />
+- Index: <code>ied-logs-*</code><br />
+- Query: Match <code>message</code> containing <code>TRIP</code> or <code>PROTECTION</code><br />
+- Condition: Count &gt; 0<br />
+- Severity: Critical<br />
+- Action: Send to <code>SOC-Email</code> and <code>SOC-Slack</code></p>
+<p><strong>Example 5: Device Offline (No Logs Received)</strong><br />
+- Name: <code>Device Offline Detection</code><br />
+- Method: Visual editor<br />
+- Index: <code>fluentd-*</code><br />
+- Condition: Count from a specific host is BELOW <code>1</code> in the last <code>15 minutes</code><br />
+- Action: Send notification to <code>SOC-Email</code></p>
+<h3 id="113-view-alert-history">11.3 View Alert History</h3>
+<p>Go to <strong>Menu &gt; Alerting &gt; Alerts</strong> to see triggered alerts and their history.</p>
+<hr />
+<h2 id="12-reports">12. Reports</h2>
+<h3 id="121-generate-on-demand-reports">12.1 Generate On-Demand Reports</h3>
+<ol>
+<li>Navigate to any <strong>Dashboard</strong> or <strong>Visualization</strong></li>
+<li>Click <strong>Reporting</strong> in the top menu bar (or the share icon)</li>
+<li>Select format:</li>
+<li><strong>PDF</strong> - For printable reports</li>
+<li><strong>PNG</strong> - For image snapshots</li>
+<li><strong>CSV</strong> - For data export</li>
+<li>Click <strong>Generate</strong></li>
+</ol>
+<h3 id="122-schedule-automated-reports">12.2 Schedule Automated Reports</h3>
+<ol>
+<li>Go to <strong>Menu &gt; Reporting</strong></li>
+<li>Click <strong>Create report definition</strong></li>
+<li>Configure:</li>
+<li><strong>Name:</strong> <code>Daily SIEM Summary</code></li>
+<li><strong>Source:</strong> Select a dashboard (e.g., "Supra SIEM Overview")</li>
+<li><strong>Format:</strong> PDF</li>
+<li><strong>Schedule:</strong> Daily at 08:00 AM</li>
+<li><strong>Delivery:</strong> Email to <code>soc-manager@yourcompany.com</code></li>
+<li>Click <strong>Create</strong></li>
+</ol>
+<h3 id="123-recommended-report-schedule">12.3 Recommended Report Schedule</h3>
+<table>
+<thead>
+<tr>
+<th>Report</th>
+<th>Source Dashboard</th>
+<th>Frequency</th>
+<th>Recipients</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Daily SIEM Summary</td>
+<td>SIEM Overview</td>
+<td>Daily 8:00 AM</td>
+<td>SOC Team</td>
+</tr>
+<tr>
+<td>Weekly Firewall Report</td>
+<td>Firewall Dashboard</td>
+<td>Weekly (Monday)</td>
+<td>Network Team</td>
+</tr>
+<tr>
+<td>Monthly Security Report</td>
+<td>Security Analytics</td>
+<td>Monthly (1st)</td>
+<td>Management</td>
+</tr>
+<tr>
+<td>IED Event Report</td>
+<td>IED Monitoring</td>
+<td>Daily 6:00 AM</td>
+<td>Substation Team</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="13-security-analytics-siem">13. Security Analytics (SIEM)</h2>
+<p>The Security Analytics plugin provides threat detection using pre-built and custom rules.</p>
+<h3 id="131-create-a-detector">13.1 Create a Detector</h3>
+<ol>
+<li>Go to <strong>Menu &gt; Security Analytics &gt; Detectors</strong></li>
+<li>Click <strong>Create detector</strong></li>
+<li>Configure:</li>
+<li><strong>Name:</strong> <code>Network Threat Detector</code></li>
+<li><strong>Data source:</strong> <code>fluentd-*</code> (or <code>firewall-logs-*</code>)</li>
+<li><strong>Log type:</strong> Select appropriate type (e.g., <code>network</code>, <code>linux</code>, <code>windows</code>)</li>
+<li><strong>Detection rules:</strong> Select from pre-built rules or add custom ones</li>
+<li><strong>Schedule:</strong> Run every 1 minute</li>
+<li>Set up alert triggers (optional)</li>
+<li>Click <strong>Create</strong></li>
+</ol>
+<h3 id="132-pre-built-detection-rules">13.2 Pre-built Detection Rules</h3>
+<p>The Security Analytics plugin comes with pre-built Sigma rules for:</p>
+<ul>
+<li>Brute force attacks</li>
+<li>Port scanning</li>
+<li>Privilege escalation</li>
+<li>Malware indicators</li>
+<li>Suspicious network connections</li>
+<li>Lateral movement</li>
+<li>Data exfiltration patterns</li>
+</ul>
+<h3 id="133-create-custom-detection-rules">13.3 Create Custom Detection Rules</h3>
+<ol>
+<li>Go to <strong>Menu &gt; Security Analytics &gt; Detection rules</strong></li>
+<li>Click <strong>Create detection rule</strong></li>
+<li>Write a rule in Sigma format:</li>
+</ol>
+<div class="code"><pre><span></span><code><span class="nt">title</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Multiple Failed SSH Logins</span>
+<span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Detects multiple failed SSH login attempts</span>
+<span class="nt">status</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">experimental</span>
+<span class="nt">logsource</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">product</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">linux</span>
+<span class="w">    </span><span class="nt">service</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">sshd</span>
+<span class="nt">detection</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">selection</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">message|contains</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;Failed</span><span class="nv"> </span><span class="s">password&quot;</span>
+<span class="w">    </span><span class="nt">condition</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">selection | count() &gt; 5</span>
+<span class="w">    </span><span class="nt">timeframe</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">5m</span>
+<span class="nt">level</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">high</span>
+<span class="nt">tags</span><span class="p">:</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">attack.credential_access</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">attack.t1110</span>
+</code></pre></div>
+
+<h3 id="134-view-security-findings">13.4 View Security Findings</h3>
+<ol>
+<li>Go to <strong>Menu &gt; Security Analytics &gt; Findings</strong></li>
+<li>Filter by severity, detector, or time range</li>
+<li>Click on a finding for detailed analysis</li>
+</ol>
+<hr />
+<h2 id="14-service-management">14. Service Management</h2>
+<h3 id="startstoprestart-services">Start/Stop/Restart Services</h3>
+<div class="code"><pre><span></span><code><span class="c1"># All services</span>
+sudo<span class="w"> </span>systemctl<span class="w"> </span>start<span class="w"> </span>opensearch<span class="w"> </span>opensearch-dashboards<span class="w"> </span>fluentd
+sudo<span class="w"> </span>systemctl<span class="w"> </span>stop<span class="w"> </span>opensearch-dashboards<span class="w"> </span>fluentd<span class="w"> </span>opensearch
+sudo<span class="w"> </span>systemctl<span class="w"> </span>restart<span class="w"> </span>opensearch<span class="w"> </span>opensearch-dashboards<span class="w"> </span>fluentd
+
+<span class="c1"># Individual services</span>
+sudo<span class="w"> </span>systemctl<span class="w"> </span>start<span class="w"> </span>opensearch
+sudo<span class="w"> </span>systemctl<span class="w"> </span>stop<span class="w"> </span>opensearch
+sudo<span class="w"> </span>systemctl<span class="w"> </span>restart<span class="w"> </span>opensearch
+
+sudo<span class="w"> </span>systemctl<span class="w"> </span>start<span class="w"> </span>opensearch-dashboards
+sudo<span class="w"> </span>systemctl<span class="w"> </span>stop<span class="w"> </span>opensearch-dashboards
+
+sudo<span class="w"> </span>systemctl<span class="w"> </span>start<span class="w"> </span>fluentd
+sudo<span class="w"> </span>systemctl<span class="w"> </span>stop<span class="w"> </span>fluentd
+</code></pre></div>
+
+<h3 id="check-service-status">Check Service Status</h3>
+<div class="code"><pre><span></span><code>sudo<span class="w"> </span>systemctl<span class="w"> </span>status<span class="w"> </span>opensearch<span class="w"> </span>opensearch-dashboards<span class="w"> </span>fluentd
+</code></pre></div>
+
+<h3 id="view-logs">View Logs</h3>
+<div class="code"><pre><span></span><code><span class="c1"># OpenSearch logs</span>
+journalctl<span class="w"> </span>-u<span class="w"> </span>opensearch<span class="w"> </span>-f
+
+<span class="c1"># Dashboards logs</span>
+journalctl<span class="w"> </span>-u<span class="w"> </span>opensearch-dashboards<span class="w"> </span>-f
+
+<span class="c1"># Fluentd logs</span>
+journalctl<span class="w"> </span>-u<span class="w"> </span>fluentd<span class="w"> </span>-f
+
+<span class="c1"># All Supra logs</span>
+journalctl<span class="w"> </span>-u<span class="w"> </span>opensearch<span class="w"> </span>-u<span class="w"> </span>opensearch-dashboards<span class="w"> </span>-u<span class="w"> </span>fluentd<span class="w"> </span>--since<span class="w"> </span><span class="s2">&quot;1 hour ago&quot;</span>
+</code></pre></div>
+
+<h3 id="enabledisable-auto-start-on-boot">Enable/Disable Auto-Start on Boot</h3>
+<div class="code"><pre><span></span><code><span class="c1"># Enable auto-start</span>
+sudo<span class="w"> </span>systemctl<span class="w"> </span><span class="nb">enable</span><span class="w"> </span>opensearch<span class="w"> </span>opensearch-dashboards<span class="w"> </span>fluentd
+
+<span class="c1"># Disable auto-start</span>
+sudo<span class="w"> </span>systemctl<span class="w"> </span>disable<span class="w"> </span>opensearch<span class="w"> </span>opensearch-dashboards<span class="w"> </span>fluentd
+</code></pre></div>
+
+<hr />
+<h2 id="15-backup-and-restore">15. Backup and Restore</h2>
+<h3 id="151-register-a-snapshot-repository">15.1 Register a Snapshot Repository</h3>
+<div class="code"><pre><span></span><code>curl<span class="w"> </span>-sk<span class="w"> </span>-u<span class="w"> </span>admin:admin<span class="w"> </span>-X<span class="w"> </span>PUT<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>https://localhost:9200/_snapshot/supra_backup<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-H<span class="w"> </span><span class="s2">&quot;Content-Type: application/json&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-d<span class="w"> </span><span class="s1">&#39;{</span>
+<span class="s1">    &quot;type&quot;: &quot;fs&quot;,</span>
+<span class="s1">    &quot;settings&quot;: {</span>
+<span class="s1">      &quot;location&quot;: &quot;/opt/supra/backups&quot;</span>
+<span class="s1">    }</span>
+<span class="s1">  }&#39;</span>
+</code></pre></div>
+
+<blockquote>
+<p>Add <code>path.repo: ["/opt/supra/backups"]</code> to <code>opensearch.yml</code> and restart OpenSearch first.</p>
+</blockquote>
+<h3 id="152-create-a-snapshot">15.2 Create a Snapshot</h3>
+<div class="code"><pre><span></span><code><span class="c1"># Snapshot all indices</span>
+curl<span class="w"> </span>-sk<span class="w"> </span>-u<span class="w"> </span>admin:admin<span class="w"> </span>-X<span class="w"> </span>PUT<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span><span class="s2">&quot;https://localhost:9200/_snapshot/supra_backup/snapshot_</span><span class="k">$(</span>date<span class="w"> </span>+%Y%m%d<span class="k">)</span><span class="s2">?wait_for_completion=true&quot;</span>
+</code></pre></div>
+
+<h3 id="153-restore-from-snapshot">15.3 Restore from Snapshot</h3>
+<div class="code"><pre><span></span><code>curl<span class="w"> </span>-sk<span class="w"> </span>-u<span class="w"> </span>admin:admin<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>https://localhost:9200/_snapshot/supra_backup/snapshot_20260306/_restore<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-H<span class="w"> </span><span class="s2">&quot;Content-Type: application/json&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-d<span class="w"> </span><span class="s1">&#39;{ &quot;indices&quot;: &quot;fluentd-*&quot; }&#39;</span>
+</code></pre></div>
+
+<h3 id="154-automated-daily-backup-cron">15.4 Automated Daily Backup (Cron)</h3>
+<div class="code"><pre><span></span><code><span class="c1"># Add to crontab: sudo crontab -e</span>
+<span class="m">0</span><span class="w"> </span><span class="m">2</span><span class="w"> </span>*<span class="w"> </span>*<span class="w"> </span>*<span class="w"> </span>curl<span class="w"> </span>-sk<span class="w"> </span>-u<span class="w"> </span>admin:admin<span class="w"> </span>-X<span class="w"> </span>PUT<span class="w"> </span><span class="s2">&quot;https://localhost:9200/_snapshot/supra_backup/snapshot_</span><span class="k">$(</span>date<span class="w"> </span>+<span class="se">\%</span>Y<span class="se">\%</span>m<span class="se">\%</span>d<span class="k">)</span><span class="s2">?wait_for_completion=true&quot;</span><span class="w"> </span>&gt;&gt;<span class="w"> </span>/var/log/supra-backup.log<span class="w"> </span><span class="m">2</span>&gt;<span class="p">&amp;</span><span class="m">1</span>
+</code></pre></div>
+
+<hr />
+<h2 id="16-troubleshooting">16. Troubleshooting</h2>
+<h3 id="opensearch-wont-start">OpenSearch won't start</h3>
+<div class="code"><pre><span></span><code><span class="c1"># Check logs</span>
+journalctl<span class="w"> </span>-u<span class="w"> </span>opensearch<span class="w"> </span>--no-pager<span class="w"> </span>-n<span class="w"> </span><span class="m">50</span>
+
+<span class="c1"># Common fix: increase vm.max_map_count</span>
+sudo<span class="w"> </span>sysctl<span class="w"> </span>-w<span class="w"> </span>vm.max_map_count<span class="o">=</span><span class="m">262144</span>
+
+<span class="c1"># Check disk space</span>
+df<span class="w"> </span>-h<span class="w"> </span>/opt/supra
+
+<span class="c1"># Check JVM heap</span>
+cat<span class="w"> </span>/opt/supra/opensearch/config/jvm.options<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>-E<span class="w"> </span><span class="s2">&quot;^-Xm&quot;</span>
+</code></pre></div>
+
+<h3 id="dashboards-shows-opensearch-unavailable">Dashboards shows "OpenSearch unavailable"</h3>
+<div class="code"><pre><span></span><code><span class="c1"># Verify OpenSearch is running</span>
+curl<span class="w"> </span>-sk<span class="w"> </span>-u<span class="w"> </span>admin:admin<span class="w"> </span>https://localhost:9200
+
+<span class="c1"># Check dashboards config</span>
+cat<span class="w"> </span>/opt/supra/dashboards/config/opensearch_dashboards.yml<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>opensearch.hosts
+
+<span class="c1"># Restart dashboards</span>
+sudo<span class="w"> </span>systemctl<span class="w"> </span>restart<span class="w"> </span>opensearch-dashboards
+</code></pre></div>
+
+<h3 id="no-logs-appearing-in-dashboards">No logs appearing in Dashboards</h3>
+<ol>
+<li>
+<p><strong>Check Fluentd is running:</strong><br />
+<code>bash
+   sudo systemctl status fluentd</code></p>
+</li>
+<li>
+<p><strong>Test syslog reception:</strong><br />
+<code>bash
+   logger -n 127.0.0.1 -P 5140 -d "Test message"</code></p>
+</li>
+<li>
+<p><strong>Check if indices exist:</strong><br />
+<code>bash
+   curl -sk -u admin:admin https://localhost:9200/_cat/indices?v</code></p>
+</li>
+<li>
+<p><strong>Verify index pattern exists in Dashboards:</strong><br />
+   Go to <strong>Stack Management &gt; Index Patterns</strong> and ensure <code>fluentd-*</code> is created.</p>
+</li>
+<li>
+<p><strong>Check Fluentd logs for errors:</strong><br />
+<code>bash
+   journalctl -u fluentd --no-pager -n 50</code></p>
+</li>
+</ol>
+<h3 id="device-syslog-not-reaching-supra">Device syslog not reaching Supra</h3>
+<ol>
+<li>
+<p><strong>Verify network connectivity:</strong><br />
+<code>bash
+   # From the device (or a machine on the same network)
+   nc -vuz &lt;SUPRA_SERVER_IP&gt; 5140</code></p>
+</li>
+<li>
+<p><strong>Check firewall on Supra server:</strong><br />
+<code>bash
+   sudo ufw status         # Ubuntu
+   sudo firewall-cmd --list-ports  # RHEL</code></p>
+</li>
+<li>
+<p><strong>Test with tcpdump:</strong><br />
+<code>bash
+   sudo tcpdump -i any port 5140 -nn</code></p>
+</li>
+<li>
+<p><strong>Verify device syslog config:</strong> Refer to <a href="#6-syslog-configuration-on-devices">Section 6</a>.</p>
+</li>
+</ol>
+<h3 id="high-disk-usage">High disk usage</h3>
+<div class="code"><pre><span></span><code><span class="c1"># Check index sizes</span>
+curl<span class="w"> </span>-sk<span class="w"> </span>-u<span class="w"> </span>admin:admin<span class="w"> </span><span class="s2">&quot;https://localhost:9200/_cat/indices?v&amp;s=store.size:desc&quot;</span>
+
+<span class="c1"># Delete old indices manually</span>
+curl<span class="w"> </span>-sk<span class="w"> </span>-u<span class="w"> </span>admin:admin<span class="w"> </span>-X<span class="w"> </span>DELETE<span class="w"> </span><span class="s2">&quot;https://localhost:9200/fluentd-2025.01.*&quot;</span>
+
+<span class="c1"># Set up automatic cleanup - see Section 8.3</span>
+</code></pre></div>
+
+<hr />
+<h2 id="17-appendix">17. Appendix</h2>
+<h3 id="a-default-ports-summary">A. Default Ports Summary</h3>
+<table>
+<thead>
+<tr>
+<th>Port</th>
+<th>Service</th>
+<th>Protocol</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>5140</td>
+<td>Fluentd syslog input</td>
+<td>UDP/TCP</td>
+</tr>
+<tr>
+<td>24224</td>
+<td>Fluentd forward input</td>
+<td>TCP</td>
+</tr>
+<tr>
+<td>9200</td>
+<td>OpenSearch API</td>
+<td>HTTPS</td>
+</tr>
+<tr>
+<td>5601</td>
+<td>Dashboards Web UI</td>
+<td>HTTP</td>
+</tr>
+</tbody>
+</table>
+<h3 id="b-file-locations">B. File Locations</h3>
+<table>
+<thead>
+<tr>
+<th>File/Directory</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>/opt/supra/opensearch/</code></td>
+<td>OpenSearch installation</td>
+</tr>
+<tr>
+<td><code>/opt/supra/opensearch/config/opensearch.yml</code></td>
+<td>OpenSearch configuration</td>
+</tr>
+<tr>
+<td><code>/opt/supra/opensearch/config/opensearch-security/</code></td>
+<td>Security plugin configs</td>
+</tr>
+<tr>
+<td><code>/opt/supra/dashboards/</code></td>
+<td>Dashboards installation</td>
+</tr>
+<tr>
+<td><code>/opt/supra/dashboards/config/opensearch_dashboards.yml</code></td>
+<td>Dashboards configuration</td>
+</tr>
+<tr>
+<td><code>/opt/supra/fluentd/fluent.conf</code></td>
+<td>Fluentd configuration</td>
+</tr>
+<tr>
+<td><code>/etc/systemd/system/opensearch.service</code></td>
+<td>OpenSearch service file</td>
+</tr>
+<tr>
+<td><code>/etc/systemd/system/opensearch-dashboards.service</code></td>
+<td>Dashboards service file</td>
+</tr>
+<tr>
+<td><code>/etc/systemd/system/fluentd.service</code></td>
+<td>Fluentd service file</td>
+</tr>
+</tbody>
+</table>
+<h3 id="c-useful-api-commands">C. Useful API Commands</h3>
+<div class="code"><pre><span></span><code><span class="c1"># Cluster health</span>
+curl<span class="w"> </span>-sk<span class="w"> </span>-u<span class="w"> </span>admin:admin<span class="w"> </span>https://localhost:9200/_cluster/health?pretty
+
+<span class="c1"># List all indices</span>
+curl<span class="w"> </span>-sk<span class="w"> </span>-u<span class="w"> </span>admin:admin<span class="w"> </span>https://localhost:9200/_cat/indices?v
+
+<span class="c1"># Node stats</span>
+curl<span class="w"> </span>-sk<span class="w"> </span>-u<span class="w"> </span>admin:admin<span class="w"> </span>https://localhost:9200/_nodes/stats?pretty
+
+<span class="c1"># Search logs</span>
+curl<span class="w"> </span>-sk<span class="w"> </span>-u<span class="w"> </span>admin:admin<span class="w"> </span>https://localhost:9200/fluentd-*/_search?pretty<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-H<span class="w"> </span><span class="s2">&quot;Content-Type: application/json&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-d<span class="w"> </span><span class="s1">&#39;{ &quot;query&quot;: { &quot;match&quot;: { &quot;message&quot;: &quot;error&quot; } }, &quot;size&quot;: 10 }&#39;</span>
+
+<span class="c1"># Count documents in an index</span>
+curl<span class="w"> </span>-sk<span class="w"> </span>-u<span class="w"> </span>admin:admin<span class="w"> </span>https://localhost:9200/fluentd-*/_count
+
+<span class="c1"># List all users</span>
+curl<span class="w"> </span>-sk<span class="w"> </span>-u<span class="w"> </span>admin:admin<span class="w"> </span>https://localhost:9200/_plugins/_security/api/internalusers?pretty
+
+<span class="c1"># List all roles</span>
+curl<span class="w"> </span>-sk<span class="w"> </span>-u<span class="w"> </span>admin:admin<span class="w"> </span>https://localhost:9200/_plugins/_security/api/roles?pretty
+</code></pre></div>
+
+<h3 id="d-syslog-severity-levels">D. Syslog Severity Levels</h3>
+<table>
+<thead>
+<tr>
+<th>Code</th>
+<th>Severity</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0</td>
+<td>Emergency</td>
+<td>System is unusable</td>
+</tr>
+<tr>
+<td>1</td>
+<td>Alert</td>
+<td>Action must be taken immediately</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Critical</td>
+<td>Critical conditions</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Error</td>
+<td>Error conditions</td>
+</tr>
+<tr>
+<td>4</td>
+<td>Warning</td>
+<td>Warning conditions</td>
+</tr>
+<tr>
+<td>5</td>
+<td>Notice</td>
+<td>Normal but significant condition</td>
+</tr>
+<tr>
+<td>6</td>
+<td>Informational</td>
+<td>Informational messages</td>
+</tr>
+<tr>
+<td>7</td>
+<td>Debug</td>
+<td>Debug-level messages</td>
+</tr>
+</tbody>
+</table>
+<h3 id="e-uninstallation">E. Uninstallation</h3>
+<p>To completely remove Supra:</p>
+<div class="code"><pre><span></span><code>sudo<span class="w"> </span>bash<span class="w"> </span>/opt/supra/uninstall.sh
+</code></pre></div>
+
+<p>Or manually:</p>
+<div class="code"><pre><span></span><code>sudo<span class="w"> </span>systemctl<span class="w"> </span>stop<span class="w"> </span>opensearch<span class="w"> </span>opensearch-dashboards<span class="w"> </span>fluentd
+sudo<span class="w"> </span>systemctl<span class="w"> </span>disable<span class="w"> </span>opensearch<span class="w"> </span>opensearch-dashboards<span class="w"> </span>fluentd
+sudo<span class="w"> </span>rm<span class="w"> </span>-f<span class="w"> </span>/etc/systemd/system/<span class="o">{</span>opensearch,opensearch-dashboards,fluentd<span class="o">}</span>.service
+sudo<span class="w"> </span>systemctl<span class="w"> </span>daemon-reload
+sudo<span class="w"> </span>rm<span class="w"> </span>-rf<span class="w"> </span>/opt/supra
+sudo<span class="w"> </span>rm<span class="w"> </span>-f<span class="w"> </span>/etc/sysctl.d/99-supra.conf
+sudo<span class="w"> </span>sysctl<span class="w"> </span>--system
+</code></pre></div>
+
+<hr />
+<p><strong>Document Version:</strong> 1.0<br />
+<strong>Last Updated:</strong> March 2026<br />
+<strong>Product:</strong> Supra SIEM Platform v3.6.0</p>
+</body>
+</html>

@@ -1,0 +1,16 @@
+[Unit]
+Description=Fluentd (Ruby gem version)
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=/usr/local/bin/fluentd -c /home/velu/Hitachi/fluent/fluent.conf -p /usr/local/lib/ruby/gems/*/gems
+Restart=always
+User=root
+Group=root
+# Optional: Logging
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
