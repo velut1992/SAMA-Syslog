@@ -33,9 +33,9 @@
  *
  * @description A promise-based stream of search results that can inherit from other search sources.
  *
- * Because filters/queries in OpenSearch Dashboards have different levels of persistence and come from different
+ * Because filters/queries in Dashboards have different levels of persistence and come from different
  * places, it is important to keep track of where filters come from for when they are saved back to
- * the savedObject store in the OpenSearch Dashboards index. To do this, we create trees of searchSource objects
+ * the savedObject store in the Dashboards index. To do this, we create trees of searchSource objects
  * that can have associated query parameters (index, query, filter, etc) which can also inherit from
  * other searchSource objects.
  *
@@ -46,7 +46,7 @@
  * subscribers).
  *
  * That set of query parameters is then sent to OpenSearch. This is how the filter hierarchy
- * works in OpenSearch Dashboards.
+ * works in Dashboards.
  *
  * Visualize, starting from a new search:
  *

@@ -228,7 +228,7 @@ describe('SavedObjectsService', () => {
   });
 
   describe('#start()', () => {
-    it('creates a OpenSearchDashboardsMigrator which retries NoLivingConnectionsError errors from OpenSearch client', async () => {
+    it('creates a OpenSearchDashboardsMigrator which retries NoLivingConnectionsError errors from client', async () => {
       const coreContext = createCoreContext();
 
       const soService = new SavedObjectsService(coreContext);

@@ -78,7 +78,7 @@ export const DataSourceHomePanel: React.FC<DataSourceHomePanelProps> = ({
           legend="connection type"
           buttonSize="compressed"
           options={[
-            { id: 'manageOpensearchDataSources', label: 'OpenSearch connections' },
+            { id: 'manageOpensearchDataSources', label: 'connections' },
             { id: 'manageDirectQueryDataSources', label: 'Direct query connections' },
           ]}
           idSelected={selectedTabId}
@@ -93,7 +93,7 @@ export const DataSourceHomePanel: React.FC<DataSourceHomePanelProps> = ({
       ? [
           {
             id: 'manageOpensearchDataSources',
-            name: 'OpenSearch connections',
+            name: 'connections',
           },
         ]
       : []),

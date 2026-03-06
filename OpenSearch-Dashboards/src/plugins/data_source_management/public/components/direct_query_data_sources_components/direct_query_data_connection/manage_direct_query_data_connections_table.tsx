@@ -179,7 +179,7 @@ export const ManageDirectQueryDataConnectionsTable = ({
       } catch (error) {
         notifications.toasts.addDanger(
           i18n.translate('dataSourcesManagement.directQueryTable.fetchAllConnections', {
-            defaultMessage: 'Could not fetch OpenSearch and Direct Query Connections',
+            defaultMessage: 'Could not fetch and Direct Query Connections',
           })
         );
       } finally {

@@ -130,7 +130,7 @@ export function readFieldCapsResponse(fieldCapsResponse: FieldCapsResponse): Fie
         );
       });
 
-      // If there are multiple types but they all resolve to the same OpenSearch Dashboards type
+      // If there are multiple types but they all resolve to the same Dashboards type
       // ignore the conflict and carry on (my wayward son)
       const uniqueOpenSearchDashboardsTypes = uniq(types.map(castOpenSearchToOsdFieldTypeName));
       if (uniqueOpenSearchDashboardsTypes.length > 1) {

@@ -81,7 +81,7 @@ export const StatusMessage: React.FC<StatusMessageProps> = ({
         <span>
           <FormattedMessage
             id="indexPatternManagement.createIndexPattern.step.status.noSystemIndicesWithPromptLabel"
-            defaultMessage="No OpenSearch indices match your pattern. To view the matching system indices, toggle the switch above."
+            defaultMessage="No indices match your pattern. To view the matching system indices, toggle the switch above."
           />
         </span>
       );
@@ -90,7 +90,7 @@ export const StatusMessage: React.FC<StatusMessageProps> = ({
         <span>
           <FormattedMessage
             id="indexPatternManagement.createIndexPattern.step.status.noSystemIndicesLabel"
-            defaultMessage="No OpenSearch indices match your pattern."
+            defaultMessage="No indices match your pattern."
           />
         </span>
       );

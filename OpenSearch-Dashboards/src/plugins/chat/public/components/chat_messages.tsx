@@ -51,7 +51,7 @@ const STARTER_SUGGESTIONS: SuggestionItem[] = [
     icon: 'help',
     iconColor: 'warning',
     text: 'Explain a concept',
-    prompt: 'Explain [concept or feature] in OpenSearch Dashboards',
+    prompt: 'Explain [concept or feature] in Dashboards',
   },
 ];
 

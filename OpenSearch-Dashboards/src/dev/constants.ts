@@ -29,5 +29,5 @@
  */
 
 // Files in directories of this name will be treated as Jest integration tests with instances of
-// OpenSearch and the OpenSearch Dashboards server.
+// OpenSearch and the Dashboards server.
 export const RESERVED_DIR_JEST_INTEGRATION_TESTS = 'integration_tests';

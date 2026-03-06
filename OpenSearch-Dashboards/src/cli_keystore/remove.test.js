@@ -44,7 +44,7 @@ import sinon from 'sinon';
 import { Keystore } from '../legacy/server/keystore';
 import { remove } from './remove';
 
-describe('OpenSearch Dashboards keystore', () => {
+describe('Dashboards keystore', () => {
   describe('remove', () => {
     const sandbox = sinon.createSandbox();
 

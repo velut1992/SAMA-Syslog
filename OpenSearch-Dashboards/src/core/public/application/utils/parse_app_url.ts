@@ -39,7 +39,7 @@ import { App, ParsedAppUrl } from '../types';
  * - an absolute path containing the basePath,
  *   e.g `/base-path/app/my-app/some-path`
  *
- * - an absolute URL matching the `origin` of the OpenSearch Dashboards instance (as seen by the browser),
+ * - an absolute URL matching the `origin` of the Dashboards instance (as seen by the browser),
  *   e.g `https://opensearch-dashboards:8080/base-path/app/my-app/some-path`
  *
  * - a path relative to the provided `currentUrl`.

@@ -100,7 +100,7 @@ beforeEach(() => {
 afterEach(() => jest.clearAllMocks());
 
 describe('#setup', () => {
-  it('returns legacy OpenSearch config as a part of the contract', async () => {
+  it('returns legacy config as a part of the contract', async () => {
     const setupContract = await opensearchService.setup(setupDeps);
 
     await expect(setupContract.legacy.config$.pipe(first()).toPromise()).resolves.toBeInstanceOf(

@@ -57,9 +57,9 @@ export interface OpsProcessMetrics {
   };
   /** node event loop delay */
   event_loop_delay: number;
-  /** pid of the OpenSearch Dashboards process */
+  /** pid of the Dashboards process */
   pid: number;
-  /** uptime of the OpenSearch Dashboards process */
+  /** uptime of the Dashboards process */
   uptime_in_millis: number;
 }
 

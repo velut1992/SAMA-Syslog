@@ -30,7 +30,7 @@
 
 export interface OpenSearchConfigApiResponse {
   /**
-   * This is the first host in the hosts array that OpenSearch Dashboards is configured to use
+   * This is the first host in the hosts array that Dashboards is configured to use
    * to communicate with OpenSearch.
    *
    * At the moment this is used to power the copy as cURL functionality in Console

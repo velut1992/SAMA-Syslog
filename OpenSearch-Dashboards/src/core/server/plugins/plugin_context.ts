@@ -62,7 +62,7 @@ export interface InstanceInfo {
  *
  * We should aim to be restrictive and specific in the APIs that we expose.
  *
- * @param coreContext OpenSearch Dashboards core context
+ * @param coreContext Dashboards core context
  * @param pluginManifest The manifest of the plugin we're building these values for.
  * @internal
  */
@@ -151,7 +151,7 @@ export function createPluginInitializerContext(
  *
  * We should aim to be restrictive and specific in the APIs that we expose.
  *
- * @param coreContext OpenSearch Dashboards core context
+ * @param coreContext Dashboards core context
  * @param plugin The plugin we're building these values for.
  * @param deps Dependencies that Plugins services gets during setup.
  * @internal
@@ -238,7 +238,7 @@ export function createPluginSetupContext<TPlugin, TPluginDependencies>(
  * This is called for each plugin when it starts, so each plugin gets its own
  * version of these values.
  *
- * @param coreContext OpenSearch Dashboards core context
+ * @param coreContext Dashboards core context
  * @param plugin The plugin we're building these values for.
  * @param deps Dependencies that Plugins services gets during start.
  * @internal

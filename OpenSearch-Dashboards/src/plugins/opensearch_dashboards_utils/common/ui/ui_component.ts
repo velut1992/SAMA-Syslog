@@ -29,13 +29,13 @@
  */
 
 /**
- * In many places in OpenSearch Dashboards we want to be agnostic to frontend view library,
+ * In many places in Dashboards we want to be agnostic to frontend view library,
  * i.e. instead of exposing React-specific APIs we want to expose APIs that
  * are orthogonal to any rendering library. This interface represents such UI
  * components. UI component receives a DOM element and `props` through `render()`
  * method, the `render()` method can be called many times.
  *
- * Although Op aims to be library agnostic, OpenSearch Dashboards itself is written in React,
+ * Although Op aims to be library agnostic, Dashboards itself is written in React,
  * thus here we define `UiComponent` which is an abstract unit of UI that can be
  * implemented in any framework, but it maps easily to React components, i.e.
  * `UiComponent<Props>` is like `React.ComponentType<Props>`.

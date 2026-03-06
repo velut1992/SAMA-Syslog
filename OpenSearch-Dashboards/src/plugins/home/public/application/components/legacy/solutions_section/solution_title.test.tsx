@@ -35,7 +35,7 @@ import { getLogosMock } from '../../../../../../../core/common/mocks';
 
 const solutionEntry = {
   id: 'opensearchDashboards',
-  title: 'OpenSearch Dashboards',
+  title: 'Dashboards',
   subtitle: 'Visualize & analyze',
   descriptions: ['Analyze data in dashboards'],
   icon: 'inputOutput',

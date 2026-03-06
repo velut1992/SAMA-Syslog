@@ -121,7 +121,7 @@ export class ServiceSettings {
   }
 
   _backfillSettings = (fileLayer) => {
-    // Older version of OpenSearch Dashboards stored EMS state in the URL-params
+    // Older version of Dashboards stored EMS state in the URL-params
     // Creates object literal with required parameters as key-value pairs
     const format = fileLayer.getDefaultFormatType();
     const meta = fileLayer.getDefaultFormatMeta();
@@ -359,5 +359,5 @@ function getAttributionString(emsService) {
     anchorTag.textContent = attribution.label;
     return anchorTag.outerHTML;
   });
-  return attributionSnippets.join(' | '); //!!!this is the current convention used in OpenSearch Dashboards
+  return attributionSnippets.join(' | '); //!!!this is the current convention used in Dashboards
 }

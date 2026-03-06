@@ -27,7 +27,7 @@ const SQLReference = () => {
         <p>
           <FormattedMessage
             id="queryEnhancements.queryBar.sqlSyntaxOptionsDescription"
-            defaultMessage="OpenSearch {sqlDocsLink}. OpenSearch SQL/PPL language limitations can be found {limitationDocsLink}."
+            defaultMessage="Supra {sqlDocsLink}. SQL/PPL language limitations can be found {limitationDocsLink}."
             values={{
               sqlDocsLink: (
                 <EuiLink href={sqlDocs} target="_blank">

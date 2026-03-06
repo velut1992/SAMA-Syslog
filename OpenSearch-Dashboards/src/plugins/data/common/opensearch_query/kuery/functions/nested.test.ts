@@ -62,7 +62,7 @@ describe('kuery functions', () => {
     });
 
     describe('toOpenSearchQuery', () => {
-      test('should wrap subqueries in an OpenSearch nested query', () => {
+      test('should wrap subqueries in an nested query', () => {
         const node = nodeTypes.function.buildNode('nested', 'nestedField', childNode);
         const result = nested.toOpenSearchQuery(node, indexPattern);
 

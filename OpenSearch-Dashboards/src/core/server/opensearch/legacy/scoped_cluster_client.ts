@@ -35,7 +35,7 @@ import { LegacyAPICaller, LegacyCallAPIOptions } from './api_types';
 
 /**
  * Serves the same purpose as "normal" `ClusterClient` but exposes additional
- * `callAsCurrentUser` method that doesn't use credentials of the OpenSearch Dashboards internal
+ * `callAsCurrentUser` method that doesn't use credentials of the Dashboards internal
  * user (as `callAsInternalUser` does) to request OpenSearch API, but rather
  * passes HTTP headers extracted from the current user request to the API.
  *
@@ -67,7 +67,7 @@ export class LegacyScopedClusterClient implements ILegacyScopedClusterClient {
 
   /**
    * Calls specified `endpoint` with provided `clientParams` on behalf of the
-   * OpenSearch Dashboards internal user.
+   * Dashboards internal user.
    * See {@link LegacyAPICaller}.
    *
    * @param endpoint - String descriptor of the endpoint e.g. `cluster.getSettings` or `ping`.
@@ -91,7 +91,7 @@ export class LegacyScopedClusterClient implements ILegacyScopedClusterClient {
 
   /**
    * Calls specified `endpoint` with provided `clientParams` on behalf of the
-   * user initiated request to the OpenSearch Dashboards server (via HTTP request headers).
+   * user initiated request to the Dashboards server (via HTTP request headers).
    * See {@link LegacyAPICaller}.
    *
    * @param endpoint - String descriptor of the endpoint e.g. `cluster.getSettings` or `ping`.

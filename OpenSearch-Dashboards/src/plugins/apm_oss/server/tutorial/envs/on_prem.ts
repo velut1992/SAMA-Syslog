@@ -80,7 +80,7 @@ export function onPremInstructions({
           }),
           message: i18n.translate('apmOss.tutorial.apmServer.callOut.message', {
             defaultMessage: `Please make sure your APM Server is updated to 7.0 or higher. \
-            You can also migrate your 6.x data with the migration assistant found in OpenSearch Dashboards's management section.`,
+            You can also migrate your 6.x data with the migration assistant found in Dashboards's management section.`,
           }),
           iconType: 'alert',
         },

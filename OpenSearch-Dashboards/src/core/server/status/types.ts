@@ -203,7 +203,7 @@ export interface StatusServiceSetup {
   core$: Observable<CoreStatus>;
 
   /**
-   * Overall system status for all of OpenSearch Dashboards.
+   * Overall system status for all of Dashboards.
    *
    * @remarks
    * The level of the overall status will reflect the most severe status of any core service or plugin.

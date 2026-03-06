@@ -78,7 +78,7 @@ const TestConsumer = () => {
   return <div>{services.foo}</div>;
 };
 
-test('useOpenSearchDashboards() hook retrieves OpenSearch Dashboards context', () => {
+test('useOpenSearchDashboards() hook retrieves Dashboards context', () => {
   const core = coreMock.createStart();
   (core as any).foo = 'bar';
   act(() => {

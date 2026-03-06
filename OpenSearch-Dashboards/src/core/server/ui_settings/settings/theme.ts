@@ -56,7 +56,7 @@ export const getThemeSettings = (): Record<string, UiSettingsParams> => {
       }),
       value: false,
       description: i18n.translate('core.ui_settings.params.darkModeText', {
-        defaultMessage: `Enable a dark mode for the OpenSearch Dashboards UI. A page refresh is required for the setting to be applied.`,
+        defaultMessage: `Enable a dark mode for the Dashboards UI. A page refresh is required for the setting to be applied.`,
       }),
       requiresPageReload: true,
       preferBrowserSetting: true,
@@ -76,7 +76,7 @@ export const getThemeSettings = (): Record<string, UiSettingsParams> => {
       options: themeOptions,
       optionLabels: themeVersionLabelMap,
       description: i18n.translate('core.ui_settings.params.themeVersionText', {
-        defaultMessage: `<p>Switch between the themes used for the current and next versions of OpenSearch Dashboards. A page refresh is required for the setting to be applied.</p><p><a href="{href}">{linkText}</a></p>`,
+        defaultMessage: `<p>Switch between the themes used for the current and next versions of Dashboards. A page refresh is required for the setting to be applied.</p><p><a href="{href}">{linkText}</a></p>`,
         values: {
           href: 'https://forum.opensearch.org/t/feedback-on-dark-mode-experience/15725',
           linkText: 'Theme feedback',

@@ -145,7 +145,7 @@ export const DiscoverNoResults = ({ queryString, query, savedQuery, timeFieldNam
   //         <p>
   //           <FormattedMessage
   //             id="discover.noResults.searchExamples.howTosearchForWebServerLogsDescription"
-  //             defaultMessage="The search bar at the top uses OpenSearch&rsquo;s support for Lucene {queryStringSyntaxLink}.
+  //             defaultMessage="The search bar at the top uses Supra&rsquo;s support for Lucene {queryStringSyntaxLink}.
   //               Here are some examples of how you can search for web server logs that have been parsed into a few fields."
   //             values={{
   //               queryStringSyntaxLink: (

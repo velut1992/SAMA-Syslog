@@ -78,7 +78,7 @@ export interface HttpAuth {
 }
 
 /**
- * OpenSearch Dashboards HTTP Service provides own abstraction for work with HTTP stack.
+ * Dashboards HTTP Service provides own abstraction for work with HTTP stack.
  * Plugins don't have direct access to `hapi` server and its primitives anymore. Moreover,
  * plugins shouldn't rely on the fact that HTTP Service uses one or another library under the hood.
  * This gives the platform flexibility to upgrade or changing our internal HTTP stack without breaking plugins.
@@ -219,7 +219,7 @@ export interface HttpServiceSetup {
   registerOnPreResponse: (handler: OnPreResponseHandler) => void;
 
   /**
-   * Access or manipulate the OpenSearch Dashboards base path
+   * Access or manipulate the Dashboards base path
    * See {@link IBasePath}.
    */
   basePath: IBasePath;
@@ -233,12 +233,12 @@ export interface HttpServiceSetup {
   auth: HttpAuth;
 
   /**
-   * The CSP config used for OpenSearch Dashboards.
+   * The CSP config used for Dashboards.
    */
   csp: ICspConfig;
 
   /**
-   * The CSP-Report-Only config used for OpenSearch Dashboards.
+   * The CSP-Report-Only config used for Dashboards.
    */
   cspReportOnly: ICspReportOnlyConfig;
 
@@ -311,7 +311,7 @@ export interface InternalHttpServiceSetup
 /** @public */
 export interface HttpServiceStart {
   /**
-   * Access or manipulate the OpenSearch Dashboards base path
+   * Access or manipulate the Dashboards base path
    * See {@link IBasePath}.
    */
   basePath: IBasePath;
@@ -336,7 +336,7 @@ export interface InternalHttpServiceStart extends HttpServiceStart {
 
 /** @public */
 export interface HttpServerInfo {
-  /** The name of the OpenSearch Dashboards server */
+  /** The name of the Dashboards server */
   name: string;
   /** The hostname of the server */
   hostname: string;

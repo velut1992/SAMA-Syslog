@@ -138,7 +138,7 @@ test('return error when plugin version is missing', async () => {
   });
 });
 
-test('log warning when plugin expected OpenSearch Dashboards version has different major version', async () => {
+test('log warning when plugin expected Dashboards version has different major version', async () => {
   mockReadFilePromise.mockResolvedValue(
     Buffer.from(JSON.stringify({ id: 'someId', version: '6.4.2', server: true }))
   );
@@ -149,7 +149,7 @@ test('log warning when plugin expected OpenSearch Dashboards version has differe
   expect(loggingSystemMock.collect(logger).warn).toMatchInlineSnapshot(`
     Array [
       Array [
-        "Plugin \\"someId\\" is version \\"6.4.2\\", but used OpenSearch Dashboards version is \\"7.0.0-alpha1\\".",
+        "Plugin \\"someId\\" is version \\"6.4.2\\", but used Dashboards version is \\"7.0.0-alpha1\\".",
       ],
     ]
   `);
@@ -170,7 +170,7 @@ test('log warning when plugin expected OpenSearch Dashboards version has differe
   });
 });
 
-test('log warning when plugin expected OpenSearch Dashboards version cannot be interpreted as semver', async () => {
+test('log warning when plugin expected Dashboards version cannot be interpreted as semver', async () => {
   mockReadFilePromise.mockResolvedValue(
     Buffer.from(
       JSON.stringify({
@@ -188,7 +188,7 @@ test('log warning when plugin expected OpenSearch Dashboards version cannot be i
   expect(loggingSystemMock.collect(logger).warn).toMatchInlineSnapshot(`
     Array [
       Array [
-        "Plugin \\"someId\\" is version \\"non-sem-ver\\", but used OpenSearch Dashboards version is \\"7.0.0-alpha1\\".",
+        "Plugin \\"someId\\" is version \\"non-sem-ver\\", but used Dashboards version is \\"7.0.0-alpha1\\".",
       ],
     ]
   `);
@@ -233,7 +233,7 @@ test('return error when plugin config path is an array that contains non-string 
   });
 });
 
-test('log warning when plugin expected OpenSearch Dashboards version has different major version (8.x vs 7.x)', async () => {
+test('log warning when plugin expected Dashboards version has different major version (8.x vs 7.x)', async () => {
   mockReadFilePromise.mockResolvedValue(
     Buffer.from(JSON.stringify({ id: 'someId', version: '8.0.0', server: true }))
   );
@@ -244,7 +244,7 @@ test('log warning when plugin expected OpenSearch Dashboards version has differe
   expect(loggingSystemMock.collect(logger).warn).toMatchInlineSnapshot(`
     Array [
       Array [
-        "Plugin \\"someId\\" is version \\"8.0.0\\", but used OpenSearch Dashboards version is \\"7.0.0-alpha1\\".",
+        "Plugin \\"someId\\" is version \\"8.0.0\\", but used Dashboards version is \\"7.0.0-alpha1\\".",
       ],
     ]
   `);
@@ -276,7 +276,7 @@ test('log warning when plugin has lower major version', async () => {
   expect(loggingSystemMock.collect(logger).warn).toMatchInlineSnapshot(`
     Array [
       Array [
-        "Plugin \\"someId\\" is version \\"6.9.9\\", but used OpenSearch Dashboards version is \\"7.0.0-alpha1\\".",
+        "Plugin \\"someId\\" is version \\"6.9.9\\", but used Dashboards version is \\"7.0.0-alpha1\\".",
       ],
     ]
   `);
@@ -561,7 +561,7 @@ test('return all set optional fields as they are in manifest', async () => {
   });
 });
 
-test('return manifest when plugin expected OpenSearch Dashboards version matches actual version', async () => {
+test('return manifest when plugin expected Dashboards version matches actual version', async () => {
   mockReadFilePromise.mockResolvedValue(
     Buffer.from(
       JSON.stringify({
@@ -592,7 +592,7 @@ test('return manifest when plugin expected OpenSearch Dashboards version matches
   });
 });
 
-test('return manifest when plugin expected OpenSearch Dashboards version is `opensearchDashboards`', async () => {
+test('return manifest when plugin expected Dashboards version is `opensearchDashboards`', async () => {
   mockReadFilePromise.mockResolvedValue(
     Buffer.from(
       JSON.stringify({

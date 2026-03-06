@@ -10,7 +10,7 @@ import { TableRow, TableRowProps } from './table_row';
 // Create a mock function that we can track
 const mockUseDynamicContextFn = jest.fn().mockReturnValue('test-context-id');
 
-// Mock the OpenSearch Dashboards React hook
+// Mock the Dashboards React hook
 jest.mock('../../../../../opensearch_dashboards_react/public', () => ({
   useOpenSearchDashboards: jest.fn(() => ({
     services: {

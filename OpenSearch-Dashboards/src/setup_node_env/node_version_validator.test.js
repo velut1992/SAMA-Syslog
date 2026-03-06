@@ -159,7 +159,7 @@ const checkNodeVersionValidation = async (nodeVersion, requiredRange) => {
       { cwd: __dirname }
     );
   } catch (ex) {
-    if (ex.stderr?.indexOf('OpenSearch Dashboards') > -1)
+    if (ex.stderr?.indexOf('Dashboards') > -1)
       return {
         error: ex.code,
         stderr: ex.stderr,

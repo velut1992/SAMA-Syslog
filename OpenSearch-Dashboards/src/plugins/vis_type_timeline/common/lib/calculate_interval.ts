@@ -28,8 +28,8 @@
  * under the License.
  */
 
-// Totally cribbed this from OpenSearch Dashboards 3.
-// I bet there's something similar in the OpenSearch Dashboards 4 code. Somewhere. Somehow.
+// Totally cribbed this from Dashboards 3.
+// I bet there's something similar in the Dashboards 4 code. Somewhere. Somehow.
 import { toMS } from './to_milliseconds';
 
 function roundInterval(interval: number) {

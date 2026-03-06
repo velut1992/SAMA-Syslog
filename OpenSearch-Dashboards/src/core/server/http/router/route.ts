@@ -47,7 +47,7 @@ export type DestructiveRouteMethod = 'post' | 'put' | 'delete' | 'patch';
 export type SafeRouteMethod = 'get' | 'options';
 
 /**
- * The set of common HTTP methods supported by OpenSearch Dashboards routing.
+ * The set of common HTTP methods supported by Dashboards routing.
  * @public
  */
 export type RouteMethod = SafeRouteMethod | DestructiveRouteMethod;

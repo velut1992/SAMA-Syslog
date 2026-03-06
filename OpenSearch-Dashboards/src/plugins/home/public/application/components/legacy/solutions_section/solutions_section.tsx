@@ -57,7 +57,7 @@ export const SolutionsSection: FC<Props> = ({
   branding,
   logos,
 }) => {
-  // Separate OpenSearch Dashboards from other solutions
+  // Separate Dashboards from other solutions
   const opensearchDashboards = solutions.find(({ id }) => id === 'opensearchDashboards');
   const opensearchDashboardsApps = directories
     .filter(({ solutionId }) => solutionId === 'opensearchDashboards')

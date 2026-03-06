@@ -36,7 +36,7 @@ import { Logger, LoggerFactory, LoggingConfigType, LoggingSystem } from '../logg
 import { Server } from '../server';
 
 /**
- * Top-level entry point to kick off the app and start the OpenSearch Dashboards server.
+ * Top-level entry point to kick off the app and start the Dashboards server.
  */
 export class Root {
   public readonly logger: LoggerFactory;
@@ -84,7 +84,7 @@ export class Root {
     if (reason) {
       if (reason.code === 'EADDRINUSE' && Number.isInteger(reason.port)) {
         reason = new Error(
-          `Port ${reason.port} is already in use. Another instance of OpenSearch Dashboards may be running!`
+          `Port ${reason.port} is already in use. Another instance of Dashboards may be running!`
         );
       }
 

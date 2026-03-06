@@ -32,7 +32,7 @@ import { OpenSearchClient } from './types';
 
 /**
  * Serves the same purpose as the normal {@link IClusterClient | cluster client} but exposes
- * an additional `asCurrentUser` method that doesn't use credentials of the OpenSearch Dashboards internal
+ * an additional `asCurrentUser` method that doesn't use credentials of the Dashboards internal
  * user (as `asInternalUser` does) to request OpenSearch API, but rather passes HTTP headers
  * extracted from the current user request to the API instead.
  *
@@ -41,23 +41,23 @@ import { OpenSearchClient } from './types';
 export interface IScopedClusterClient {
   /**
    * A {@link OpenSearchClient | client} to be used to query the opensearch cluster
-   * on behalf of the internal OpenSearch Dashboards user.
+   * on behalf of the internal Dashboards user.
    */
   readonly asInternalUser: OpenSearchClient;
   /**
    * A {@link OpenSearchClient | client} to be used to query the opensearch cluster
-   * on behalf of the user that initiated the request to the OpenSearch Dashboards server.
+   * on behalf of the user that initiated the request to the Dashboards server.
    */
   readonly asCurrentUser: OpenSearchClient;
   /**
    * A {@link OpenSearchClient | client}, with support for long numerals, to be used to
-   * query the opensearch cluster on behalf of the internal OpenSearch Dashboards user.
+   * query the opensearch cluster on behalf of the internal Dashboards user.
    */
   readonly asInternalUserWithLongNumeralsSupport: OpenSearchClient;
   /**
    * A {@link OpenSearchClient | client}, with support for long numerals, to be used to
    * query the opensearch cluster on behalf of the user that initiated the request to
-   * the OpenSearch Dashboards server.
+   * the Dashboards server.
    */
   readonly asCurrentUserWithLongNumeralsSupport: OpenSearchClient;
 }

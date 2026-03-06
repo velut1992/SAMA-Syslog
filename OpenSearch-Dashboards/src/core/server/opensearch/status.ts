@@ -61,7 +61,7 @@ export const calculateStatus$ = (
               summary:
                 // Message should always be present, but this is a safe fallback
                 message ??
-                `Some OpenSearch nodes are not compatible with this version of OpenSearch Dashboards`,
+                `Some OpenSearch nodes are not compatible with this version of Dashboards`,
               meta: { warningNodes, incompatibleNodes },
             };
           } else if (warningNodes.length > 0) {
@@ -70,7 +70,7 @@ export const calculateStatus$ = (
               summary:
                 // Message should always be present, but this is a safe fallback
                 message ??
-                `Some OpenSearch nodes are running different versions than this version of OpenSearch Dashboards`,
+                `Some OpenSearch nodes are running different versions than this version of Dashboards`,
               meta: { warningNodes, incompatibleNodes },
             };
           }

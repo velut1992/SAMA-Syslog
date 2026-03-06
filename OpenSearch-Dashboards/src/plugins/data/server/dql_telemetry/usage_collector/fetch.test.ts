@@ -113,7 +113,7 @@ describe('makeDQLUsageCollector', () => {
     });
 
     // Indicates the user has modified the setting at some point but the value is currently the default
-    it('should return the OpenSearch Dashboards default query language if the config value is null', async () => {
+    it('should return the Dashboards default query language if the config value is null', async () => {
       setupMockCallCluster({ optInCount: 1 }, null);
       const fetchResponse = await fetch(callCluster);
       expect(fetchResponse.defaultQueryLanguage).toBe('lucene');
@@ -132,7 +132,7 @@ describe('makeDQLUsageCollector', () => {
       expect(fetchResponse.optOutCount).toBe(0);
     });
 
-    it('should default to the OpenSearch Dashboards default language if the config document does not exist', async () => {
+    it('should default to the Dashboards default language if the config document does not exist', async () => {
       setupMockCallCluster(null, 'missingConfigDoc');
       const fetchResponse = await fetch(callCluster);
       expect(fetchResponse.defaultQueryLanguage).toBe('default-lucene');

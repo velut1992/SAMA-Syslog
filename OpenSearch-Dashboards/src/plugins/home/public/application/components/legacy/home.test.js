@@ -139,7 +139,7 @@ describe('home', () => {
       const directoryEntry = {
         id: 'stack-management',
         title: 'Management',
-        description: 'Your center console for managing the OpenSearch Stack.',
+        description: 'Your center console for managing the Stack.',
         icon: 'managementApp',
         path: 'management_landing_page',
         category: FeatureCatalogueCategory.ADMIN,
@@ -176,7 +176,7 @@ describe('home', () => {
     test('should render solutions in the "solution section"', async () => {
       const solutionEntry1 = {
         id: 'opensearchDashboards',
-        title: 'OpenSearch Dashboards',
+        title: 'Dashboards',
         subtitle: 'Visualize & analyze',
         appDescriptions: ['Analyze data in dashboards'],
         icon: 'inputOutput',
@@ -240,7 +240,7 @@ describe('home', () => {
       const directoryEntry = {
         id: 'index_patterns',
         title: 'Index Patterns',
-        description: 'Manage the index patterns that help retrieve your data from OpenSearch.',
+        description: 'Manage the index patterns that help retrieve your data from Supra.',
         icon: 'indexPatternApp',
         path: 'index_management_landing_page',
         showOnHomePage: true,
@@ -258,7 +258,7 @@ describe('home', () => {
       const directoryEntry = {
         id: 'stack-management',
         title: 'Management',
-        description: 'Your center console for managing the OpenSearch Stack.',
+        description: 'Your center console for managing the Stack.',
         icon: 'managementApp',
         path: 'management_landing_page',
         showOnHomePage: false,

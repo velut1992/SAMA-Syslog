@@ -258,7 +258,7 @@ describe('RenderingService', () => {
 
   describe('isTitleValid()', () => {
     it('checks valid title', () => {
-      const result = service.isTitleValid('OpenSearch Dashboards', 'config');
+      const result = service.isTitleValid('Dashboards', 'config');
       expect(result).toEqual(true);
     });
 
@@ -268,7 +268,7 @@ describe('RenderingService', () => {
     });
 
     it('checks invalid title with length > 36 character', () => {
-      const result = service.isTitleValid('OpenSearch Dashboardssssssssssssssssssssss', 'config');
+      const result = service.isTitleValid('Dashboardssssssssssssssssssssss', 'config');
       expect(result).toEqual(false);
     });
   });

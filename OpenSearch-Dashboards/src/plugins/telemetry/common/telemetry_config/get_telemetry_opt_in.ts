@@ -64,12 +64,12 @@ export const getTelemetryOptIn: GetTelemetryOptIn = ({
   if (savedOptIn === true) return savedOptIn;
 
   // Additional check if they've already opted out (enabled: false):
-  // - if the OpenSearch Dashboards version has changed by at least a minor version,
+  // - if the Dashboards version has changed by at least a minor version,
   //   return null to re-prompt.
 
   const lastOpenSearchDashboardsVersion = telemetrySavedObject.lastVersionChecked;
 
-  // if the last OpenSearch Dashboards version isn't set, or is somehow not a string, return null
+  // if the last Dashboards version isn't set, or is somehow not a string, return null
   if (typeof lastOpenSearchDashboardsVersion !== 'string') return null;
 
   // if version hasn't changed, just return enabled value

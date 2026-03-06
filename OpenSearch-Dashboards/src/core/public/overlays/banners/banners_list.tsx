@@ -38,7 +38,7 @@ interface Props {
 }
 
 /**
- * BannersList is a list of "banners". A banner something that is displayed at the top of OpenSearch Dashboards that may or may not
+ * BannersList is a list of "banners". A banner something that is displayed at the top of Dashboards that may or may not
  * disappear.
  *
  * Whether or not a banner can be closed is completely up to the author of the banner. Some banners make sense to be

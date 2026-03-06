@@ -95,7 +95,7 @@ describe('kuery functions', () => {
     });
 
     describe('toOpenSearchQuery', () => {
-      test('should return an OpenSearch geo_polygon query representing the given node', () => {
+      test('should return an geo_polygon query representing the given node', () => {
         const node = nodeTypes.function.buildNode('geoPolygon', 'geo', points);
         const result = geoPolygon.toOpenSearchQuery(node, indexPattern);
 
@@ -109,7 +109,7 @@ describe('kuery functions', () => {
         });
       });
 
-      test('should return an OpenSearch geo_polygon query without an index pattern', () => {
+      test('should return an geo_polygon query without an index pattern', () => {
         const node = nodeTypes.function.buildNode('geoPolygon', 'geo', points);
         const result = geoPolygon.toOpenSearchQuery(node);
 

@@ -65,7 +65,7 @@ const fieldNameWithNotSuggestions = fieldNameSuggestions.concat(notOperatorSugge
 const carrierValues = [
   'Logstash Airways',
   'BeatsWest',
-  'OpenSearch Dashboards Airlines',
+  'Dashboards Airlines',
   'OpenSearch-Air',
 ];
 
@@ -73,10 +73,10 @@ const allCarrierValueSuggestions = [
   { text: 'Logstash Airways', type: valueType, detail: 'Value', insertText: '"Logstash Airways" ' },
   { text: 'BeatsWest', type: valueType, detail: 'Value', insertText: '"BeatsWest" ' },
   {
-    text: 'OpenSearch Dashboards Airlines',
+    text: 'Dashboards Airlines',
     type: valueType,
     detail: 'Value',
-    insertText: '"OpenSearch Dashboards Airlines" ',
+    insertText: '"Dashboards Airlines" ',
   },
   { text: 'OpenSearch-Air', type: valueType, detail: 'Value', insertText: '"OpenSearch-Air" ' },
 ];
@@ -87,10 +87,10 @@ const logCarrierValueSuggestion = [
 
 const openCarrierValueSuggestion = [
   {
-    text: 'OpenSearch Dashboards Airlines',
+    text: 'Dashboards Airlines',
     type: valueType,
     detail: 'Value',
-    insertText: '"OpenSearch Dashboards Airlines" ',
+    insertText: '"Dashboards Airlines" ',
   },
   { text: 'OpenSearch-Air', type: valueType, detail: 'Value', insertText: '"OpenSearch-Air" ' },
 ];
@@ -282,7 +282,7 @@ describe('Test basic value suggestions', () => {
   );
 
   it('suggest rest of partial value within quotes', async () => {
-    const query = 'Carrier: "OpenSearch"';
+    const query = 'Carrier: "Supra"';
     expect(await getSuggestionsAtPos(query, query.length)).toStrictEqual(
       addPositionToValue(openCarrierValueSuggestion, 11, 21)
     );

@@ -46,7 +46,7 @@ export type ExpressionFunctionVarSet = ExpressionFunctionDefinition<
 export const variableSet: ExpressionFunctionVarSet = {
   name: 'var_set',
   help: i18n.translate('expressions.functions.varset.help', {
-    defaultMessage: 'Updates the OpenSearch Dashboards global context.',
+    defaultMessage: 'Updates the Dashboards global context.',
   }),
   args: {
     name: {

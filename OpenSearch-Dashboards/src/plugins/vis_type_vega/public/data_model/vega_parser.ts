@@ -65,7 +65,7 @@ import {
 } from './types';
 import { PPLQueryParser } from './ppl_parser';
 
-// Set default single color to match other OpenSearch Dashboards visualizations
+// Set default single color to match other Dashboards visualizations
 const defaultColor: string = euiPaletteColorBlind()[0];
 
 const locToDirMap: Record<string, ControlsLocation> = {
@@ -126,7 +126,7 @@ export class VegaParser {
     try {
       await this._parseAsync();
     } catch (err) {
-      // if we reject current promise, it will use the standard OpenSearch Dashboards error handling
+      // if we reject current promise, it will use the standard Dashboards error handling
       this.error = Utils.formatErrorToStr(err);
     }
     return this;
@@ -144,7 +144,7 @@ export class VegaParser {
             defaultMessage: `Your specification requires a {schemaParam} field with a valid URL for
 Vega (see {vegaSchemaUrl}) or
 Vega-Lite (see {vegaLiteSchemaUrl}).
-The URL is an identifier only. OpenSearch Dashboards and your browser will never access this URL.`,
+The URL is an identifier only. Dashboards and your browser will never access this URL.`,
             values: {
               schemaParam: '"$schema"',
               vegaLiteSchemaUrl: 'https://vega.github.io/vega-lite/docs/spec.html#top-level',
@@ -646,7 +646,7 @@ The URL is an identifier only. OpenSearch Dashboards and your browser will never
   }
 
   /**
-   * Replace all instances of OpenSearch requests with raw values.
+   * Replace all instances of requests with raw values.
    * Also handle any other type of url: {type: xxx, ...}
    * @private
    */
@@ -749,7 +749,7 @@ The URL is an identifier only. OpenSearch Dashboards and your browser will never
    * @private
    */
   _setDefaultColors() {
-    // Default category coloring to the OpenSearch color scheme
+    // Default category coloring to the color scheme
     this._setDefaultValue(euiPaletteColorBlind(), 'config', 'range', 'category');
 
     if (this.isVegaLite) {

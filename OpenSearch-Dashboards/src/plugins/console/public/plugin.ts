@@ -53,7 +53,7 @@ export class ConsoleUIPlugin implements Plugin<void, void, AppSetupUIPluginDepen
       home.featureCatalogue.register({
         id: 'console',
         title: i18n.translate('console.devToolsTitle', {
-          defaultMessage: 'Interact with the OpenSearch API',
+          defaultMessage: 'Interact with the Supra API',
         }),
         description: i18n.translate('console.devToolsDescription', {
           defaultMessage: 'Skip cURL and use a JSON interface to work with your data in Console.',

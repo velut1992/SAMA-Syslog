@@ -119,7 +119,7 @@ export class OpenSearchDashboardsOverviewPlugin
       home.featureCatalogue.registerSolution({
         id: 'opensearchDashboards',
         title: i18n.translate('opensearchDashboardsOverview.opensearchDashboards.solution.title', {
-          defaultMessage: 'OpenSearch Dashboards',
+          defaultMessage: 'Dashboards',
         }),
         subtitle: i18n.translate(
           'opensearchDashboardsOverview.opensearchDashboards.solution.subtitle',

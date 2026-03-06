@@ -8,7 +8,7 @@ import { useSearchContext } from './use_search_context';
 import { useOpenSearchDashboards } from '../../../../../../opensearch_dashboards_react/public';
 import { BehaviorSubject } from 'rxjs';
 
-// Mock OpenSearch Dashboards service
+// Mock Dashboards service
 jest.mock('../../../../../../opensearch_dashboards_react/public', () => ({
   useOpenSearchDashboards: jest.fn(),
 }));

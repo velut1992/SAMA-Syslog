@@ -181,7 +181,7 @@ describe('PluginsService', () => {
       `);
     });
 
-    it('throws if plugin required OpenSearch Dashboards version is incompatible with the current version', async () => {
+    it('throws if plugin required Dashboards version is incompatible with the current version', async () => {
       mockDiscover.mockReturnValue({
         error$: from([
           PluginDiscoveryError.incompatibleVersion('path-3', new Error('Incompatible version')),

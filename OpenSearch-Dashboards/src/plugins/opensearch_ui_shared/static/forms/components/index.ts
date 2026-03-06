@@ -32,10 +32,10 @@
 @TODO
 
 The brace/mode/json import below is loaded eagerly - before this plugin is explicitly loaded by users. This makes
-the brace JSON mode, used for JSON syntax highlighting and grammar checking, available across all of OpenSearch Dashboards plugins.
+the brace JSON mode, used for JSON syntax highlighting and grammar checking, available across all of Dashboards plugins.
 
-This is not ideal because we are loading JS that is not necessary for OpenSearch Dashboards to start, but the alternative
-is breaking JSON mode for an unknown number of ace editors across OpenSearch Dashboards - not all components reference the underlying
+This is not ideal because we are loading JS that is not necessary for Dashboards to start, but the alternative
+is breaking JSON mode for an unknown number of ace editors across Dashboards - not all components reference the underlying
 EuiCodeEditor (for instance, explicitly).
 
 Importing here is a way of preventing a more sophisticated solution to this problem since we want to, eventually,

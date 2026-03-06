@@ -55,7 +55,7 @@ const defaultValues = {
       id: 'ds-1',
       name: 'ds-1-title',
       description: 'ds-1-description',
-      type: 'OpenSearch',
+      type: 'Supra',
       connectionType: DataSourceConnectionType.OpenSearchConnection,
     },
   ],

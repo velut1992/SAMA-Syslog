@@ -150,7 +150,7 @@ export const WorkspaceInitial = ({ registeredUseCases$ }: WorkspaceInitialProps)
         <EuiTitle size="l">
           <h1>
             {i18n.translate('workspace.initial.title', {
-              defaultMessage: 'Welcome to OpenSearch',
+              defaultMessage: 'Welcome to Supra',
             })}
           </h1>
         </EuiTitle>
@@ -246,7 +246,7 @@ export const WorkspaceInitial = ({ registeredUseCases$ }: WorkspaceInitialProps)
   return (
     <EuiPage style={{ minHeight: '100vh' }}>
       <EuiPageBody>
-        <EuiIcon type="logoOpenSearch" size="xl" style={{ position: 'fixed' }} />
+        <EuiIcon type="logoSupra" size="xl" style={{ position: 'fixed' }} />
         <EuiSpacer size="xl" />
         <EuiSpacer size="l" />
         <EuiFlexGroup

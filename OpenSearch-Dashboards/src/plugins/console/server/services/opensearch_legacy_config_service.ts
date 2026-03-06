@@ -34,17 +34,17 @@ import { OpenSearchConfig } from 'opensearch-dashboards/server';
 
 export class OpenSearchLegacyConfigService {
   /**
-   * The OpenSearch config value at a given point in time.
+   * The config value at a given point in time.
    */
   private config?: OpenSearchConfig;
 
   /**
-   * An observable that emits OpenSearch config.
+   * An observable that emits config.
    */
   private config$?: Observable<OpenSearchConfig>;
 
   /**
-   * A reference to the subscription to the OpenSearch observable
+   * A reference to the subscription to the observable
    */
   private configSub?: Subscription;
 
@@ -63,7 +63,7 @@ export class OpenSearchLegacyConfigService {
 
   async readConfig(): Promise<OpenSearchConfig> {
     if (!this.config$) {
-      throw new Error('Could not read OpenSearch config, this service has not been setup!');
+      throw new Error('Could not read config, this service has not been setup!');
     }
 
     if (!this.config) {

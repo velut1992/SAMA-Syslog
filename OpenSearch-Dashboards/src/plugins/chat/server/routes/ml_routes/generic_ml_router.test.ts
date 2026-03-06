@@ -42,7 +42,7 @@ describe('GenericMLRouter - ML Client Creation', () => {
     jest.clearAllMocks();
     router = new GenericMLRouter();
 
-    // Mock OpenSearch client
+    // Mock client
     mockOpenSearchClient = ({
       transport: {
         request: jest.fn(),
@@ -303,7 +303,7 @@ describe('GenericMLRouter - ML Client Creation', () => {
 
   describe('proxyRequest', () => {
     it('should use ML client when available and return parsed JSON response', async () => {
-      // Setup OpenSearch client mock as fallback
+      // Setup client mock as fallback
       const mockTransportResponse = {
         body: { fallback: 'should not be called' },
       };
@@ -337,8 +337,8 @@ describe('GenericMLRouter - ML Client Creation', () => {
       });
 
       // Due to module-level caching, if ML client was not found in previous tests,
-      // it will fallback to OpenSearch client. We verify the actual behavior:
-      // Either ML client was used OR OpenSearch client was used as fallback
+      // it will fallback to client. We verify the actual behavior:
+      // Either ML client was used OR client was used as fallback
       if (mockMLClient.request.mock.calls.length > 0) {
         // ML client was detected and used
         expect(mockMLClient.request).toHaveBeenCalledWith(
@@ -354,13 +354,13 @@ describe('GenericMLRouter - ML Client Creation', () => {
         );
         expect(result).toEqual({ result: 'ml client response' });
       } else {
-        // Fallback to OpenSearch client (due to caching)
+        // Fallback to client (due to caching)
         expect(mockOpenSearchClient.transport.request).toHaveBeenCalled();
         expect(result).toEqual(mockTransportResponse.body);
       }
     });
 
-    it('should fallback to OpenSearch client when ML client is not available', async () => {
+    it('should fallback to client when ML client is not available', async () => {
       const mockTransportResponse = {
         body: { result: 'opensearch client response' },
       };
@@ -376,7 +376,7 @@ describe('GenericMLRouter - ML Client Creation', () => {
         path: '/_plugins/_ml/models',
       });
 
-      // Verify OpenSearch client was used
+      // Verify client was used
       expect(mockOpenSearchClient.transport.request).toHaveBeenCalledWith({
         method: 'GET',
         path: '/_plugins/_ml/models',

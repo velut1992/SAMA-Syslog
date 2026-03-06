@@ -43,7 +43,7 @@ describe('build query', () => {
   } as unknown) as IIndexPattern;
 
   describe('buildOpenSearchQuery', () => {
-    it('should return the parameters of an OpenSearch bool query', () => {
+    it('should return the parameters of an bool query', () => {
       const result = buildOpenSearchQuery(indexPattern, [], []);
       const expected = {
         bool: {
@@ -56,7 +56,7 @@ describe('build query', () => {
       expect(result).toEqual(expected);
     });
 
-    it('should combine queries and filters from multiple query languages into a single OpenSearch bool query', () => {
+    it('should combine queries and filters from multiple query languages into a single bool query', () => {
       const queries = [
         { query: 'extension:jpg', language: 'kuery' },
         { query: 'bar:baz', language: 'lucene' },

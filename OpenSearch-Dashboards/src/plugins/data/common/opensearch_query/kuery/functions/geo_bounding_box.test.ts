@@ -94,7 +94,7 @@ describe('kuery functions', () => {
     });
 
     describe('toOpenSearchQuery', () => {
-      test('should return an OpenSearch geo_bounding_box query representing the given node', () => {
+      test('should return an geo_bounding_box query representing the given node', () => {
         const node = nodeTypes.function.buildNode('geoBoundingBox', 'geo', params);
         const result = geoBoundingBox.toOpenSearchQuery(node, indexPattern);
 
@@ -103,7 +103,7 @@ describe('kuery functions', () => {
         expect(result.geo_bounding_box.geo).toHaveProperty('bottom_right', '50.73, -135.35');
       });
 
-      test('should return an OpenSearch geo_bounding_box query without an index pattern', () => {
+      test('should return an geo_bounding_box query without an index pattern', () => {
         const node = nodeTypes.function.buildNode('geoBoundingBox', 'geo', params);
         const result = geoBoundingBox.toOpenSearchQuery(node);
 

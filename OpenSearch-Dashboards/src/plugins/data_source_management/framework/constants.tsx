@@ -11,7 +11,7 @@ export const OLLY_QUESTION_URL_PARAM_KEY = 'olly_q';
 export const INDEX_URL_PARAM_KEY = 'indexPattern';
 export const DEFAULT_DATA_SOURCE_TYPE = 'DEFAULT_INDEX_PATTERNS';
 export const DEFAULT_DATA_SOURCE_NAME = 'Default cluster';
-export const DEFAULT_DATA_SOURCE_OBSERVABILITY_DISPLAY_NAME = 'OpenSearch';
+export const DEFAULT_DATA_SOURCE_OBSERVABILITY_DISPLAY_NAME = 'Supra';
 export const DEFAULT_DATA_SOURCE_TYPE_NAME = 'Default Group';
 export const enum QUERY_LANGUAGE {
   PPL = 'PPL',
@@ -62,7 +62,7 @@ export const ACC_INDEX_TYPE_DOCUMENTATION_URL =
 export const ACC_CHECKPOINT_DOCUMENTATION_URL =
   'https://github.com/opensearch-project/opensearch-spark/blob/main/docs/index.md#create-index-options';
 
-export const ACCELERATION_INDEX_NAME_INFO = `All OpenSearch acceleration indices have a naming format of pattern: \`prefix_<index name>_suffix\`. They share a common prefix structure, which is \`flint_<data source name>_<database name>_<table name>_\`. Additionally, they may have a suffix that varies based on the index type. 
+export const ACCELERATION_INDEX_NAME_INFO = `All acceleration indices have a naming format of pattern: \`prefix_<index name>_suffix\`. They share a common prefix structure, which is \`flint_<data source name>_<database name>_<table name>_\`. Additionally, they may have a suffix that varies based on the index type. 
 ##### Skipping Index
 - For 'Skipping' indices, a fixed index name 'skipping' is used, and this name cannot be modified by the user. The suffix added to this type is \`_index\`.
   - An example of a 'Skipping' index name would be: \`flint_mydatasource_mydb_mytable_skipping_index\`.

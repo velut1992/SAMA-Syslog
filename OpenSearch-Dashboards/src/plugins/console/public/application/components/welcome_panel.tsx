@@ -72,7 +72,7 @@ export function WelcomePanel(props: Props) {
             <FormattedMessage
               id="console.welcomePage.quickIntroDescription"
               defaultMessage="The Console UI is split into two panes: an editor pane (left) and a response pane (right).
-                Use the editor to type requests and submit them to OpenSearch. The results will be displayed in
+                Use the editor to type requests and submit them to Supra. The results will be displayed in
                 the response pane on the right side."
             />
           </p>
@@ -100,7 +100,7 @@ export function WelcomePanel(props: Props) {
             <li>
               <FormattedMessage
                 id="console.welcomePage.quickTips.submitRequestDescription"
-                defaultMessage="Submit requests to OpenSearch using the green triangle button."
+                defaultMessage="Submit requests to using the green triangle button."
               />
             </li>
             <li>

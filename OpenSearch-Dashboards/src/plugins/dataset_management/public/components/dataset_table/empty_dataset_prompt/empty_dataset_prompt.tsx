@@ -76,7 +76,7 @@ export const EmptyDatasetPrompt = ({
             <h2>
               <FormattedMessage
                 id="datasetManagement.emptyDatasetPrompt.youHaveData"
-                defaultMessage="You have data in OpenSearch."
+                defaultMessage="You have data in Supra."
               />
               <br />
               <FormattedMessage
@@ -87,7 +87,7 @@ export const EmptyDatasetPrompt = ({
             <p>
               <FormattedMessage
                 id="datasetManagement.emptyDatasetPrompt.datasetExplanation"
-                defaultMessage="OpenSearch Dashboards requires an index pattern to identify which indices you want to explore. An
+                defaultMessage="Dashboards requires an index pattern to identify which indices you want to explore. An
                 index pattern can point to a specific index, for example, your log data from
                 yesterday, or all indices that contain your log data."
               />

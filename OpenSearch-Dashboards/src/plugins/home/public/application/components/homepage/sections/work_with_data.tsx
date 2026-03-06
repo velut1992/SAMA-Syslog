@@ -136,7 +136,7 @@ export const workWithDataSection: Section = {
   }),
   description: i18n.translate('home.sections.workWithData.description', {
     defaultMessage:
-      'Get started by ingesting data to access robust and visual data exploration capabilities. Not ready to ingest data yet? Use our sample data to explore and get familiar with OpenSearch capabilities.',
+      'Get started by ingesting data to access robust and visual data exploration capabilities. Not ready to ingest data yet? Use our sample data to explore and get familiar with capabilities.',
   }),
   render,
 };

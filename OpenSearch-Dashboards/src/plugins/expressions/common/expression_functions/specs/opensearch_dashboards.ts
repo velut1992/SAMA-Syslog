@@ -50,7 +50,7 @@ export const opensearchDashboards: ExpressionFunctionOpenSearchDashboards = {
   inputTypes: ['opensearch_dashboards_context', 'null'],
 
   help: i18n.translate('expressions.functions.opensearchDashboards.help', {
-    defaultMessage: 'Gets OpenSearch Dashboards global context',
+    defaultMessage: 'Gets Dashboards global context',
   }),
 
   args: {},

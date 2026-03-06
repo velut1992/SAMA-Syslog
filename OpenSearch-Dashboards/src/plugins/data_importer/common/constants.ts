@@ -5,7 +5,7 @@
 
 export const PLUGIN_NAME_AS_TITLE = 'Import Data';
 export const PLUGIN_DESCRIPTION =
-  'Import data from files (CSV, JSON, NDJSON) into OpenSearch indexes.';
+  'Import data from files (CSV, JSON, NDJSON) into indexes.';
 export const PLUGIN_ID = 'dataImporter';
 export const PLUGIN_NAME = 'dataImporter';
 

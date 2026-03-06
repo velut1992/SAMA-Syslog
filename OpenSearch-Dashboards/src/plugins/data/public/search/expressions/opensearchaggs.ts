@@ -158,7 +158,7 @@ const handleCourierRequest = async ({
         'data.functions.opensearchaggs.inspector.dataRequest.description',
         {
           defaultMessage:
-            'This request queries OpenSearch to fetch the data for the visualization.',
+            'This request queries to fetch the data for the visualization.',
         }
       ),
     }

@@ -36,11 +36,11 @@ const PRINT_DEPTH = 5;
 /**
  * Starts an interactive REPL with a global `server` object.
  *
- * @param {OpenSearch DashboardsServer} osdServer
+ * @param {DashboardsServer} osdServer
  */
 export function startRepl(osdServer) {
   const replServer = repl.start({
-    prompt: 'OpenSearch Dashboards> ',
+    prompt: 'Dashboards> ',
     useColors: true,
     writer: promiseFriendlyWriter({
       displayPrompt: () => replServer.displayPrompt(),

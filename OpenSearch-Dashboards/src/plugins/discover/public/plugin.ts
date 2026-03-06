@@ -153,7 +153,7 @@ export interface DiscoverStartPlugins {
 }
 
 /**
- * Contains Discover, one of the oldest parts of OpenSearch Dashboards
+ * Contains Discover, one of the oldest parts of Dashboards
  * Discover provides embeddables for Dashboards
  */
 export class DiscoverPlugin

@@ -36,7 +36,7 @@ import { IDynamicConfigService } from './config/dynamic_config_service';
 export type CoreId = symbol;
 
 /**
- * Groups all main OpenSearch Dashboards's core modules/systems/services that are consumed in a
+ * Groups all main Dashboards's core modules/systems/services that are consumed in a
  * variety of places within the core itself.
  * @internal
  */

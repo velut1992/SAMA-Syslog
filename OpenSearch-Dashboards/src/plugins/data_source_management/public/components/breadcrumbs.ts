@@ -37,7 +37,7 @@ export function getCreateOpenSearchDataSourceBreadcrumbs(useNewUX: boolean) {
         ? i18n.translate(
             'dataSourcesManagement.dataSources.createOpenSearchDataSourceBreadcrumbs',
             {
-              defaultMessage: 'Connect OpenSearch Cluster',
+              defaultMessage: 'Connect Cluster',
             }
           )
         : i18n.translate(
@@ -46,7 +46,7 @@ export function getCreateOpenSearchDataSourceBreadcrumbs(useNewUX: boolean) {
               defaultMessage: 'Open Search',
             }
           ),
-      href: `/configure/OpenSearch`,
+      href: `/configure/Supra`,
     },
   ];
 }

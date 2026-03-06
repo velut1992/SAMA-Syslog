@@ -108,7 +108,7 @@ const createInternalSetupContractMock = () => {
     }),
     status$: new BehaviorSubject<ServiceStatus<OpenSearchStatusMeta>>({
       level: ServiceStatusLevels.available,
-      summary: 'OpenSearch is available',
+      summary: 'is available',
     }),
     legacy: {
       ...createSetupContractMock().legacy,

@@ -38,7 +38,7 @@ import { DataSourceError } from '../../../../data_source/common/data_sources';
 import { DataSourcePluginSetup } from '../../../../data_source/server';
 import { SearchUsage } from '../collectors';
 
-describe('OpenSearch search strategy', () => {
+describe('search strategy', () => {
   const mockLogger: any = {
     debug: () => {},
   };

@@ -163,7 +163,7 @@ export const getDateFormatSettings = (): Record<string, UiSettingsParams> => {
       }),
       value: 'MMM D, YYYY @ HH:mm:ss.SSSSSSSSS',
       description: i18n.translate('core.ui_settings.params.dateNanosFormatText', {
-        defaultMessage: 'Used for the {dateNanosLink} datatype of OpenSearch',
+        defaultMessage: 'Used for the {dateNanosLink} datatype of Supra',
         values: {
           dateNanosLink:
             '<a href="https://opensearch.org/docs/latest/opensearch/units/" target="_blank" rel="noopener noreferrer">' +

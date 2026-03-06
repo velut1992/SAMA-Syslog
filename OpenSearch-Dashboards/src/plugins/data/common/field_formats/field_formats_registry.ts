@@ -210,7 +210,7 @@ export class FieldFormatsRegistry {
   /**
    * Returns a cache key built by the given variables for caching in memoized
    * Where opensearchType contains fieldType, fieldType is returned
-   * -> OpenSearch Dashboards types have a higher priority in that case
+   * -> Dashboards types have a higher priority in that case
    * -> would lead to failing tests that match e.g. date format with/without esTypes
    * https://lodash.com/docs#memoize
    *

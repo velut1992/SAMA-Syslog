@@ -205,7 +205,7 @@ describe(`Fetch DataSource MetaData ${URL}`, () => {
       .expect(200);
     expect(result.body).toEqual({
       dataSourceVersion: '2.11.0',
-      dataSourceEngineType: 'OpenSearch',
+      dataSourceEngineType: 'Supra',
       installedPlugins: ['opensearch-ml', 'opensearch-sql'],
     });
     expect(dataSourceServiceSetupMock.getDataSourceClient).toHaveBeenCalledWith(
@@ -229,7 +229,7 @@ describe(`Fetch DataSource MetaData ${URL}`, () => {
       .expect(200);
     expect(result.body).toEqual({
       dataSourceVersion: '2.11.0',
-      dataSourceEngineType: 'OpenSearch',
+      dataSourceEngineType: 'Supra',
       installedPlugins: ['opensearch-ml', 'opensearch-sql'],
     });
   });
@@ -330,7 +330,7 @@ describe(`Fetch DataSource MetaData ${URL}`, () => {
       .expect(200);
     expect(result.body).toEqual({
       dataSourceVersion: '2.11.0',
-      dataSourceEngineType: 'OpenSearch',
+      dataSourceEngineType: 'Supra',
       installedPlugins: ['opensearch-ml', 'opensearch-sql'],
     });
   });
@@ -345,7 +345,7 @@ describe(`Fetch DataSource MetaData ${URL}`, () => {
       .expect(200);
     expect(result.body).toEqual({
       dataSourceVersion: '2.11.0',
-      dataSourceEngineType: 'OpenSearch',
+      dataSourceEngineType: 'Supra',
       installedPlugins: ['opensearch-ml', 'opensearch-sql'],
     });
   });
@@ -360,7 +360,7 @@ describe(`Fetch DataSource MetaData ${URL}`, () => {
       .expect(200);
     expect(result.body).toEqual({
       dataSourceVersion: '2.11.0',
-      dataSourceEngineType: 'OpenSearch',
+      dataSourceEngineType: 'Supra',
       installedPlugins: ['opensearch-ml', 'opensearch-sql'],
     });
   });
@@ -375,7 +375,7 @@ describe(`Fetch DataSource MetaData ${URL}`, () => {
       .expect(200);
     expect(result.body).toEqual({
       dataSourceVersion: '2.11.0',
-      dataSourceEngineType: 'OpenSearch',
+      dataSourceEngineType: 'Supra',
       installedPlugins: ['opensearch-ml', 'opensearch-sql'],
     });
   });

@@ -191,7 +191,7 @@ export class SavedObjectEdition extends Component<
 
     const confirmed = await overlays.openConfirm(
       i18n.translate('savedObjectsManagement.deleteConfirm.modalDescription', {
-        defaultMessage: 'This action permanently removes the object from OpenSearch Dashboards.',
+        defaultMessage: 'This action permanently removes the object from Dashboards.',
       }),
       {
         confirmButtonText: i18n.translate(
@@ -203,7 +203,7 @@ export class SavedObjectEdition extends Component<
         title: i18n.translate('savedObjectsManagement.deleteConfirm.modalTitle', {
           defaultMessage: `Delete '{title}'?`,
           values: {
-            title: object?.attributes?.title || 'saved OpenSearch Dashboards object',
+            title: object?.attributes?.title || 'saved Dashboards object',
           },
         }),
         buttonColor: 'danger',

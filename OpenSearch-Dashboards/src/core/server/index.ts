@@ -29,7 +29,7 @@
  */
 
 /**
- * The OpenSearch Dashboards Core APIs for server-side plugins.
+ * The Dashboards Core APIs for server-side plugins.
  *
  * A plugin requires a `opensearch_dashboards.json` file at it's root directory that follows
  * {@link PluginManifest | the manfiest schema} to define static plugin

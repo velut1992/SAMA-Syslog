@@ -185,7 +185,7 @@ export class TelemetryManagementSection extends Component<Props, State> {
                   <strong>
                     <FormattedMessage
                       id="telemetry.callout.appliesSettingTitle.allOfOpenSearchDashboardsText"
-                      defaultMessage="all of OpenSearchDashboards"
+                      defaultMessage="all of Dashboards"
                     />
                   </strong>
                 ),

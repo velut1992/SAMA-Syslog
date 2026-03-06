@@ -38,12 +38,12 @@ import { CriticalError } from './errors';
 const isClusterManager = cluster.isPrimary ?? cluster.isMaster;
 
 interface OpenSearchDashboardsFeatures {
-  // Indicates whether we can run OpenSearch Dashboards in a so called cluster mode in which
-  // OpenSearch Dashboards is run as a "worker" process together with optimizer "worker" process
+  // Indicates whether we can run Dashboards in a so called cluster mode in which
+  // Dashboards is run as a "worker" process together with optimizer "worker" process
   // that are orchestrated by the "master" process (dev mode only feature).
   isClusterModeSupported: boolean;
 
-  // Indicates whether we can run OpenSearch Dashboards in REPL mode (dev mode only feature).
+  // Indicates whether we can run Dashboards in REPL mode (dev mode only feature).
   isReplModeSupported: boolean;
 }
 
@@ -66,7 +66,7 @@ export async function bootstrap({
   features,
 }: BootstrapArgs) {
   if (cliArgs.repl && !features.isReplModeSupported) {
-    terminate('OpenSearch Dashboards REPL mode can only be run in development mode.');
+    terminate('Dashboards REPL mode can only be run in development mode.');
   }
 
   if (cliArgs.optimize) {

@@ -47,8 +47,8 @@ export function CreateDataSourceCardView({
       ? [
           {
             name: 'OPENSEARCH',
-            displayName: 'OpenSearch',
-            description: 'Connect to OpenSearch',
+            displayName: 'Supra',
+            description: 'Connect to Supra',
             displayIcon: <EuiIcon type={opensearchLogSvg} size="xl" />,
             onClick: () => history.push(`/configure/${OPENSEARCH_URL}`),
           },

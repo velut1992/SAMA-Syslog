@@ -117,7 +117,7 @@ describe('date_range params', () => {
       expect(params.time_zone).toBe('defaultTimeZone');
     });
 
-    test('should use the OpenSearch Dashboards time_zone if no parameter specified', () => {
+    test('should use the Dashboards time_zone if no parameter specified', () => {
       aggTypesDependencies = {
         ...aggTypesDependencies,
         getConfig: () => 'opensearchDashboardsTimeZone' as any,

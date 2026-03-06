@@ -78,7 +78,7 @@ export const [getUsageCollector, setUsageCollector] = createGetterSetter<UsageCo
 export const getHistory = _.once(() => createHashHistory());
 
 /**
- * Discover currently uses two `history` instances: one from OpenSearch Dashboards Platform and
+ * Discover currently uses two `history` instances: one from Dashboards Platform and
  * another from `history` package. Below function is used every time Discover
  * app is loaded to synchronize both instances.
  *

@@ -38,7 +38,7 @@ describe('NDJSONProcessor', () => {
     });
 
     it.each<NDJSONTestCaseFormat>(VALID_NDJSON_TEST_CASES)(
-      'should index $expected.length documents into OpenSearch',
+      'should index $expected.length documents into Supra',
       async ({ rawString, expected }) => {
         const response = await processor.ingestText(rawString.join('\n'), {
           client: clientMock,
@@ -51,7 +51,7 @@ describe('NDJSONProcessor', () => {
     );
 
     it.each<NDJSONTestCaseFormat>(VALID_NDJSON_TEST_CASES)(
-      'should handle OpenSearch errors and show the correct failedRow',
+      'should handle errors and show the correct failedRow',
       async ({ rawString, expected }) => {
         const mockSuccessfulResponse = opensearchServiceMock.createApiResponse<IndexResponse>();
         clientMock.index
@@ -106,7 +106,7 @@ describe('NDJSONProcessor', () => {
     });
 
     it.each<NDJSONTestCaseFormat>(VALID_NDJSON_TEST_CASES)(
-      'should index $expected.length documents into OpenSearch',
+      'should index $expected.length documents into Supra',
       async ({ rawString, expected }) => {
         const validNDJSONFileStream = Readable.from(rawString.join('\n'));
         const response = await processor.ingestFile(validNDJSONFileStream, {
@@ -120,7 +120,7 @@ describe('NDJSONProcessor', () => {
     );
 
     it.each<NDJSONTestCaseFormat>(VALID_NDJSON_TEST_CASES)(
-      'should handle OpenSearch errors and show the correct failedRow',
+      'should handle errors and show the correct failedRow',
       async ({ rawString, expected }) => {
         const mockSuccessfulResponse = opensearchServiceMock.createApiResponse<IndexResponse>();
         clientMock.index

@@ -72,7 +72,7 @@ export function injectReferences(
 ) {
   // Skip if panelsJSON is missing otherwise this will cause saved object import to fail when
   // importing objects without panelsJSON. At development time of this, there is no guarantee each saved
-  // object has panelsJSON in all previous versions of OpenSearch Dashboards.
+  // object has panelsJSON in all previous versions of Dashboards.
   if (typeof savedObject.panelsJSON !== 'string') {
     return;
   }

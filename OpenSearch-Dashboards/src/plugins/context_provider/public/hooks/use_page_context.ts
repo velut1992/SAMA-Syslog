@@ -8,7 +8,7 @@ import { useDynamicContext } from './use_dynamic_context';
 import { getStateFromOsdUrl } from '../../../opensearch_dashboards_utils/public';
 
 /**
- * URL state interface for OpenSearch Dashboards
+ * URL state interface for Dashboards
  */
 export interface URLState {
   pathname: string;
@@ -35,12 +35,12 @@ const DEFAULT_CATEGORIES = ['page', 'static'];
 
 /**
  * Capture current URL state using direct browser URL monitoring
- * Uses OpenSearch Dashboards' existing URL parsing utilities
+ * Uses Dashboards' existing URL parsing utilities
  */
 function captureCurrentURLState(): URLState {
   const url = new URL(window.location.href);
 
-  // Use OpenSearch Dashboards' built-in URL state parsing utilities
+  // Use Dashboards' built-in URL state parsing utilities
   // These handle rison decoding automatically
   const _g = getStateFromOsdUrl('_g', url.href);
   const _a = getStateFromOsdUrl('_a', url.href);
@@ -61,7 +61,7 @@ function captureCurrentURLState(): URLState {
 
 /**
  * Hook for automatically capturing page context from URL state.
- * Uses direct browser URL monitoring with OpenSearch Dashboards parsing utilities.
+ * Uses direct browser URL monitoring with Dashboards parsing utilities.
  */
 export function usePageContext(options?: UsePageContextOptions): string {
   const [urlState, setUrlState] = useState<URLState | null>(null);
@@ -84,7 +84,7 @@ export function usePageContext(options?: UsePageContextOptions): string {
       setUrlState(newState);
     };
 
-    // 1. Monitor hash changes (PRIMARY method for OpenSearch Dashboards)
+    // 1. Monitor hash changes (PRIMARY method for Dashboards)
     // This covers most URL changes in OSD since it uses hash-based routing
     const hashChangeHandler = () => handleUrlChange('hashchange');
     window.addEventListener('hashchange', hashChangeHandler);
@@ -94,7 +94,7 @@ export function usePageContext(options?: UsePageContextOptions): string {
     window.addEventListener('popstate', popstateHandler);
 
     // 3. Monitor pushState/replaceState (for programmatic navigation)
-    // These are the main methods used by OpenSearch Dashboards for navigation
+    // These are the main methods used by Dashboards for navigation
     const originalPushState = history.pushState;
     const originalReplaceState = history.replaceState;
 

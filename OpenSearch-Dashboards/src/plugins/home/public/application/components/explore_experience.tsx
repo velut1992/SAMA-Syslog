@@ -47,7 +47,7 @@ export const ExperienceSelectionModal = ({ onClose }: ConfigNoticeModalProps) =>
               })}
               <code>opensearch_dashboards.yml</code>
               {i18n.translate('home.enhancedDiscover.modal.emptyPrompt.bodySuffix', {
-                defaultMessage: ' file and restarting OpenSearch Dashboards to apply the changes.',
+                defaultMessage: ' file and restarting Dashboards to apply the changes.',
               })}
             </p>
           }

@@ -52,7 +52,7 @@ export function HeaderBreadcrumbs({
   renderFullLength,
   hideTrailingSeparator,
 }: Props) {
-  const appTitle = useObservable(appTitle$, 'OpenSearch Dashboards');
+  const appTitle = useObservable(appTitle$, 'Supra');
   const breadcrumbs = useObservable(breadcrumbs$, []);
   const [breadcrumbEnricher, setBreadcrumbEnricher] = useState<
     ChromeBreadcrumbEnricher | undefined

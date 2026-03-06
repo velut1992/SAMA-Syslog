@@ -44,7 +44,7 @@ export interface Capabilities {
     [sectionId: string]: Record<string, boolean>;
   };
 
-  /** Catalogue capabilities. Catalogue entries drive the visibility of the OpenSearch Dashboards homepage options. */
+  /** Catalogue capabilities. Catalogue entries drive the visibility of the Dashboards homepage options. */
   catalogue: Record<string, boolean>;
 
   /** Workspaces capabilities. */

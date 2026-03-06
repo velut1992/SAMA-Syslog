@@ -25,14 +25,14 @@ import {
 } from '../../../../content_management/public';
 
 export const getLearnOpenSearchConfig = (docLinks: DocLinksStart): Config => ({
-  title: i18n.translate('home.card.learnOpenSearch.title', {
-    defaultMessage: 'OpenSearch Documentation',
+  title: i18n.translate('home.card.learnSupra.title', {
+    defaultMessage: 'Documentation',
   }),
   list: [
     {
       label: 'Quickstart guide',
       href: docLinks.links.opensearchDashboards.dashboards.quickStart,
-      description: 'Start using OpenSearch Dashboards in minutes.',
+      description: 'Start using Dashboards in minutes.',
     },
     {
       label: 'Building data visualizations',
@@ -64,14 +64,14 @@ export const getWhatsNewConfig = (docLinks: DocLinksStart): Config => ({
     {
       label: 'Quickstart guide',
       href: docLinks.links.opensearchDashboards.dashboards.quickStart,
-      description: 'Get started in minutes with OpenSearch Dashboards',
+      description: 'Get started in minutes with Dashboards',
     },
   ],
   allLink: (
     <EuiLink href={docLinks.OPENSEARCH_WEBSITE_URL} target="_blank">
       <EuiText size="s" className="eui-displayInline">
         {i18n.translate('home.list.card.whatsnew', {
-          defaultMessage: 'View all on OpenSearch.org',
+          defaultMessage: 'View all on Supra.org',
         })}
       </EuiText>
     </EuiLink>

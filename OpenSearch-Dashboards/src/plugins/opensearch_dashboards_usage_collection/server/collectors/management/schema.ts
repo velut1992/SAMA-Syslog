@@ -31,7 +31,7 @@
 import { MakeSchemaFrom } from 'src/plugins/usage_collection/server';
 import { UsageStats } from './telemetry_management_collector';
 
-// Retrieved by changing all the current settings in OpenSearch Dashboards (we'll need to revisit it in the future).
+// Retrieved by changing all the current settings in Dashboards (we'll need to revisit it in the future).
 // I would suggest we use flattened type for the mappings of this collector.
 export const stackManagementSchema: MakeSchemaFrom<UsageStats> = {
   'visualize:enableLabs': { type: 'boolean' },

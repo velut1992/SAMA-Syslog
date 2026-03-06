@@ -57,7 +57,11 @@
       "Bash(gh auth:*)",
       "Bash(git remote:*)",
       "Bash(git push:*)",
-      "Bash(git rm:*)"
+      "Bash(git rm:*)",
+      "Bash(./scripts/rebrand.sh:*)",
+      "Bash(yarn build-platform:*)",
+      "Bash(ln:*)",
+      "Bash(unzip -l /tmp/test-security-plugin.zip)"
     ]
   }
 }

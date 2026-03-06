@@ -38,7 +38,7 @@ const mockQueryWithIndexPattern = {
     dataSource: {
       id: 'mock-data-source-id',
       title: 'test-mds',
-      type: 'OpenSearch',
+      type: 'Supra',
     },
   },
 };

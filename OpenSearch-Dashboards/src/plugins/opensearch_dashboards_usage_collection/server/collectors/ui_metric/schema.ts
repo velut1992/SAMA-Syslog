@@ -54,7 +54,7 @@ const uiMetricFromDataPluginSchema: MakeSchemaFrom<UIMetricUsage> = {
 };
 
 // TODO: Find a way to retrieve it automatically
-// Searching `reportUiStats` across OpenSearch Dashboards
+// Searching `reportUiStats` across Dashboards
 export const uiMetricSchema: MakeSchemaFrom<UIMetricUsage> = {
   console: commonSchema,
   DashboardPanelVersionInUrl: commonSchema,

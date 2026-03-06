@@ -54,7 +54,7 @@ export const createRegionDeniedWarning = (function () {
           body={
             <Fragment>
               <p>
-                You can configure OpenSearch Dashboards to use a different map server for coordinate
+                You can configure Dashboards to use a different map server for coordinate
                 maps by modifying the default WMS properties.
               </p>
             </Fragment>

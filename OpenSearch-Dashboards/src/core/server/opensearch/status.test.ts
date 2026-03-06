@@ -51,7 +51,7 @@ describe('calculateStatus', () => {
   it('starts in unavailable', async () => {
     expect(await calculateStatus$(new Subject()).pipe(take(1)).toPromise()).toEqual({
       level: ServiceStatusLevels.unavailable,
-      summary: 'Waiting for OpenSearch',
+      summary: 'Waiting for Supra',
       meta: {
         warningNodes: [],
         incompatibleNodes: [],
@@ -73,7 +73,7 @@ describe('calculateStatus', () => {
         .toPromise()
     ).toEqual({
       level: ServiceStatusLevels.available,
-      summary: 'OpenSearch is available',
+      summary: 'is available',
       meta: {
         warningNodes: [],
         incompatibleNodes: [],
@@ -116,14 +116,14 @@ describe('calculateStatus', () => {
           incompatibleNodes: [nodeInfo],
           // this isn't the real message, just used to test that the message
           // is forwarded to the status
-          message: 'Incompatible with OpenSearch',
+          message: 'Incompatible with Supra',
         })
       )
         .pipe(take(2))
         .toPromise()
     ).toEqual({
       level: ServiceStatusLevels.critical,
-      summary: 'Incompatible with OpenSearch',
+      summary: 'Incompatible with Supra',
       meta: {
         incompatibleNodes: [nodeInfo],
         warningNodes: [nodeInfo],
@@ -151,7 +151,7 @@ describe('calculateStatus', () => {
       opensearchDashboardsVersion: '2.1.1',
       incompatibleNodes: [nodeInfo],
       warningNodes: [],
-      message: 'Incompatible with OpenSearch',
+      message: 'Incompatible with Supra',
     });
     nodeCompat$.next({
       isCompatible: true,
@@ -176,7 +176,7 @@ describe('calculateStatus', () => {
             "incompatibleNodes": Array [],
             "warningNodes": Array [],
           },
-          "summary": "Waiting for OpenSearch",
+          "summary": "Waiting for Supra",
         },
         Object {
           "level": critical,
@@ -201,7 +201,7 @@ describe('calculateStatus', () => {
             ],
             "warningNodes": Array [],
           },
-          "summary": "Incompatible with OpenSearch",
+          "summary": "Incompatible with Supra",
         },
         Object {
           "level": available,
@@ -226,7 +226,7 @@ describe('calculateStatus', () => {
             "incompatibleNodes": Array [],
             "warningNodes": Array [],
           },
-          "summary": "OpenSearch is available",
+          "summary": "is available",
         },
       ]
     `);

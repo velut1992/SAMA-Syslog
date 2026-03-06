@@ -52,7 +52,7 @@ export const setupHome = (contentManagement: ContentManagementPluginSetup) => {
       {
         id: SECTIONS.GET_STARTED,
         order: 1000,
-        title: "Get started with OpenSearch's powerful features",
+        title: "Get started with Supra's powerful features",
         kind: 'card',
         collapsible: true,
       },

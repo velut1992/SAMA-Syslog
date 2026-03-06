@@ -107,7 +107,7 @@ export interface OpenSearchDashboardsRequestEvents {
 export interface LegacyRequest extends Request {} // eslint-disable-line @typescript-eslint/no-empty-interface
 
 /**
- * OpenSearch Dashboards specific abstraction for an incoming request.
+ * Dashboards specific abstraction for an incoming request.
  * @public
  */
 export class OpenSearchDashboardsRequest<

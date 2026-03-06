@@ -91,7 +91,7 @@ const getFieldValueCounts = (params: FieldValueCountsParams): FieldValueCounts =
           'agentTraces.discover.fieldChooser.fieldCalculator.fieldIsNotPresentInDocumentsErrorMessage',
           {
             defaultMessage:
-              'This field is present in your OpenSearch mapping but not in the {hitsLength} documents shown in the doc table. You may still be able to visualize or search on it.',
+              'This field is present in your mapping but not in the {hitsLength} documents shown in the doc table. You may still be able to visualize or search on it.',
             values: {
               hitsLength: hits.length,
             },

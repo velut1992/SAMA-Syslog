@@ -70,7 +70,7 @@ import { createMigrationOpenSearchClient } from './migrations/core/';
 import { Config } from '../config';
 /**
  * Saved Objects is OpenSearchDashboards's data persistence mechanism allowing plugins to
- * use OpenSearch for storing and querying state. The SavedObjectsServiceSetup API exposes methods
+ * use for storing and querying state. The SavedObjectsServiceSetup API exposes methods
  * for registering Saved Object types, creating and registering Saved Object client wrappers and factories.
  *
  * @remarks
@@ -195,7 +195,7 @@ export interface InternalSavedObjectsServiceSetup extends SavedObjectsServiceSet
 
 /**
  * Saved Objects is OpenSearchDashboards's data persisentence mechanism allowing plugins to
- * use OpenSearch for storing and querying state. The
+ * use for storing and querying state. The
  * SavedObjectsServiceStart API provides a scoped Saved Objects client for
  * interacting with Saved Objects.
  *
@@ -205,7 +205,7 @@ export interface SavedObjectsServiceStart {
   /**
    * Creates a {@link SavedObjectsClientContract | Saved Objects client} that
    * uses the credentials from the passed in request to authenticate with
-   * OpenSearch. If other plugins have registered Saved Objects client
+   * Supra. If other plugins have registered Saved Objects client
    * wrappers, these will be applied to extend the functionality of the client.
    *
    * A client that is already scoped to the incoming request is also exposed
@@ -218,7 +218,7 @@ export interface SavedObjectsServiceStart {
   /**
    * Creates a {@link ISavedObjectsRepository | Saved Objects repository} that
    * uses the credentials from the passed in request to authenticate with
-   * OpenSearch.
+   * Supra.
    *
    * @param req - The request to create the scoped repository from.
    * @param includedHiddenTypes - A list of additional hidden types the repository should have access to.
@@ -233,7 +233,7 @@ export interface SavedObjectsServiceStart {
   ) => ISavedObjectsRepository;
   /**
    * Creates a {@link ISavedObjectsRepository | Saved Objects repository} that
-   * uses the internal OpenSearch Dashboards user for authenticating with OpenSearch.
+   * uses the internal Dashboards user for authenticating with Supra.
    *
    * @param includedHiddenTypes - A list of additional hidden types the repository should have access to.
    */
@@ -261,7 +261,7 @@ export interface SavedObjectsRepositoryFactory {
   /**
    * Creates a {@link ISavedObjectsRepository | Saved Objects repository} that
    * uses the credentials from the passed in request to authenticate with
-   * OpenSearch.
+   * Supra.
    *
    * @param includedHiddenTypes - A list of additional hidden types the repository should have access to.
    */
@@ -271,7 +271,7 @@ export interface SavedObjectsRepositoryFactory {
   ) => ISavedObjectsRepository;
   /**
    * Creates a {@link ISavedObjectsRepository | Saved Objects repository} that
-   * uses the internal OpenSearch Dashboards user for authenticating with OpenSearch.
+   * uses the internal Dashboards user for authenticating with Supra.
    *
    * @param includedHiddenTypes - A list of additional hidden types the repository should have access to.
    */
@@ -454,7 +454,7 @@ export class SavedObjectsService
      * HTTP requests.
      *
      * However, our build system optimize step and some tests depend on the
-     * HTTP server running without an OpenSearch server being available.
+     * HTTP server running without an server being available.
      * So, when the `migrations.skip` is true, we skip migrations altogether.
      *
      * We also cannot safely run migrations if plugins are not initialized since
@@ -468,7 +468,7 @@ export class SavedObjectsService
       );
     } else {
       this.logger.info(
-        'Waiting until all OpenSearch nodes are compatible with OpenSearch Dashboards before starting saved objects migrations...'
+        'Waiting until all nodes are compatible with Dashboards before starting saved objects migrations...'
       );
 
       // TODO: Move to Status Service https://github.com/elastic/kibana/issues/41983

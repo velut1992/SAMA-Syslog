@@ -28,7 +28,7 @@ const setupAssociationDataSourceModal = ({
       id: 'ds1',
       name: 'Data Source 1',
       connectionType: DataSourceConnectionType.OpenSearchConnection,
-      type: 'OpenSearch',
+      type: 'Supra',
       relatedConnections: [
         {
           id: 'ds1-dqc1',
@@ -50,7 +50,7 @@ const setupAssociationDataSourceModal = ({
       id: 'ds2',
       name: 'Data Source 2',
       connectionType: DataSourceConnectionType.OpenSearchConnection,
-      type: 'OpenSearch',
+      type: 'Supra',
     },
     {
       id: 'dqs1',
@@ -89,7 +89,7 @@ const setupAssociationDataSourceModalForCrossClusterSearch = ({
       id: 'ds1',
       name: 'Data Source 1',
       connectionType: DataSourceConnectionType.OpenSearchConnection,
-      type: 'OpenSearch',
+      type: 'Supra',
       relatedConnections: [
         {
           id: 'ds1:connection-alias-1',
@@ -149,9 +149,9 @@ describe('AssociationDataSourceModal', () => {
     );
   });
 
-  it('should display opensearch connections and should not display data connection when associating OpenSearch data sources', async () => {
+  it('should display opensearch connections and should not display data connection when associating data sources', async () => {
     setupAssociationDataSourceModal();
-    expect(screen.getByText('Associate OpenSearch data sources')).toBeInTheDocument();
+    expect(screen.getByText('Associate data sources')).toBeInTheDocument();
     expect(
       screen.getByText(
         'Add data sources that will be available in the workspace. If a selected data source has related Direct Query data sources, they will also be available in the workspace.'
@@ -174,9 +174,9 @@ describe('AssociationDataSourceModal', () => {
     });
   });
 
-  it('should not render the second step fetching dqc when associating OpenSearch data sources', async () => {
+  it('should not render the second step fetching dqc when associating data sources', async () => {
     setupAssociationDataSourceModal();
-    expect(screen.getByText('Associate OpenSearch data sources')).toBeInTheDocument();
+    expect(screen.getByText('Associate data sources')).toBeInTheDocument();
     await waitFor(() => {
       expect(screen.getByRole('option', { name: 'Data Source 1' })).toBeInTheDocument();
       expect(screen.queryByText('+ 1 Direct query')).not.toBeInTheDocument();
@@ -229,7 +229,7 @@ describe('AssociationDataSourceModal', () => {
         id: 'ds1',
         name: 'Data Source 1',
         connectionType: DataSourceConnectionType.OpenSearchConnection,
-        type: 'OpenSearch',
+        type: 'Supra',
         relatedConnections: [
           {
             id: 'ds1-dqc1',
@@ -297,12 +297,12 @@ describe('Cross-Cluster Search in AssociationDataSourceModal', () => {
     );
   });
 
-  it('should display cross-cluster connections when associating OpenSearch data sources', async () => {
+  it('should display cross-cluster connections when associating data sources', async () => {
     await act(async () => {
       setupAssociationDataSourceModalForCrossClusterSearch();
     });
 
-    expect(screen.getByText('Associate OpenSearch data sources')).toBeInTheDocument();
+    expect(screen.getByText('Associate data sources')).toBeInTheDocument();
 
     await waitFor(() => {
       expect(screen.getByRole('option', { name: 'Data Source 1' })).toBeInTheDocument();
@@ -315,7 +315,7 @@ describe('Cross-Cluster Search in AssociationDataSourceModal', () => {
       setupAssociationDataSourceModalForCrossClusterSearch();
     });
 
-    expect(screen.getByText('Associate OpenSearch data sources')).toBeInTheDocument();
+    expect(screen.getByText('Associate data sources')).toBeInTheDocument();
 
     await waitFor(() => {
       expect(screen.getByText('+ 1 Cross cluster')).toBeInTheDocument();

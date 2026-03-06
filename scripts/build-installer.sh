@@ -20,9 +20,17 @@ BUILD_DIR="$BASE_DIR/installer-build"
 PACKAGE_NAME="supra-installer"
 VERSION="3.6.0"
 
-# Source paths — full distributions (with security, alerting, SIEM, etc.)
+# Source paths
+# OpenSearch: full distribution (downloaded from CI)
 OPENSEARCH_TARBALL="$BASE_DIR/opensearch-${VERSION}-linux-x64.tar.gz"
-DASHBOARDS_TARBALL="$BASE_DIR/opensearch-dashboards-${VERSION}-linux-x64.tar.gz"
+# Dashboards: local build output (with rebranding applied)
+# Try with -SNAPSHOT suffix first, then without
+if [ -f "$BASE_DIR/OpenSearch-Dashboards/target/opensearch-dashboards-${VERSION}-SNAPSHOT-linux-x64.tar.gz" ]; then
+  DASHBOARDS_TARBALL="$BASE_DIR/OpenSearch-Dashboards/target/opensearch-dashboards-${VERSION}-SNAPSHOT-linux-x64.tar.gz"
+else
+  DASHBOARDS_TARBALL="$BASE_DIR/OpenSearch-Dashboards/target/opensearch-dashboards-${VERSION}-linux-x64.tar.gz"
+fi
+# Extra plugins (security, alerting, SIEM, etc.) — downloaded separately
 EXTRA_PLUGINS_DIR="$BASE_DIR/dashboards-plugins"
 FLUENTD_CONF="$BASE_DIR/fluent/fluent.conf"
 LICENSE_VALIDATOR_DIR="$BASE_DIR/opensearch-license-validator"
@@ -45,8 +53,10 @@ if [ ! -f "$OPENSEARCH_TARBALL" ]; then
 fi
 
 if [ ! -f "$DASHBOARDS_TARBALL" ]; then
-    echo "ERROR: Dashboards full distribution tarball not found at $DASHBOARDS_TARBALL"
-    echo "       Download from: https://ci.opensearch.org/ci/dbc/distribution-build-opensearch-dashboards/${VERSION}/latest/linux/x64/tar/dist/opensearch-dashboards/opensearch-dashboards-${VERSION}-linux-x64.tar.gz"
+    echo "ERROR: Dashboards build tarball not found at $DASHBOARDS_TARBALL"
+    echo "       Build it first:"
+    echo "         cd $BASE_DIR/OpenSearch-Dashboards"
+    echo "         yarn build-platform --linux --skip-os-packages"
     exit 1
 fi
 
@@ -58,6 +68,38 @@ fi
 echo "  OpenSearch tarball:  OK"
 echo "  Dashboards tarball:  OK"
 echo "  Fluentd config:      OK"
+
+# Download missing Dashboards plugins from OpenSearch CI
+DASHBOARDS_PLUGIN_BASE_URL="https://ci.opensearch.org/ci/dbc/distribution-build-opensearch-dashboards/${VERSION}/latest/linux/x64/tar/builds/opensearch-dashboards/plugins"
+DASHBOARDS_PLUGIN_ARTIFACTS=(
+    "securityDashboards|${DASHBOARDS_PLUGIN_BASE_URL}/securityDashboards-${VERSION}.zip"
+    "alertingDashboards|${DASHBOARDS_PLUGIN_BASE_URL}/alertingDashboards-${VERSION}.zip"
+    "anomalyDetectionDashboards|${DASHBOARDS_PLUGIN_BASE_URL}/anomalyDetectionDashboards-${VERSION}.zip"
+    "observabilityDashboards|${DASHBOARDS_PLUGIN_BASE_URL}/observabilityDashboards-${VERSION}.zip"
+    "searchRelevanceDashboards|${DASHBOARDS_PLUGIN_BASE_URL}/searchRelevanceDashboards-${VERSION}.zip"
+    "queryInsightsDashboards|${DASHBOARDS_PLUGIN_BASE_URL}/queryInsightsDashboards-${VERSION}.zip"
+    "assistantDashboards|${DASHBOARDS_PLUGIN_BASE_URL}/assistantDashboards-${VERSION}.zip"
+    "customImportMapDashboards|${DASHBOARDS_PLUGIN_BASE_URL}/customImportMapDashboards-${VERSION}.zip"
+)
+
+mkdir -p "$EXTRA_PLUGINS_DIR"
+echo "  Checking Dashboards plugins..."
+for entry in "${DASHBOARDS_PLUGIN_ARTIFACTS[@]}"; do
+    PLUGIN_NAME="${entry%%|*}"
+    PLUGIN_URL="${entry##*|}"
+    PLUGIN_FILE="$EXTRA_PLUGINS_DIR/${PLUGIN_NAME}-${VERSION}.zip"
+    if [ ! -f "$PLUGIN_FILE" ]; then
+        echo "  Downloading ${PLUGIN_NAME}..."
+        if curl -fsSL -o "$PLUGIN_FILE" "$PLUGIN_URL" 2>/dev/null; then
+            echo "    OK"
+        else
+            echo "    WARNING: Failed to download ${PLUGIN_NAME}. Skipping."
+            rm -f "$PLUGIN_FILE"
+        fi
+    else
+        echo "    ${PLUGIN_NAME} already downloaded."
+    fi
+done
 
 # Check extra dashboards plugins
 EXTRA_PLUGINS_FOUND=0
@@ -151,11 +193,6 @@ opensearch.ssl.verificationMode: none
 opensearch.username: "kibanaserver"
 opensearch.password: "kibanaserver"
 opensearch.requestHeadersAllowlist: ["securitytenant", "Authorization"]
-
-opensearch_security.multitenancy.enabled: true
-opensearch_security.multitenancy.tenants.preferred: ["Private", "Global"]
-opensearch_security.readonly_mode.roles: ["kibana_read_only"]
-opensearch_security.cookie.secure: false
 
 opensearchDashboards.branding:
   logo:
@@ -410,6 +447,18 @@ fi
 
 # Apply config
 cp "$SCRIPT_DIR/dashboards/opensearch_dashboards.yml" "$INSTALL_DIR/dashboards/config/opensearch_dashboards.yml"
+
+# If securityDashboards plugin is installed, add security config keys
+if [ -d "$INSTALL_DIR/dashboards/plugins/securityDashboards" ]; then
+    log "  Security Dashboards plugin detected — adding security config..."
+    cat >> "$INSTALL_DIR/dashboards/config/opensearch_dashboards.yml" <<'SECCONF'
+
+opensearch_security.multitenancy.enabled: true
+opensearch_security.multitenancy.tenants.preferred: ["Private", "Global"]
+opensearch_security.readonly_mode.roles: ["kibana_read_only"]
+opensearch_security.cookie.secure: false
+SECCONF
+fi
 
 # Copy branding assets
 BRANDING_DIR="$INSTALL_DIR/dashboards/src/core/server/core_app/assets/default_branding"

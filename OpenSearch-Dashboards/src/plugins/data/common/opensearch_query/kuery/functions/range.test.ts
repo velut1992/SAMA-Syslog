@@ -78,7 +78,7 @@ describe('kuery functions', () => {
     });
 
     describe('toOpenSearchQuery', () => {
-      test("should return an OpenSearch range query for the node's field and params", () => {
+      test("should return an range query for the node's field and params", () => {
         const expected = {
           bool: {
             should: [
@@ -100,7 +100,7 @@ describe('kuery functions', () => {
         expect(result).toEqual(expected);
       });
 
-      test('should return an OpenSearch range query without an index pattern', () => {
+      test('should return an range query without an index pattern', () => {
         const expected = {
           bool: {
             should: [

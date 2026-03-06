@@ -396,7 +396,7 @@ describe('http service', () => {
       await root.shutdown();
     });
 
-    it('rewrites authorization header via authHeaders to make a request to OpenSearch', async () => {
+    it('rewrites authorization header via authHeaders to make a request to Supra', async () => {
       const authHeaders = { authorization: 'Basic: user:password' };
       const { http } = await root.setup();
       const { registerAuth, createRouter } = http;
@@ -423,7 +423,7 @@ describe('http service', () => {
       });
     });
 
-    it('passes request authorization header to OpenSearch if registerAuth was not set', async () => {
+    it('passes request authorization header to if registerAuth was not set', async () => {
       const authorizationHeader = 'Basic: username:password';
       const { http } = await root.setup();
       const { createRouter } = http;

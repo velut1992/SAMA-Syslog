@@ -103,8 +103,8 @@ export interface SampleDatasetSchema<T = unknown> {
   defaultIndex: string;
   getDataSourceIntegratedDefaultIndex: (dataSourceId?: string, workspaceId?: string) => string;
 
-  // OpenSearch Dashboards saved objects (index patter, visualizations, dashboard, ...)
-  // Should provide a nice demo of OpenSearch Dashboards's functionality with the sample data set
+  // Dashboards saved objects (index patter, visualizations, dashboard, ...)
+  // Should provide a nice demo of Dashboards's functionality with the sample data set
   savedObjects: Array<SavedObject<T>>;
   getDataSourceIntegratedSavedObjects: (
     dataSourceId?: string,

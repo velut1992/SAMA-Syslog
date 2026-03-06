@@ -32,6 +32,6 @@ export const PLUGIN_ID = 'opensearchDashboardsUsageCollection';
 export const PLUGIN_NAME = 'opensearch_dashboards_usage_collection';
 
 /**
- * The type name used to publish OpenSearch Dashboards usage stats in the formatted as bulk.
+ * The type name used to publish Dashboards usage stats in the formatted as bulk.
  */
 export const OPENSEARCH_DASHBOARDS_STATS_TYPE = 'opensearch_dashboards_stats';

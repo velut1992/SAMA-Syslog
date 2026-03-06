@@ -24,7 +24,7 @@ export const indexPatternTypeConfig: DatasetTypeConfig = {
   title: 'Index Patterns',
   meta: {
     icon: { type: 'indexPatternApp' },
-    tooltip: 'OpenSearch Index Patterns',
+    tooltip: 'Index Patterns',
     searchOnLoad: true,
   },
 

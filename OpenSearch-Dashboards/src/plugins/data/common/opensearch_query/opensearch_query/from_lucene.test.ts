@@ -47,7 +47,7 @@ describe('build query', () => {
       expect(result).toEqual(expected);
     });
 
-    test("should transform an array of lucene queries into OpenSearch queries combined in the bool's must clause", () => {
+    test("should transform an array of lucene queries into queries combined in the bool's must clause", () => {
       const queries = ([
         { query: 'foo:bar', language: 'lucene' },
         { query: 'bar:baz', language: 'lucene' },
@@ -61,7 +61,7 @@ describe('build query', () => {
       expect(result.must).toEqual(expectedOpenSearchQueries);
     });
 
-    test('should also accept queries in OpenSearch query DSL format, simply passing them through', () => {
+    test('should also accept queries in query DSL format, simply passing them through', () => {
       const queries = ([{ query: { match_all: {} }, language: 'lucene' }] as unknown) as Query[];
       const result = buildQueryFromLucene(queries, {});
 

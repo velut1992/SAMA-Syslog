@@ -46,7 +46,7 @@ export const TIMELINE_VIS_NAME = 'timelion';
 export function getTimelineVisDefinition(dependencies: TimelineVisDependencies) {
   const timelineRequestHandler = getTimelineRequestHandler(dependencies);
 
-  // return the visType object, which OpenSearch Dashboards will use to display and configure new
+  // return the visType object, which Dashboards will use to display and configure new
   // Vis object of this type.
   return {
     name: TIMELINE_VIS_NAME,

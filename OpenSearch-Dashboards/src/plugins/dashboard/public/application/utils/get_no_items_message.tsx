@@ -50,13 +50,13 @@ export const getNoItemsMessage = (
             <p>
               <FormattedMessage
                 id="dashboard.listing.createNewDashboard.combineDataViewFromOpenSearchDashboardsAppDescription"
-                defaultMessage="You can combine data views from any OpenSearch Dashboards app into one dashboard and see everything in one place."
+                defaultMessage="You can combine data views from any Dashboards app into one dashboard and see everything in one place."
               />
             </p>
             <p>
               <FormattedMessage
                 id="dashboard.listing.createNewDashboard.newToOpenSearchDashboardsDescription"
-                defaultMessage="New to OpenSearch Dashboards? {sampleDataInstallLink} to take a test drive."
+                defaultMessage="New to Dashboards? {sampleDataInstallLink} to take a test drive."
                 values={{
                   sampleDataInstallLink: (
                     <EuiLink onClick={() => application.navigateToApp('import_sample_data')}>

@@ -133,7 +133,7 @@ export function DevToolsSettingsModal(props: Props) {
           helpText={
             <FormattedMessage
               id="console.settingsPage.refreshingDataDescription"
-              defaultMessage="Console refreshes autocomplete suggestions by querying OpenSearch.
+              defaultMessage="Console refreshes autocomplete suggestions by querying Supra.
               Automatic refreshes may be an issue if you have a large cluster or if you have network limitations."
             />
           }

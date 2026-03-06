@@ -76,7 +76,7 @@ export const aggMax = (): FunctionDefinition => ({
     json: {
       types: ['string'],
       help: i18n.translate('data.search.aggs.metrics.max.json.help', {
-        defaultMessage: 'Advanced json to include when the agg is sent to OpenSearch',
+        defaultMessage: 'Advanced json to include when the agg is sent to Supra',
       }),
     },
     customLabel: {

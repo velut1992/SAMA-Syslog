@@ -352,7 +352,7 @@ export class ChromeService {
         title: mountReactNode(
           <FormattedMessage
             id="core.chrome.browserDeprecationWarning"
-            defaultMessage="Internet Explorer lacks features required for OpenSearch Dashboards to function correctly; please use one of {link}."
+            defaultMessage="Internet Explorer lacks features required for Dashboards to function correctly; please use one of {link}."
             values={{
               link: (
                 <EuiLink

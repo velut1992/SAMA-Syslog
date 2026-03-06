@@ -51,12 +51,12 @@ export class DataView extends IndexPattern implements IDataView {
       // FIXME: dataSourceRef.type is overloaded with conflicting meanings:
       // - For INDEX_PATTERN datasets: contains saved object type 'data-source' (correct)
       // - For INDEX datasets: contains structure type 'DATA_SOURCE' (incorrect - should be 'data-source')
-      // - After initialization: contains engine type like 'OpenSearch', 'S3_GLUE' (metadata, not saved object type)
+      // - After initialization: contains engine type like 'Supra', 'S3_GLUE' (metadata, not saved object type)
       //
       // The DataSource interface (src/plugins/data/common/datasets/types.ts:17) claims type is
       // "The engine type of the data source", but actual usage violates this contract:
       // - index_type.ts:56 sets type to DataStructure.type ('DATA_SOURCE')
-      // - index_pattern_type.ts:148 sets type to dataSourceEngineType ('OpenSearch', 'S3_GLUE')
+      // - index_pattern_type.ts:148 sets type to dataSourceEngineType ('Supra', 'S3_GLUE')
       // - SavedObjectReference.type expects saved object type ('data-source')
       //
       // This causes savedObjectsClient.get() to fail for INDEX datasets because 'DATA_SOURCE'
@@ -117,7 +117,7 @@ export class DataView extends IndexPattern implements IDataView {
         dataSource = {
           id: dataSourceReference.id,
           title: attributes.title || dataSourceReference.id,
-          type: attributes.dataSourceEngineType || 'OpenSearch',
+          type: attributes.dataSourceEngineType || 'Supra',
           version: attributes.dataSourceVersion || '',
         };
       } catch (error) {
@@ -128,7 +128,7 @@ export class DataView extends IndexPattern implements IDataView {
             dataSourceReference.name && dataSourceReference.name !== 'dataSource'
               ? dataSourceReference.name
               : dataSourceReference.id,
-          type: 'OpenSearch',
+          type: 'Supra',
           version: '',
         };
       }

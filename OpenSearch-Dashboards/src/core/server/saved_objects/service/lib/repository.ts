@@ -200,7 +200,7 @@ export class SavedObjectsRepository {
 
     // It's important that we migrate documents / mark them as up-to-date
     // prior to writing them to the index. Otherwise, we'll cause unnecessary
-    // index migrations to run at OpenSearch Dashboards startup, and those will probably fail
+    // index migrations to run at Dashboards startup, and those will probably fail
     // due to invalidly versioned documents in the index.
     //
     // The migrator performs double-duty, and validates the documents prior

@@ -36,7 +36,7 @@ export const createEditConfig = () => ({
   }),
   textPre: i18n.translate('apmOss.tutorial.editConfig.textPre', {
     defaultMessage:
-      "If you're using a secured version of OpenSearch, you must specify \
+      "If you're using a secured version of Supra, you must specify \
 credentials in the `apm-server.yml` config file.",
   }),
   commands: [
@@ -53,7 +53,7 @@ const createStartServer = () => ({
   }),
   textPre: i18n.translate('apmOss.tutorial.startServer.textPre', {
     defaultMessage:
-      'The server processes and stores application performance metrics in OpenSearch.',
+      'The server processes and stores application performance metrics in Supra.',
   }),
 });
 

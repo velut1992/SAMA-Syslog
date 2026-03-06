@@ -215,7 +215,7 @@ describe('DatasetService', () => {
       dataSource: {
         id: 'ds-1',
         title: 'Data Source 1',
-        type: 'OpenSearch',
+        type: 'Supra',
         version: '1.0',
         meta: { prometheusUrl: 'http://localhost:9090', customField: 'value' },
       },
@@ -239,7 +239,7 @@ describe('DatasetService', () => {
       dataSource: {
         id: 'ds-1',
         title: 'Data Source 1',
-        type: 'OpenSearch',
+        type: 'Supra',
         version: '1.0',
       },
     } as Dataset;
@@ -316,7 +316,7 @@ describe('DatasetService', () => {
       dataSource: {
         id: 'data-source-123',
         title: 'My Data Source',
-        type: 'OpenSearch',
+        type: 'Supra',
         version: '1.0',
       },
     } as Dataset;
@@ -353,7 +353,7 @@ describe('DatasetService', () => {
         dataSourceRef: {
           id: 'data-source-123',
           name: 'My Data Source',
-          type: 'OpenSearch',
+          type: 'Supra',
           version: '1.0',
         },
       }),
@@ -467,7 +467,7 @@ describe('DatasetService', () => {
           id: 'id',
           attributes: {
             title: 'datasource',
-            dataSourceEngineType: 'OpenSearch',
+            dataSourceEngineType: 'Supra',
           },
         })
       ),
@@ -478,7 +478,7 @@ describe('DatasetService', () => {
       expect(service.getDefault()?.dataSource).toMatchObject({
         id: 'id',
         title: 'datasource',
-        type: 'OpenSearch',
+        type: 'Supra',
       });
     });
 

@@ -751,7 +751,7 @@ export class IndexPatternsService {
 
   /**
    * Deletes an index pattern from .kibana index
-   * @param indexPatternId: Id of OpenSearch Dashboards Index Pattern to delete
+   * @param indexPatternId: Id of Dashboards Index Pattern to delete
    */
   async delete(indexPatternId: string) {
     indexPatternCache.clear(indexPatternId);

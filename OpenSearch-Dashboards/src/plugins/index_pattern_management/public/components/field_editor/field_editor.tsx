@@ -368,7 +368,7 @@ export class FieldEditor extends PureComponent<FieldEdiorProps, FieldEditorState
               &nbsp;
               <FormattedMessage
                 id="indexPatternManagement.warningLabel.warningDetail"
-                defaultMessage="{language} is deprecated and support will be removed in the next major version of OpenSearch Dashboards and OpenSearch.
+                defaultMessage="{language} is deprecated and support will be removed in the next major version of Dashboards and Supra.
               We recommend using {painlessLink} for new scripted fields."
                 values={{
                   language: <EuiCode>{spec.lang}</EuiCode>,
@@ -546,7 +546,7 @@ export class FieldEditor extends PureComponent<FieldEdiorProps, FieldEditorState
         label={i18n.translate('indexPatternManagement.popularityLabel', {
           defaultMessage: 'Popularity',
           description:
-            '"Popularity" refers to OpenSearch Dashboards\'s measurement how popular a field is (i.e. how commonly it is used).',
+            '"Popularity" refers to Dashboards\'s measurement how popular a field is (i.e. how commonly it is used).',
         })}
       >
         <EuiCompressedFieldNumber

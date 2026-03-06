@@ -33,7 +33,7 @@ import { navigateToLegacyOpenSearchDashboardsUrl } from './navigate_to_legacy_op
 import { CoreStart } from '../../../../core/public';
 import { coreMock } from '../../../../core/public/mocks';
 
-describe('migrate legacy OpenSearch Dashboards urls', () => {
+describe('migrate legacy Dashboards urls', () => {
   let forwardDefinitions: ForwardDefinition[];
   let coreStart: CoreStart;
 

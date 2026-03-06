@@ -59,15 +59,15 @@ export async function resolveInstanceUuid({
   if (uuidFromConfig) {
     if (uuidFromConfig === uuidFromFile) {
       // uuid matches, nothing to do
-      logger.debug(`OpenSearch Dashboards instance UUID: ${uuidFromConfig}`);
+      logger.debug(`Dashboards instance UUID: ${uuidFromConfig}`);
       return uuidFromConfig;
     } else {
       // uuid in file don't match, or file was not present, we need to write it.
       if (uuidFromFile === undefined) {
-        logger.debug(`Setting new OpenSearch Dashboards instance UUID: ${uuidFromConfig}`);
+        logger.debug(`Setting new Dashboards instance UUID: ${uuidFromConfig}`);
       } else {
         logger.debug(
-          `Updating OpenSearch Dashboards instance UUID to: ${uuidFromConfig} (was: ${uuidFromFile})`
+          `Updating Dashboards instance UUID to: ${uuidFromConfig} (was: ${uuidFromFile})`
         );
       }
       await writeUuidToFile(uuidFilePath, uuidFromConfig);
@@ -77,12 +77,12 @@ export async function resolveInstanceUuid({
   if (uuidFromFile === undefined) {
     const newUuid = uuid.v4();
     // no uuid either in config or file, we need to generate and write it.
-    logger.debug(`Setting new OpenSearch Dashboards instance UUID: ${newUuid}`);
+    logger.debug(`Setting new Dashboards instance UUID: ${newUuid}`);
     await writeUuidToFile(uuidFilePath, newUuid);
     return newUuid;
   }
 
-  logger.debug(`Resuming persistent OpenSearch Dashboards instance UUID: ${uuidFromFile}`);
+  logger.debug(`Resuming persistent Dashboards instance UUID: ${uuidFromFile}`);
   return uuidFromFile;
 }
 
@@ -103,8 +103,8 @@ async function readUuidFromFile(filepath: string, logger: Logger): Promise<strin
       return undefined;
     }
     throw new Error(
-      'Unable to read OpenSearch Dashboards UUID file, please check the uuid.server configuration ' +
-        'value in opensearch_dashboards.yml and ensure OpenSearch Dashboards has sufficient permissions to read / write to this file. ' +
+      'Unable to read Dashboards UUID file, please check the uuid.server configuration ' +
+        'value in opensearch_dashboards.yml and ensure Dashboards has sufficient permissions to read / write to this file. ' +
         `Error was: ${e.code}`
     );
   }
@@ -115,8 +115,8 @@ async function writeUuidToFile(filepath: string, uuidValue: string) {
     return await writeFile(filepath, uuidValue, { encoding: FILE_ENCODING });
   } catch (e) {
     throw new Error(
-      'Unable to write OpenSearch Dashboards UUID file, please check the uuid.server configuration ' +
-        'value in opensearch_dashboards.yml and ensure OpenSearch Dashboards has sufficient permissions to read / write to this file. ' +
+      'Unable to write Dashboards UUID file, please check the uuid.server configuration ' +
+        'value in opensearch_dashboards.yml and ensure Dashboards has sufficient permissions to read / write to this file. ' +
         `Error was: ${e.code}`
     );
   }

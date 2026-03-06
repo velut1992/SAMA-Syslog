@@ -63,7 +63,7 @@ export function formatMsg(err: Record<string, any> | string, source: string = ''
         {
           defaultMessage:
             'An HTTP request has failed to connect. ' +
-            'Please check if the OpenSearch Dashboards server is running and that your browser has a working connection, ' +
+            'Please check if the Dashboards server is running and that your browser has a working connection, ' +
             'or contact your system administrator.',
         }
       );

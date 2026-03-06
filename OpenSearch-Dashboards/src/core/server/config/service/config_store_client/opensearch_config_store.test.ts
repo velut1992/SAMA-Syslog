@@ -41,7 +41,7 @@ describe('OpenSearchConfigStoreClient', () => {
   }
 
   /**
-   * Creates a new OpenSearch client mock complete with a mock for existsAlias(), cat.indices(), and search() results
+   * Creates a new client mock complete with a mock for existsAlias(), cat.indices(), and search() results
    *
    * @param param0
    * @returns

@@ -275,7 +275,7 @@ export const getSavedObjects = (): SavedObject[] => [
         defaultMessage: '[Flights] Markdown Instructions',
       }),
       visState:
-        '{"title":"[Flights] Markdown Instructions","type":"markdown","params":{"fontSize":10,"openLinksInNewTab":true,"markdown":"### Sample Flight data\\nThis dashboard contains sample data for you to play with. You can view it, search it, and interact with the visualizations. For more information about OpenSearch Dashboards, check our [docs](https://opensearch.org/docs/latest/dashboards/index/)."},"aggs":[]}',
+        '{"title":"[Flights] Markdown Instructions","type":"markdown","params":{"fontSize":10,"openLinksInNewTab":true,"markdown":"### Sample Flight data\\nThis dashboard contains sample data for you to play with. You can view it, search it, and interact with the visualizations. For more information about Dashboards, check our [docs](https://opensearch.org/docs/latest/dashboards/index/)."},"aggs":[]}',
       uiStateJSON: '{}',
       description: '',
       version: 1,
@@ -565,7 +565,7 @@ export const getSavedObjects = (): SavedObject[] => [
         'home.sampleData.flightsSpec.globalFlightDashboardDescription',
         {
           defaultMessage:
-            'Analyze mock flight data for OpenSearch-Air, Logstash Airways, OpenSearch Dashboards Airlines and BeatsWest',
+            'Analyze mock flight data for OpenSearch-Air, Logstash Airways, Dashboards Airlines and BeatsWest',
         }
       ),
       panelsJSON:

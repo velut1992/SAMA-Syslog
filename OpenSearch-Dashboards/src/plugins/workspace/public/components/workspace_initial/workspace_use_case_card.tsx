@@ -55,7 +55,7 @@ export const WorkspaceUseCaseCard = ({
   isDashboardAdmin,
   handleClickUseCaseInformation,
 }: WorkspaceUseCaseCardProps) => {
-  const useCaseIcon = useCase.icon || 'logoOpenSearch';
+  const useCaseIcon = useCase.icon || 'logoSupra';
 
   // Display the recently accessed workspaces first, and then arrange other workspaces in alphabetical order.
   const sortedWorkspaceList: UpdatedWorkspaceObject[] = useMemo(() => {

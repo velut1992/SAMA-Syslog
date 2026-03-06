@@ -33,7 +33,7 @@ import { CoreStart } from '../../../../../core/public';
 import { coreMock } from '../../../../../core/public/mocks';
 import { UI_SETTINGS } from '../../../common';
 
-describe('Get OpenSearch preference', () => {
+describe('Get preference', () => {
   let mockCoreStart: MockedKeys<CoreStart>;
 
   beforeEach(() => {

@@ -163,7 +163,7 @@ export class Fetch {
 
     /* `osd-version` is used on the server-side to make sure that an incoming request originated from a front-end
      * of the same version; see core/server/http/lifecycle_handlers.ts
-     * `osd-xsrf` is to satisfy XSRF protection but is only meaningful to OpenSearch Dashboards.
+     * `osd-xsrf` is to satisfy XSRF protection but is only meaningful to Dashboards.
      *
      * If the `url` equals `basePath`,  starts with `basePath` + '/', or is relative, add `osd-version` and `osd-xsrf` headers.
      */

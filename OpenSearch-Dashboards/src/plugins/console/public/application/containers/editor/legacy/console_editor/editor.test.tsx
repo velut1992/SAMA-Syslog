@@ -80,15 +80,15 @@ describe('Legacy (Ace) Console Editor Component Smoke Test with dataSourceId', (
     sandbox.restore();
   });
 
-  it('calls send current request to OpenSearch', async () => {
+  it('calls send current request to Supra', async () => {
     (getEndpointFromPosition as jest.Mock).mockReturnValue({ patterns: [] });
-    (sendRequestToOpenSearch as jest.Mock).mockRejectedValue({});
+    (sendRequestToas jest.Mock).mockRejectedValue({});
     const editor = doMount();
     act(() => {
       editor.find('[data-test-subj~="sendRequestButton"]').simulate('click');
     });
     await nextTick();
-    expect(sendRequestToOpenSearch).toBeCalledTimes(1);
+    expect(sendRequestToSupra).toBeCalledTimes(1);
   });
 
   it('opens docs', () => {
@@ -143,15 +143,15 @@ describe('Legacy (Ace) Console Editor Component Smoke Test with empty dataSource
     sandbox.restore();
   });
 
-  it('calls send current request to OpenSearch', async () => {
+  it('calls send current request to Supra', async () => {
     (getEndpointFromPosition as jest.Mock).mockReturnValue({ patterns: [] });
-    (sendRequestToOpenSearch as jest.Mock).mockRejectedValue({});
+    (sendRequestToas jest.Mock).mockRejectedValue({});
     const editor = doMount();
     act(() => {
       editor.find('[data-test-subj~="sendRequestButton"]').simulate('click');
     });
     await nextTick();
-    expect(sendRequestToOpenSearch).toBeCalledTimes(1);
+    expect(sendRequestToSupra).toBeCalledTimes(1);
   });
 
   it('opens docs', () => {
@@ -208,20 +208,20 @@ describe('Legacy (Ace) Console Editor Component Smoke Test with dataSouceId unde
 
   it('diasbles send request button', async () => {
     (getEndpointFromPosition as jest.Mock).mockReturnValue({ patterns: [] });
-    (sendRequestToOpenSearch as jest.Mock).mockRejectedValue({});
+    (sendRequestToas jest.Mock).mockRejectedValue({});
     const editor = doMount();
     expect(editor.find('[data-test-subj~="sendRequestButton"]').get(0).props.disabled);
   });
 
-  it('not able to send current request to OpenSearch', async () => {
+  it('not able to send current request to Supra', async () => {
     (getEndpointFromPosition as jest.Mock).mockReturnValue({ patterns: [] });
-    (sendRequestToOpenSearch as jest.Mock).mockRejectedValue({});
+    (sendRequestToas jest.Mock).mockRejectedValue({});
     const editor = doMount();
     act(() => {
       editor.find('[data-test-subj~="sendRequestButton"]').simulate('click');
     });
     await nextTick();
-    expect(sendRequestToOpenSearch).toBeCalledTimes(0);
+    expect(sendRequestToSupra).toBeCalledTimes(0);
   });
 
   it('opens docs', () => {

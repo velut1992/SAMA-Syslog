@@ -26,7 +26,7 @@ export const QueryPermissionsConfiguration = (props: PermissionsConfigurationPro
   const accessLevelOptions = [
     {
       id: QUERY_RESTRICTED,
-      label: 'Restricted - accessible by users with specific OpenSearch roles',
+      label: 'Restricted - accessible by users with specific roles',
       disabled: !hasSecurityAccess,
     },
     {
@@ -42,13 +42,13 @@ export const QueryPermissionsConfiguration = (props: PermissionsConfigurationPro
         <EuiSpacer size="s" />
         <EuiText>OpenSearch Roles</EuiText>
         <EuiText size="xs">
-          Select one or more OpenSearch roles that can query this data connection.
+          Select one or more roles that can query this data connection.
         </EuiText>
         <EuiCompressedFormRow
           isInvalid={selectedRoles.length === 0}
           error={
             selectedRoles.length === 0
-              ? 'Select an OpenSearch role or roles that will have query access to this data source'
+              ? 'Select an role or roles that will have query access to this data source'
               : undefined
           }
         >
@@ -75,7 +75,7 @@ export const QueryPermissionsConfiguration = (props: PermissionsConfigurationPro
           </EuiText>
           <EuiText size="s">
             <p>
-              Control which OpenSearch roles have permission to query and index data from this data
+              Control which roles have permission to query and index data from this data
               source.
             </p>
           </EuiText>

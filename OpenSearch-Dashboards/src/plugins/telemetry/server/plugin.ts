@@ -79,7 +79,7 @@ export interface TelemetryPluginSetup {
 export interface TelemetryPluginStart {
   /**
    * Resolves `true` if the user has opted into send OpenSearch usage data.
-   * Resolves `false` if the user explicitly opted out of sending usage data to OpenSearch Dashboards
+   * Resolves `false` if the user explicitly opted out of sending usage data to Dashboards
    * or did not choose to opt-in or out -yet- after a minor or major upgrade (only when previously opted-out).
    */
   getIsOptedIn: () => Promise<boolean>;

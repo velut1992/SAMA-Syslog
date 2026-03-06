@@ -87,7 +87,7 @@ export interface DataStructureCreatorProps<FetchOptions = unknown> {
  *   meta: {
  *     type: 'FEATURE',
  *     icon: 'clusterIcon',
- *     tooltip: 'OpenSearch Cluster'
+ *     tooltip: 'Cluster'
  *   }
  * };
  *
@@ -242,7 +242,7 @@ export interface BaseDataset {
  * have similar titles and the data plugin assumes unique data set IDs.
  *
  * @example
- * Example of a Dataset for an OpenSearch index pattern
+ * Example of a Dataset for an index pattern
  * const logsIndexDataset: Dataset = {
  *   id: "2e1b1b80-9c4d-11ee-8c90-0242ac120001",
  *   title: "logs-*",
@@ -251,7 +251,7 @@ export interface BaseDataset {
  *   dataSource: {
  *     id: "2e1b1b80-9c4d-11ee-8c90-0242ac120001",
  *     title: "Cluster1",
- *     type: "OpenSearch"
+ *     type: "Supra"
  *   }
  * };
  *

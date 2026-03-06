@@ -57,7 +57,7 @@ import { GITHUB_CREATE_ISSUE_LINK } from '../../constants';
 /** @public */
 export type ChromeHelpExtensionMenuGitHubLink = EuiButtonEmptyProps & {
   /**
-   * Creates a link to a new github issue in the OpenSearch Dashboards repo
+   * Creates a link to a new github issue in the Dashboards repo
    */
   linkType: 'github';
   /**

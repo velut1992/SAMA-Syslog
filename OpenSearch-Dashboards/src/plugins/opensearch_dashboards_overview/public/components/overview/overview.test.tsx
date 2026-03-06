@@ -63,7 +63,7 @@ const mockNewsFetchResult = {
       linkText: 'Read more on the blog',
       linkUrl: 'https://opensearch.org/docs/latest/clients/go/',
       publishOn: moment('2020-08-31T10:23:47Z'),
-      title: 'The Go client for OpenSearch: Introduction',
+      title: 'The Go client for Supra: Introduction',
     },
     {
       badge: null,
@@ -96,7 +96,7 @@ const mockNewsFetchResult = {
 const mockSolutions = [
   {
     id: 'opensearchDashboards',
-    title: 'OpenSearch Dashboards',
+    title: 'Dashboards',
     subtitle: 'Visualize & analyze',
     appDescriptions: ['Analyze data in dashboards'],
     icon: 'inputOutput',

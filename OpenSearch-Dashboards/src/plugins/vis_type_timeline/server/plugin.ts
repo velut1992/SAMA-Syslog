@@ -60,7 +60,7 @@ export interface TimelinePluginStartDeps {
 }
 
 /**
- * Represents Timeline Plugin instance that will be managed by the OpenSearch Dashboards plugin system.
+ * Represents Timeline Plugin instance that will be managed by the Dashboards plugin system.
  */
 export class Plugin {
   constructor(private readonly initializerContext: PluginInitializerContext) {}

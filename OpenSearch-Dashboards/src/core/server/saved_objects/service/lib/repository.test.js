@@ -173,7 +173,7 @@ describe('SavedObjectsRepository', () => {
   ) => {
     const namespaceId = objectNamespace === 'default' ? undefined : objectNamespace ?? namespace;
     return {
-      // NOTE: OpenSearch returns more fields (_index, _type) but the SavedObjectsRepository method ignores these
+      // NOTE: returns more fields (_index, _type) but the SavedObjectsRepository method ignores these
       found: true,
       _id: `${
         registry.isSingleNamespace(type) && namespaceId ? `${namespaceId}:` : ''
@@ -307,7 +307,7 @@ describe('SavedObjectsRepository', () => {
     };
 
     describe('client calls', () => {
-      it(`should use OpenSearch get action then update action`, async () => {
+      it(`should use get action then update action`, async () => {
         await addToNamespacesSuccess(type, id, [newNs1, newNs2]);
       });
 
@@ -383,7 +383,7 @@ describe('SavedObjectsRepository', () => {
         await test([]);
       });
 
-      it(`throws when OpenSearch is unable to find the document during get`, async () => {
+      it(`throws when is unable to find the document during get`, async () => {
         client.get.mockResolvedValue(
           opensearchClientMock.createSuccessTransportRequestPromise({ found: false })
         );
@@ -391,7 +391,7 @@ describe('SavedObjectsRepository', () => {
         expect(client.get).toHaveBeenCalledTimes(1);
       });
 
-      it(`throws when OpenSearch is unable to find the index during get`, async () => {
+      it(`throws when is unable to find the index during get`, async () => {
         client.get.mockResolvedValue(
           opensearchClientMock.createSuccessTransportRequestPromise({}, { statusCode: 404 })
         );
@@ -407,7 +407,7 @@ describe('SavedObjectsRepository', () => {
         expect(client.get).toHaveBeenCalledTimes(1);
       });
 
-      it(`throws when OpenSearch is unable to find the document during update`, async () => {
+      it(`throws when is unable to find the document during update`, async () => {
         mockGetResponse(type, id);
         client.update.mockResolvedValue(
           opensearchClientMock.createSuccessTransportRequestPromise({}, { statusCode: 404 })
@@ -542,12 +542,12 @@ describe('SavedObjectsRepository', () => {
     });
 
     describe('client calls', () => {
-      it(`should use the OpenSearch bulk action by default`, async () => {
+      it(`should use the bulk action by default`, async () => {
         await bulkCreateSuccess([obj1, obj2]);
         expect(client.bulk).toHaveBeenCalledTimes(1);
       });
 
-      it(`should use the OpenSearch mget action before bulk action for any types that are multi-namespace, when id is defined`, async () => {
+      it(`should use the mget action before bulk action for any types that are multi-namespace, when id is defined`, async () => {
         const objects = [obj1, { ...obj2, type: MULTI_NAMESPACE_TYPE }];
         await bulkCreateSuccess(objects);
         expect(client.bulk).toHaveBeenCalledTimes(1);
@@ -556,24 +556,24 @@ describe('SavedObjectsRepository', () => {
         expect(client.mget.mock.calls[0][0].body).toEqual({ docs });
       });
 
-      it(`should use the OpenSearch create method if ID is undefined and overwrite=true`, async () => {
+      it(`should use the create method if ID is undefined and overwrite=true`, async () => {
         const objects = [obj1, obj2].map((obj) => ({ ...obj, id: undefined }));
         await bulkCreateSuccess(objects, { overwrite: true });
         expectClientCallArgsAction(objects, { method: 'create' });
       });
 
-      it(`should use the OpenSearch create method if ID is undefined and overwrite=false`, async () => {
+      it(`should use the create method if ID is undefined and overwrite=false`, async () => {
         const objects = [obj1, obj2].map((obj) => ({ ...obj, id: undefined }));
         await bulkCreateSuccess(objects);
         expectClientCallArgsAction(objects, { method: 'create' });
       });
 
-      it(`should use the OpenSearch index method if ID is defined and overwrite=true`, async () => {
+      it(`should use the index method if ID is defined and overwrite=true`, async () => {
         await bulkCreateSuccess([obj1, obj2], { overwrite: true });
         expectClientCallArgsAction([obj1, obj2], { method: 'index' });
       });
 
-      it(`should use the OpenSearch index method with version if ID and version are defined and overwrite=true`, async () => {
+      it(`should use the index method with version if ID and version are defined and overwrite=true`, async () => {
         await bulkCreateSuccess(
           [
             {
@@ -594,12 +594,12 @@ describe('SavedObjectsRepository', () => {
         expectClientCallArgsAction([obj1WithSeq, obj2], { method: 'index' });
       });
 
-      it(`should use the OpenSearch create method if ID is defined and overwrite=false`, async () => {
+      it(`should use the create method if ID is defined and overwrite=false`, async () => {
         await bulkCreateSuccess([obj1, obj2]);
         expectClientCallArgsAction([obj1, obj2], { method: 'create' });
       });
 
-      it(`formats the OpenSearch request`, async () => {
+      it(`formats the request`, async () => {
         await bulkCreateSuccess([obj1, obj2]);
         const body = [...expectObjArgs(obj1), ...expectObjArgs(obj2)];
         expect(client.bulk).toHaveBeenCalledWith(
@@ -973,7 +973,7 @@ describe('SavedObjectsRepository', () => {
     });
 
     describe('returns', () => {
-      it(`formats the OpenSearch response`, async () => {
+      it(`formats the response`, async () => {
         const result = await bulkCreateSuccess([obj1, obj2]);
         expect(result).toEqual({
           saved_objects: [obj1, obj2].map((x) => expectSuccessResult(x)),
@@ -1013,7 +1013,7 @@ describe('SavedObjectsRepository', () => {
           namespace,
         });
 
-        // Assert that both raw docs from the OpenSearch response are deserialized
+        // Assert that both raw docs from the response are deserialized
         expect(serializer.rawToSavedObject).toHaveBeenNthCalledWith(1, {
           ...response.items[0].create,
           _source: {
@@ -1224,7 +1224,7 @@ describe('SavedObjectsRepository', () => {
         expect(client.mget).not.toHaveBeenCalled();
       });
 
-      it(`formats the OpenSearch response`, async () => {
+      it(`formats the response`, async () => {
         const response = getMockMgetResponse([obj1, obj2]);
         client.mget.mockResolvedValueOnce(
           opensearchClientMock.createSuccessTransportRequestPromise(response)
@@ -1379,12 +1379,12 @@ describe('SavedObjectsRepository', () => {
     ];
 
     describe('client calls', () => {
-      it(`should use the OpenSearch bulk action by default`, async () => {
+      it(`should use the bulk action by default`, async () => {
         await bulkUpdateSuccess([obj1, obj2]);
         expect(client.bulk).toHaveBeenCalled();
       });
 
-      it(`should use the OpenSearch mget action before bulk action for any types that are multi-namespace`, async () => {
+      it(`should use the mget action before bulk action for any types that are multi-namespace`, async () => {
         const objects = [obj1, { ...obj2, type: MULTI_NAMESPACE_TYPE }];
         await bulkUpdateSuccess(objects);
         expect(client.bulk).toHaveBeenCalled();
@@ -1397,7 +1397,7 @@ describe('SavedObjectsRepository', () => {
         );
       });
 
-      it(`formats the OpenSearch request`, async () => {
+      it(`formats the request`, async () => {
         await bulkUpdateSuccess([obj1, obj2]);
         const body = [...expectObjArgs(obj1), ...expectObjArgs(obj2)];
         expect(client.bulk).toHaveBeenCalledWith(
@@ -1406,7 +1406,7 @@ describe('SavedObjectsRepository', () => {
         );
       });
 
-      it(`formats the OpenSearch request for any types that are multi-namespace`, async () => {
+      it(`formats the request for any types that are multi-namespace`, async () => {
         const _obj2 = { ...obj2, type: MULTI_NAMESPACE_TYPE };
         await bulkUpdateSuccess([obj1, _obj2]);
         const body = [...expectObjArgs(obj1), ...expectObjArgs(_obj2)];
@@ -1416,7 +1416,7 @@ describe('SavedObjectsRepository', () => {
         );
       });
 
-      it(`doesnt call OpenSearch if there are no valid objects to update`, async () => {
+      it(`doesnt call if there are no valid objects to update`, async () => {
         const objects = [obj1, obj2].map((x) => ({ ...x, type: 'unknownType' }));
         await savedObjectsRepository.bulkUpdate(objects);
         expect(client.bulk).toHaveBeenCalledTimes(0);
@@ -1679,13 +1679,13 @@ describe('SavedObjectsRepository', () => {
         );
       });
 
-      it(`returns error when OpenSearch is unable to find the document (mget)`, async () => {
+      it(`returns error when is unable to find the document (mget)`, async () => {
         const _obj = { ...obj, type: MULTI_NAMESPACE_TYPE, found: false };
         const mgetResponse = getMockMgetResponse([_obj]);
         await bulkUpdateMultiError([obj1, _obj, obj2], undefined, mgetResponse);
       });
 
-      it(`returns error when OpenSearch is unable to find the index (mget)`, async () => {
+      it(`returns error when is unable to find the index (mget)`, async () => {
         const _obj = { ...obj, type: MULTI_NAMESPACE_TYPE };
         const mgetResponse = { statusCode: 404 };
         await bulkUpdateMultiError([obj1, _obj, obj2], { namespace }, mgetResponse);
@@ -1735,7 +1735,7 @@ describe('SavedObjectsRepository', () => {
         ...mockTimestampFields,
       });
 
-      it(`formats the OpenSearch response`, async () => {
+      it(`formats the response`, async () => {
         const response = await bulkUpdateSuccess([obj1, obj2]);
         expect(response).toEqual({
           saved_objects: [obj1, obj2].map(expectSuccessResult),
@@ -1970,22 +1970,22 @@ describe('SavedObjectsRepository', () => {
     };
 
     describe('client calls', () => {
-      it(`should use the OpenSearch create action if ID is undefined and overwrite=true`, async () => {
+      it(`should use the create action if ID is undefined and overwrite=true`, async () => {
         await createSuccess(type, attributes, { overwrite: true });
         expect(client.create).toHaveBeenCalled();
       });
 
-      it(`should use the OpenSearch create action if ID is undefined and overwrite=false`, async () => {
+      it(`should use the create action if ID is undefined and overwrite=false`, async () => {
         await createSuccess(type, attributes);
         expect(client.create).toHaveBeenCalled();
       });
 
-      it(`should use the OpenSearch index action if ID is defined and overwrite=true`, async () => {
+      it(`should use the index action if ID is defined and overwrite=true`, async () => {
         await createSuccess(type, attributes, { id, overwrite: true });
         expect(client.index).toHaveBeenCalled();
       });
 
-      it(`should use the OpenSearch index with version if ID and version are defined and overwrite=true`, async () => {
+      it(`should use the index with version if ID and version are defined and overwrite=true`, async () => {
         await createSuccess(type, attributes, { id, overwrite: true, version: mockVersion });
         expect(client.index).toHaveBeenCalled();
 
@@ -1995,12 +1995,12 @@ describe('SavedObjectsRepository', () => {
         });
       });
 
-      it(`should use the OpenSearch create action if ID is defined and overwrite=false`, async () => {
+      it(`should use the create action if ID is defined and overwrite=false`, async () => {
         await createSuccess(type, attributes, { id });
         expect(client.create).toHaveBeenCalled();
       });
 
-      it(`should use the OpenSearch get action then index action if type is multi-namespace, ID is defined, and overwrite=true`, async () => {
+      it(`should use the get action then index action if type is multi-namespace, ID is defined, and overwrite=true`, async () => {
         await createSuccess(MULTI_NAMESPACE_TYPE, attributes, { id, overwrite: true });
         expect(client.get).toHaveBeenCalled();
         expect(client.index).toHaveBeenCalled();
@@ -2292,7 +2292,7 @@ describe('SavedObjectsRepository', () => {
     });
 
     describe('returns', () => {
-      it(`formats the OpenSearch response`, async () => {
+      it(`formats the response`, async () => {
         const result = await createSuccess(type, attributes, {
           id,
           namespace,
@@ -2337,13 +2337,13 @@ describe('SavedObjectsRepository', () => {
     };
 
     describe('client calls', () => {
-      it(`should use the OpenSearch delete action when not using a multi-namespace type`, async () => {
+      it(`should use the delete action when not using a multi-namespace type`, async () => {
         await deleteSuccess(type, id);
         expect(client.get).not.toHaveBeenCalled();
         expect(client.delete).toHaveBeenCalledTimes(1);
       });
 
-      it(`should use OpenSearch get action then delete action when using a multi-namespace type`, async () => {
+      it(`should use get action then delete action when using a multi-namespace type`, async () => {
         await deleteSuccess(MULTI_NAMESPACE_TYPE, id);
         expect(client.get).toHaveBeenCalledTimes(1);
         expect(client.delete).toHaveBeenCalledTimes(1);
@@ -2432,7 +2432,7 @@ describe('SavedObjectsRepository', () => {
         expect(client.delete).not.toHaveBeenCalled();
       });
 
-      it(`throws when OpenSearch is unable to find the document during get`, async () => {
+      it(`throws when is unable to find the document during get`, async () => {
         client.get.mockResolvedValueOnce(
           opensearchClientMock.createSuccessTransportRequestPromise({ found: false })
         );
@@ -2440,7 +2440,7 @@ describe('SavedObjectsRepository', () => {
         expect(client.get).toHaveBeenCalledTimes(1);
       });
 
-      it(`throws when OpenSearch is unable to find the index during get`, async () => {
+      it(`throws when is unable to find the index during get`, async () => {
         client.get.mockResolvedValueOnce(
           opensearchClientMock.createSuccessTransportRequestPromise({}, { statusCode: 404 })
         );
@@ -2485,7 +2485,7 @@ describe('SavedObjectsRepository', () => {
         expect(client.get).toHaveBeenCalledTimes(1);
       });
 
-      it(`throws when OpenSearch is unable to find the document during delete`, async () => {
+      it(`throws when is unable to find the document during delete`, async () => {
         client.delete.mockResolvedValueOnce(
           opensearchClientMock.createSuccessTransportRequestPromise({ result: 'not_found' })
         );
@@ -2493,7 +2493,7 @@ describe('SavedObjectsRepository', () => {
         expect(client.delete).toHaveBeenCalledTimes(1);
       });
 
-      it(`throws when OpenSearch is unable to find the index during delete`, async () => {
+      it(`throws when is unable to find the index during delete`, async () => {
         client.delete.mockResolvedValueOnce(
           opensearchClientMock.createSuccessTransportRequestPromise({
             error: { type: 'index_not_found_exception' },
@@ -2503,7 +2503,7 @@ describe('SavedObjectsRepository', () => {
         expect(client.delete).toHaveBeenCalledTimes(1);
       });
 
-      it(`throws when OpenSearch returns an unexpected response`, async () => {
+      it(`throws when returns an unexpected response`, async () => {
         client.delete.mockResolvedValueOnce(
           opensearchClientMock.createSuccessTransportRequestPromise({
             result: 'something unexpected',
@@ -2553,7 +2553,7 @@ describe('SavedObjectsRepository', () => {
     };
 
     describe('client calls', () => {
-      it(`should use the OpenSearch updateByQuery action`, async () => {
+      it(`should use the updateByQuery action`, async () => {
         await deleteByNamespaceSuccess(namespace);
         expect(client.updateByQuery).toHaveBeenCalledTimes(1);
       });
@@ -2631,7 +2631,7 @@ describe('SavedObjectsRepository', () => {
     };
 
     describe('client calls', () => {
-      it(`should use the OpenSearch updateByQuery action`, async () => {
+      it(`should use the updateByQuery action`, async () => {
         await deleteByWorkspaceSuccess(workspace);
         expect(client.updateByQuery).toHaveBeenCalledTimes(1);
       });
@@ -2767,7 +2767,7 @@ describe('SavedObjectsRepository', () => {
     };
 
     describe('client calls', () => {
-      it(`should use the OpenSearch search action`, async () => {
+      it(`should use the search action`, async () => {
         await findSuccess({ type });
         expect(client.search).toHaveBeenCalledTimes(1);
       });
@@ -2927,7 +2927,7 @@ describe('SavedObjectsRepository', () => {
     });
 
     describe('returns', () => {
-      it(`formats the OpenSearch response when there is no namespace`, async () => {
+      it(`formats the response when there is no namespace`, async () => {
         const noNamespaceSearchResults = generateSearchResults();
         client.search.mockResolvedValueOnce(
           opensearchClientMock.createSuccessTransportRequestPromise(noNamespaceSearchResults)
@@ -2954,7 +2954,7 @@ describe('SavedObjectsRepository', () => {
         });
       });
 
-      it(`formats the OpenSearch response when there is a namespace`, async () => {
+      it(`formats the response when there is a namespace`, async () => {
         const namespacedSearchResults = generateSearchResults(namespace);
         client.search.mockResolvedValueOnce(
           opensearchClientMock.createSuccessTransportRequestPromise(namespacedSearchResults)
@@ -3197,7 +3197,7 @@ describe('SavedObjectsRepository', () => {
     };
 
     describe('client calls', () => {
-      it(`should use the OpenSearch get action`, async () => {
+      it(`should use the get action`, async () => {
         await getSuccess(type, id);
         expect(client.get).toHaveBeenCalledTimes(1);
       });
@@ -3275,7 +3275,7 @@ describe('SavedObjectsRepository', () => {
         expect(client.get).not.toHaveBeenCalled();
       });
 
-      it(`throws when OpenSearch is unable to find the document during get`, async () => {
+      it(`throws when is unable to find the document during get`, async () => {
         client.get.mockResolvedValueOnce(
           opensearchClientMock.createSuccessTransportRequestPromise({ found: false })
         );
@@ -3283,7 +3283,7 @@ describe('SavedObjectsRepository', () => {
         expect(client.get).toHaveBeenCalledTimes(1);
       });
 
-      it(`throws when OpenSearch is unable to find the index during get`, async () => {
+      it(`throws when is unable to find the index during get`, async () => {
         client.get.mockResolvedValueOnce(
           opensearchClientMock.createSuccessTransportRequestPromise({}, { statusCode: 404 })
         );
@@ -3302,7 +3302,7 @@ describe('SavedObjectsRepository', () => {
     });
 
     describe('returns', () => {
-      it(`formats the OpenSearch response`, async () => {
+      it(`formats the response`, async () => {
         const result = await getSuccess(type, id);
         expect(result).toEqual({
           id,
@@ -3401,12 +3401,12 @@ describe('SavedObjectsRepository', () => {
     };
 
     describe('client calls', () => {
-      it(`should use the OpenSearch update action if type is not multi-namespace`, async () => {
+      it(`should use the update action if type is not multi-namespace`, async () => {
         await incrementCounterSuccess(type, id, field, { namespace });
         expect(client.update).toHaveBeenCalledTimes(1);
       });
 
-      it(`should use the OpenSearch get action then update action if type is multi-namespace, ID is defined, and overwrite=true`, async () => {
+      it(`should use the get action then update action if type is multi-namespace, ID is defined, and overwrite=true`, async () => {
         await incrementCounterSuccess(MULTI_NAMESPACE_TYPE, id, field, { namespace });
         expect(client.get).toHaveBeenCalledTimes(1);
         expect(client.update).toHaveBeenCalledTimes(1);
@@ -3555,7 +3555,7 @@ describe('SavedObjectsRepository', () => {
     });
 
     describe('returns', () => {
-      it(`formats the OpenSearch response`, async () => {
+      it(`formats the response`, async () => {
         client.update.mockImplementation((params) =>
           opensearchClientMock.createSuccessTransportRequestPromise({
             _id: params.id,
@@ -3656,7 +3656,7 @@ describe('SavedObjectsRepository', () => {
           await test([namespace1, namespace2]);
         };
 
-        it(`should use OpenSearch get action then delete action if the object has no namespaces remaining`, async () => {
+        it(`should use get action then delete action if the object has no namespaces remaining`, async () => {
           const expectFn = () => {
             expect(client.delete).toHaveBeenCalledTimes(1);
             expect(client.get).toHaveBeenCalledTimes(1);
@@ -3664,7 +3664,7 @@ describe('SavedObjectsRepository', () => {
           await deleteFromNamespacesSuccessDelete(expectFn);
         });
 
-        it(`formats the OpenSearch requests`, async () => {
+        it(`formats the requests`, async () => {
           const expectFn = () => {
             expect(client.delete).toHaveBeenCalledWith(
               expect.objectContaining({
@@ -3731,7 +3731,7 @@ describe('SavedObjectsRepository', () => {
           await test([namespace2, namespace3]);
         };
 
-        it(`should use OpenSearch get action then update action if the object has one or more namespaces remaining`, async () => {
+        it(`should use get action then update action if the object has one or more namespaces remaining`, async () => {
           const expectFn = () => {
             expect(client.update).toHaveBeenCalledTimes(1);
             expect(client.get).toHaveBeenCalledTimes(1);
@@ -3739,7 +3739,7 @@ describe('SavedObjectsRepository', () => {
           await deleteFromNamespacesSuccessUpdate(expectFn);
         });
 
-        it(`formats the OpenSearch requests`, async () => {
+        it(`formats the requests`, async () => {
           let ctr = 0;
           const expectFn = () => {
             expect(client.update).toHaveBeenCalledWith(
@@ -3841,7 +3841,7 @@ describe('SavedObjectsRepository', () => {
         await test([]);
       });
 
-      it(`throws when OpenSearch is unable to find the document during get`, async () => {
+      it(`throws when is unable to find the document during get`, async () => {
         client.get.mockResolvedValueOnce(
           opensearchClientMock.createSuccessTransportRequestPromise({ found: false })
         );
@@ -3849,7 +3849,7 @@ describe('SavedObjectsRepository', () => {
         expect(client.get).toHaveBeenCalledTimes(1);
       });
 
-      it(`throws when OpenSearch is unable to find the index during get`, async () => {
+      it(`throws when is unable to find the index during get`, async () => {
         client.get.mockResolvedValueOnce(
           opensearchClientMock.createSuccessTransportRequestPromise({}, { statusCode: 404 })
         );
@@ -3863,7 +3863,7 @@ describe('SavedObjectsRepository', () => {
         expect(client.get).toHaveBeenCalledTimes(1);
       });
 
-      it(`throws when OpenSearch is unable to find the document during delete`, async () => {
+      it(`throws when is unable to find the document during delete`, async () => {
         mockGetResponse(type, id, [namespace1]);
         client.delete.mockResolvedValueOnce(
           opensearchClientMock.createSuccessTransportRequestPromise({ result: 'not_found' })
@@ -3873,7 +3873,7 @@ describe('SavedObjectsRepository', () => {
         expect(client.delete).toHaveBeenCalledTimes(1);
       });
 
-      it(`throws when OpenSearch is unable to find the index during delete`, async () => {
+      it(`throws when is unable to find the index during delete`, async () => {
         mockGetResponse(type, id, [namespace1]);
         client.delete.mockResolvedValueOnce(
           opensearchClientMock.createSuccessTransportRequestPromise({
@@ -3885,7 +3885,7 @@ describe('SavedObjectsRepository', () => {
         expect(client.delete).toHaveBeenCalledTimes(1);
       });
 
-      it(`throws when OpenSearch returns an unexpected response`, async () => {
+      it(`throws when returns an unexpected response`, async () => {
         mockGetResponse(type, id, [namespace1]);
         client.delete.mockResolvedValueOnce(
           opensearchClientMock.createSuccessTransportRequestPromise({
@@ -3899,7 +3899,7 @@ describe('SavedObjectsRepository', () => {
         expect(client.delete).toHaveBeenCalledTimes(1);
       });
 
-      it(`throws when OpenSearch is unable to find the document during update`, async () => {
+      it(`throws when is unable to find the document during update`, async () => {
         mockGetResponse(type, id, [namespace1, namespace2]);
         client.update.mockResolvedValueOnce(
           opensearchClientMock.createSuccessTransportRequestPromise({}, { statusCode: 404 })
@@ -4001,13 +4001,13 @@ describe('SavedObjectsRepository', () => {
     };
 
     describe('client calls', () => {
-      it(`should use the OpenSearch get action then update action when type is multi-namespace`, async () => {
+      it(`should use the get action then update action when type is multi-namespace`, async () => {
         await updateSuccess(MULTI_NAMESPACE_TYPE, id, attributes);
         expect(client.get).toHaveBeenCalledTimes(1);
         expect(client.update).toHaveBeenCalledTimes(1);
       });
 
-      it(`should use the OpenSearch update action when type is not multi-namespace`, async () => {
+      it(`should use the update action when type is not multi-namespace`, async () => {
         await updateSuccess(type, id, attributes);
         expect(client.update).toHaveBeenCalledTimes(1);
       });
@@ -4194,7 +4194,7 @@ describe('SavedObjectsRepository', () => {
         expect(client.update).not.toHaveBeenCalled();
       });
 
-      it(`throws when OpenSearch is unable to find the document during get`, async () => {
+      it(`throws when is unable to find the document during get`, async () => {
         client.get.mockResolvedValueOnce(
           opensearchClientMock.createSuccessTransportRequestPromise({ found: false })
         );
@@ -4202,7 +4202,7 @@ describe('SavedObjectsRepository', () => {
         expect(client.get).toHaveBeenCalledTimes(1);
       });
 
-      it(`throws when OpenSearch is unable to find the index during get`, async () => {
+      it(`throws when is unable to find the index during get`, async () => {
         client.get.mockResolvedValueOnce(
           opensearchClientMock.createSuccessTransportRequestPromise({}, { statusCode: 404 })
         );
@@ -4219,7 +4219,7 @@ describe('SavedObjectsRepository', () => {
         expect(client.get).toHaveBeenCalledTimes(1);
       });
 
-      it(`throws when OpenSearch is unable to find the document during update`, async () => {
+      it(`throws when is unable to find the document during update`, async () => {
         client.update.mockResolvedValueOnce(
           opensearchClientMock.createSuccessTransportRequestPromise({}, { statusCode: 404 })
         );

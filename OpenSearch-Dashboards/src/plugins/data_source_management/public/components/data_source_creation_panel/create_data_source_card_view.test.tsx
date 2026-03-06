@@ -55,8 +55,8 @@ describe('CreateDataSourceCardView', () => {
       },
       {
         name: 'OPENSEARCH',
-        displayName: 'OpenSearch',
-        description: 'Connect to OpenSearch',
+        displayName: 'Supra',
+        description: 'Connect to Supra',
         displayIcon: (
           <EuiIcon
             type={'../direct_query_data_sources_components/icons/opensearch_logo.svg'}
@@ -75,12 +75,12 @@ describe('CreateDataSourceCardView', () => {
     });
   });
 
-  test('does not render OpenSearch card when featureFlagStatus is false', () => {
+  test('does not render card when featureFlagStatus is false', () => {
     const wrapper = shallowComponent({ ...defaultProps, featureFlagStatus: false });
     const cards = wrapper.find(EuiCard);
 
     expect(cards).toHaveLength(2);
-    expect(cards.someWhere((card) => card.prop('title') === 'OpenSearch')).toBe(false);
+    expect(cards.someWhere((card) => card.prop('title') === 'Supra')).toBe(false);
   });
 
   test('handles card click events', () => {

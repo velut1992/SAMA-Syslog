@@ -33,24 +33,24 @@ import { config } from './config';
 const DEFAULT_CONFIG = Object.freeze(config.schema.validate({}));
 
 /**
- * CSP configuration for use in OpenSearch Dashboards.
+ * CSP configuration for use in Dashboards.
  * @public
  */
 export interface ICspConfig {
   /**
-   * The CSP rules used for OpenSearch Dashboards.
+   * The CSP rules used for Dashboards.
    */
   readonly rules: string[];
 
   /**
    * Specify whether browsers that do not support CSP should be
-   * able to use OpenSearch Dashboards. Use `true` to block and `false` to allow.
+   * able to use Dashboards. Use `true` to block and `false` to allow.
    */
   readonly strict: boolean;
 
   /**
    * Specify whether users with legacy browsers should be warned
-   * about their lack of OpenSearch Dashboards security compliance.
+   * about their lack of Dashboards security compliance.
    */
   readonly warnLegacyBrowsers: boolean;
 
@@ -62,7 +62,7 @@ export interface ICspConfig {
 }
 
 /**
- * CSP configuration for use in OpenSearch Dashboards.
+ * CSP configuration for use in Dashboards.
  * @public
  */
 export class CspConfig implements ICspConfig {

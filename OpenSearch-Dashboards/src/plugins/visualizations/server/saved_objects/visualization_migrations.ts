@@ -775,7 +775,7 @@ export const visualizationSavedObjectTypeMigrations = {
    * released. Thus a user who already had 7.0.0 installed already got the 7.0.0 migrations below running,
    * so we need a version higher than that. But this fix was backported to the 6.7 release, meaning if we
    * would only have the 7.0.1 migration in here a user on the 6.7 release will migrate their saved objects
-   * to the 7.0.1 state, and thus when updating their OpenSearch Dashboards to 7.0, will never run the 7.0.0 migrations introduced
+   * to the 7.0.1 state, and thus when updating their Dashboards to 7.0, will never run the 7.0.0 migrations introduced
    * in that version. So we apply this twice, once with 6.7.2 and once with 7.0.1 while the backport to 6.7
    * only contained the 6.7.2 migration and not the 7.0.1 migration.
    */

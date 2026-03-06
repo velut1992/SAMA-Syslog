@@ -47,7 +47,7 @@ beforeEach(() => {
 
 describe('opensearchDashboards cli', function () {
   describe('plugin installer', function () {
-    describe('OpenSearch Dashboards', function () {
+    describe('Dashboards', function () {
       const testWorkingPath = join(__dirname, '.test.data.opensearch_dashboards');
       const tempArchiveFilePath = join(testWorkingPath, 'archive.part');
       const pluginDir = join(__dirname, 'plugins');
@@ -113,7 +113,7 @@ describe('opensearchDashboards cli', function () {
           };
 
           expect(() => assertVersion(testSettings, logger)).toThrowErrorMatchingInlineSnapshot(
-            `"Plugin foo [2.2.3] is incompatible with OpenSearch Dashboards [1.0.0]. Strict mode requires exact version match."`
+            `"Plugin foo [2.2.3] is incompatible with Dashboards [1.0.0]. Strict mode requires exact version match."`
           );
         });
 
@@ -145,7 +145,7 @@ describe('opensearchDashboards cli', function () {
           };
 
           expect(() => assertVersion(testSettings, logger)).toThrowErrorMatchingInlineSnapshot(
-            `"Plugin foo [2.0.0] is incompatible with OpenSearch Dashboards [1.0.0]. Strict mode requires exact version match."`
+            `"Plugin foo [2.0.0] is incompatible with Dashboards [1.0.0]. Strict mode requires exact version match."`
           );
         });
 
@@ -165,7 +165,7 @@ describe('opensearchDashboards cli', function () {
           };
 
           expect(() => assertVersion(testSettings, logger)).toThrowErrorMatchingInlineSnapshot(
-            `"Plugin foo [3.0.0] is incompatible with OpenSearch Dashboards [2.1.0]. Strict mode requires exact version match."`
+            `"Plugin foo [3.0.0] is incompatible with Dashboards [2.1.0]. Strict mode requires exact version match."`
           );
         });
 
@@ -194,7 +194,7 @@ describe('opensearchDashboards cli', function () {
                 plugins: [{ id: 'foo', opensearchDashboardsVersion: '3.1.0' }],
               };
               expect(() => assertVersion(settings, logger)).toThrowErrorMatchingInlineSnapshot(
-                `"Plugin foo [3.1.0] is incompatible with OpenSearch Dashboards [3.0.0]. Strict mode requires exact version match."`
+                `"Plugin foo [3.1.0] is incompatible with Dashboards [3.0.0]. Strict mode requires exact version match."`
               );
             });
           });

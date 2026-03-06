@@ -29,7 +29,7 @@
  */
 
 /*
- * This file contains the logic for managing the OpenSearch Dashboards index version
+ * This file contains the logic for managing the Dashboards index version
  * (the shape of the mappings and documents in the index).
  */
 
@@ -68,7 +68,7 @@ export interface OpenSearchDashboardsMigratorStatus {
 }
 
 /**
- * Manages the shape of mappings and documents in the OpenSearch Dashboards index.
+ * Manages the shape of mappings and documents in the Dashboards index.
  */
 export class OpenSearchDashboardsMigrator {
   private readonly client: MigrationOpenSearchClient;
@@ -120,13 +120,13 @@ export class OpenSearchDashboardsMigrator {
   }
 
   /**
-   * Migrates the mappings and documents in the OpenSearch Dashboards index. By default, this will run only
+   * Migrates the mappings and documents in the Dashboards index. By default, this will run only
    * once and subsequent calls will return the result of the original call.
    *
    * @param rerun - If true, method will run a new migration when called again instead of
    * returning the result of the initial migration. This should only be used when factors external
-   * to OpenSearch Dashboards itself alter the .kibana index causing the saved objects mappings or data to change
-   * after the OpenSearch Dashboards server performed the initial migration.
+   * to Dashboards itself alter the .kibana index causing the saved objects mappings or data to change
+   * after the Dashboards server performed the initial migration.
    *
    * @remarks When the `rerun` parameter is set to true, no checks are performed to ensure that no migration
    * is currently running. Chained or concurrent calls to `runMigrations({ rerun: true })` can lead to

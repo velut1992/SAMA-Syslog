@@ -90,7 +90,7 @@ export function setServices(newServices: HomeOpenSearchDashboardsServices) {
 export function getServices() {
   if (!services) {
     throw new Error(
-      'OpenSearch Dashboards services not set - are you trying to import this module from outside of the home app?'
+      'Dashboards services not set - are you trying to import this module from outside of the home app?'
     );
   }
   return services;

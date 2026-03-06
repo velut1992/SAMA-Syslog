@@ -100,13 +100,13 @@ export interface TutorialSchema {
   completionTimeMinutes?: number;
   previewImagePath?: string;
 
-  // OpenSearch Dashboards and elastic cluster running on prem
+  // Dashboards and elastic cluster running on prem
   onPrem: InstructionsSchema;
 
-  // OpenSearch Dashboards and elastic cluster running in elastic's cloud
+  // Dashboards and elastic cluster running in elastic's cloud
   elasticCloud?: InstructionsSchema;
 
-  // OpenSearch Dashboards running on prem and elastic cluster running in elastic's cloud
+  // Dashboards running on prem and elastic cluster running in elastic's cloud
   onPremElasticCloud?: InstructionsSchema;
 
   // Elastic stack artifacts produced by product when it is setup and run.

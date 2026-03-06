@@ -275,7 +275,7 @@ describe('workspace utils: filterWorkspaceConfigurableApps', () => {
       title: 'Dashboards',
       category: {
         id: 'opensearchDashboards',
-        label: 'OpenSearch Dashboards',
+        label: 'Dashboards',
         euiIconType: 'inputOutput',
         order: 1000,
       },
@@ -528,7 +528,7 @@ describe('workspace utils: getIsOnlyAllowEssentialUseCase', () => {
           get: () => {
             return {
               credentials: {
-                service: SigV4ServiceName.OpenSearch,
+                service: SigV4ServiceName.Supra,
               },
             };
           },
@@ -753,14 +753,14 @@ describe('workspace utils: mergeDataSourcesWithConnections', () => {
         id: 'id1',
         title: 'title1',
         type: DATA_SOURCE_SAVED_OBJECT_TYPE,
-        dataSourceEngineType: 'OpenSearch' as DataSourceEngineType,
+        dataSourceEngineType: 'Supra' as DataSourceEngineType,
         description: '',
       },
       {
         id: 'id2',
         title: 'title2',
         type: DATA_SOURCE_SAVED_OBJECT_TYPE,
-        dataSourceEngineType: 'OpenSearch' as DataSourceEngineType,
+        dataSourceEngineType: 'Supra' as DataSourceEngineType,
         description: '',
       },
     ];
@@ -806,7 +806,7 @@ describe('workspace utils: mergeDataSourcesWithConnections', () => {
             description: 'direct_query_connections_1',
           },
         ],
-        type: 'OpenSearch',
+        type: 'Supra',
       },
       {
         connectionType: 0,
@@ -814,25 +814,25 @@ describe('workspace utils: mergeDataSourcesWithConnections', () => {
         id: 'id2',
         name: 'title2',
         relatedConnections: [],
-        type: 'OpenSearch',
+        type: 'Supra',
       },
     ]);
   });
 
-  it('should return only OpenSearch connections when mode is OpenSearchConnections', () => {
+  it('should return only connections when mode is OpenSearchConnections', () => {
     const dataSources = [
       {
         id: 'id1',
         title: 'title1',
         type: DATA_SOURCE_SAVED_OBJECT_TYPE,
-        dataSourceEngineType: 'OpenSearch' as DataSourceEngineType,
+        dataSourceEngineType: 'Supra' as DataSourceEngineType,
         description: '',
       },
       {
         id: 'idc2',
         title: 'title2',
         type: DATA_CONNECTION_SAVED_OBJECT_TYPE,
-        dataSourceEngineType: 'OpenSearch' as DataSourceEngineType,
+        dataSourceEngineType: 'Supra' as DataSourceEngineType,
         description: '',
       },
     ];
@@ -859,7 +859,7 @@ describe('workspace utils: mergeDataSourcesWithConnections', () => {
         id: 'id1',
         name: 'title1',
         relatedConnections: [],
-        type: 'OpenSearch',
+        type: 'Supra',
       },
     ]);
   });
@@ -869,7 +869,7 @@ describe('workspace utils: mergeDataSourcesWithConnections', () => {
       {
         id: 'id1',
         title: 'title1',
-        dataSourceEngineType: 'OpenSearch' as DataSourceEngineType,
+        dataSourceEngineType: 'Supra' as DataSourceEngineType,
         description: '',
         type: DATA_SOURCE_SAVED_OBJECT_TYPE,
       },
@@ -894,7 +894,7 @@ describe('workspace utils: mergeDataSourcesWithConnections', () => {
         id: 'id1',
         name: 'title1',
         relatedConnections: [],
-        type: 'OpenSearch',
+        type: 'Supra',
       },
       {
         connectionType: 2,
@@ -906,20 +906,20 @@ describe('workspace utils: mergeDataSourcesWithConnections', () => {
     ]);
   });
 
-  it('should return OpenSearch connections with remote cluster connections when mode is OpenSearchConnections', () => {
+  it('should return connections with remote cluster connections when mode is OpenSearchConnections', () => {
     const dataSources = [
       {
         id: 'id1',
         title: 'title1',
         type: DATA_SOURCE_SAVED_OBJECT_TYPE,
-        dataSourceEngineType: 'OpenSearch' as DataSourceEngineType,
+        dataSourceEngineType: 'Supra' as DataSourceEngineType,
         description: '',
       },
       {
         id: 'idc2',
         title: 'title2',
         type: DATA_CONNECTION_SAVED_OBJECT_TYPE,
-        dataSourceEngineType: 'OpenSearch' as DataSourceEngineType,
+        dataSourceEngineType: 'Supra' as DataSourceEngineType,
         description: '',
       },
     ];
@@ -969,7 +969,7 @@ describe('workspace utils: mergeDataSourcesWithConnections', () => {
             parentId: 'id1',
           },
         ],
-        type: 'OpenSearch',
+        type: 'Supra',
       },
     ]);
   });
@@ -980,7 +980,7 @@ describe('workspace utils: mergeDataSourcesWithConnections', () => {
         id: 'id1',
         title: 'title1',
         type: DATA_SOURCE_SAVED_OBJECT_TYPE,
-        dataSourceEngineType: 'OpenSearch' as DataSourceEngineType,
+        dataSourceEngineType: 'Supra' as DataSourceEngineType,
         description: '',
       },
     ];
@@ -1014,7 +1014,7 @@ describe('workspace utils: mergeDataSourcesWithConnections', () => {
         type: 'Prometheus',
       })
     );
-    // OpenSearch connection should only have S3 in relatedConnections, not Prometheus
+    // connection should only have S3 in relatedConnections, not Prometheus
     const openSearchConnection = result.find((r) => r.id === 'id1');
     expect(openSearchConnection?.relatedConnections).toHaveLength(1);
     expect(openSearchConnection?.relatedConnections?.[0].type).toBe('Amazon S3');
@@ -1048,7 +1048,7 @@ describe('workspace utils: fetchDataSourceConnections', () => {
       {
         id: 'id1',
         title: 'title1',
-        dataSourceEngineType: 'OpenSearch' as DataSourceEngineType,
+        dataSourceEngineType: 'Supra' as DataSourceEngineType,
         description: '',
         type: DATA_SOURCE_SAVED_OBJECT_TYPE,
       },
@@ -1070,7 +1070,7 @@ describe('workspace utils: fetchDataSourceConnections', () => {
       },
       {
         id: 'id1',
-        type: 'OpenSearch',
+        type: 'Supra',
         connectionType: 0,
         name: 'title1',
         description: '',
@@ -1101,7 +1101,7 @@ describe('workspace utils: fetchDataSourceConnections', () => {
       {
         id: 'id1',
         title: 'title1',
-        dataSourceEngineType: 'OpenSearch' as DataSourceEngineType,
+        dataSourceEngineType: 'Supra' as DataSourceEngineType,
         description: '',
         type: DATA_SOURCE_SAVED_OBJECT_TYPE,
       },
@@ -1115,7 +1115,7 @@ describe('workspace utils: fetchDataSourceConnections', () => {
     expect(result).toEqual([
       {
         id: 'id1',
-        type: 'OpenSearch',
+        type: 'Supra',
         connectionType: 0,
         name: 'title1',
         description: '',
@@ -1148,7 +1148,7 @@ describe('workspace utils: fetchRemoteClusterConnections', () => {
       {
         id: 'id1',
         title: 'title1',
-        dataSourceEngineType: DataSourceEngineType.OpenSearch,
+        dataSourceEngineType: DataSourceEngineType.Supra,
         description: '',
         type: DATA_SOURCE_SAVED_OBJECT_TYPE,
       },
@@ -1226,7 +1226,7 @@ describe('workspace utils: fetchRemoteClusterConnections', () => {
       {
         id: 'id1',
         title: 'title1',
-        dataSourceEngineType: DataSourceEngineType.OpenSearch,
+        dataSourceEngineType: DataSourceEngineType.Supra,
         description: '',
         type: DATA_SOURCE_SAVED_OBJECT_TYPE,
       },

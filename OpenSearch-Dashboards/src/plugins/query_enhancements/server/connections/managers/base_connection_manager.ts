@@ -25,7 +25,7 @@ export interface QueryExecutor<TParams = unknown, TResponse = unknown> {
   /**
    * Execute a query with the given params.
    * @param context The request handler context
-   * @param request The OpenSearch Dashboards request
+   * @param request The Dashboards request
    * @param params The query parameters
    */
   execute(

@@ -66,7 +66,7 @@ const getFieldValueCounts = (params: FieldValueCountsParams): FieldValueCounts =
           'visBuilder.fieldChooser.fieldCalculator.fieldIsNotPresentInDocumentsErrorMessage',
           {
             defaultMessage:
-              'This field is present in your OpenSearch mapping but not in the {hitsLength} documents sampled. You may still be able to visualize it.',
+              'This field is present in your mapping but not in the {hitsLength} documents sampled. You may still be able to visualize it.',
             values: {
               hitsLength: hits.length,
             },

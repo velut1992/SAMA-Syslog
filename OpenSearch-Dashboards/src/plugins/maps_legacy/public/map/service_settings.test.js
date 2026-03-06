@@ -292,7 +292,7 @@ describe('service_settings (FKA tile_map test)', function () {
       });
     });
 
-    describe('when unable to access OpenSearch maps service', function () {
+    describe('when unable to access maps service', function () {
       const expectedDefaultTmService = DEFAULT_SERVICE[0];
       it('should return default service', async () => {
         const serviceSettings = makeServiceSettings({}, {}, { noInternet: true });

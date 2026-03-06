@@ -419,13 +419,13 @@ describe('trace_utils', () => {
         dataSource: {
           id: 'external-datasource-id',
           title: 'external',
-          type: 'OpenSearch',
+          type: 'Supra',
         },
       } as any;
       const result = buildTraceDetailsUrl('span-123', 'trace-456', dataset);
 
       expect(result).toBe(
-        "http://localhost:5601/app/agentTraces/traces/traceDetails#/?_a=(dataset:(id:'test-dataset',title:'test-title',type:'INDEX_PATTERN',timeFieldName:'endTime',dataSource:(id:'external-datasource-id',title:'external',type:'OpenSearch')),spanId:'span-123',traceId:'trace-456')"
+        "http://localhost:5601/app/agentTraces/traces/traceDetails#/?_a=(dataset:(id:'test-dataset',title:'test-title',type:'INDEX_PATTERN',timeFieldName:'endTime',dataSource:(id:'external-datasource-id',title:'external',type:'Supra')),spanId:'span-123',traceId:'trace-456')"
       );
     });
 
@@ -437,13 +437,13 @@ describe('trace_utils', () => {
         dataSource: {
           id: 'external-datasource-id',
           title: 'external',
-          type: 'OpenSearch',
+          type: 'Supra',
         },
       } as any;
       const result = buildTraceDetailsUrl('span-123', 'trace-456', dataset);
 
       expect(result).toBe(
-        "http://localhost:5601/app/agentTraces/traces/traceDetails#/?_a=(dataset:(id:'test-dataset',title:'test-title',type:'INDEX_PATTERN',dataSource:(id:'external-datasource-id',title:'external',type:'OpenSearch')),spanId:'span-123',traceId:'trace-456')"
+        "http://localhost:5601/app/agentTraces/traces/traceDetails#/?_a=(dataset:(id:'test-dataset',title:'test-title',type:'INDEX_PATTERN',dataSource:(id:'external-datasource-id',title:'external',type:'Supra')),spanId:'span-123',traceId:'trace-456')"
       );
     });
   });

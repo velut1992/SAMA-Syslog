@@ -121,12 +121,12 @@ describe('mapNodesVersionCompatibility', () => {
   });
 
   it('returns isCompatible=false for a single node that is out of date', () => {
-    // 5.0.0 OpenSearch is too old to work with a 5.1.0 version of OpenSearchDashboards.
+    // 5.0.0 is too old to work with a 5.1.0 version of OpenSearchDashboards.
     const nodesInfo = createNodes('5.1.0', '5.2.0', '5.0.0');
     const result = mapNodesVersionCompatibility(nodesInfo, OPENSEARCH_DASHBOARDS_VERSION, false);
     expect(result.isCompatible).toBe(false);
     expect(result.message).toMatchInlineSnapshot(
-      `"This version of OpenSearch Dashboards (v5.1.0) is incompatible with the following OpenSearch nodes in your cluster: v5.0.0 @ http_address (ip)"`
+      `"This version of Dashboards (v5.1.0) is incompatible with the following nodes in your cluster: v5.0.0 @ http_address (ip)"`
     );
   });
 
@@ -135,12 +135,12 @@ describe('mapNodesVersionCompatibility', () => {
     const result = mapNodesVersionCompatibility(nodesInfo, OPENSEARCH_DASHBOARDS_VERSION, false);
     expect(result.isCompatible).toBe(false);
     expect(result.message).toMatchInlineSnapshot(
-      `"This version of OpenSearch Dashboards (v5.1.0) is incompatible with the following OpenSearch nodes in your cluster: v6.1.1 @ undefined (ip)"`
+      `"This version of Dashboards (v5.1.0) is incompatible with the following nodes in your cluster: v6.1.1 @ undefined (ip)"`
     );
   });
 
   it('returns isCompatible=true for outdated nodes when ignoreVersionMismatch=true', async () => {
-    // 5.0.0 OpenSearch is too old to work with a 5.1.0 version of OpenSearch Dashboards.
+    // 5.0.0 is too old to work with a 5.1.0 version of Dashboards.
     const nodesInfo = createNodes('5.1.0', '5.2.0', '5.0.0');
     const ignoreVersionMismatch = true;
     const result = mapNodesVersionCompatibility(
@@ -150,7 +150,7 @@ describe('mapNodesVersionCompatibility', () => {
     );
     expect(result.isCompatible).toBe(true);
     expect(result.message).toMatchInlineSnapshot(
-      `"Ignoring version incompatibility between OpenSearch Dashboards v5.1.0 and the following OpenSearch nodes: v5.0.0 @ http_address (ip)"`
+      `"Ignoring version incompatibility between Dashboards v5.1.0 and the following nodes: v5.0.0 @ http_address (ip)"`
     );
   });
 
@@ -162,7 +162,7 @@ describe('mapNodesVersionCompatibility', () => {
     );
     expect(result.isCompatible).toBe(true);
     expect(result.message).toMatchInlineSnapshot(
-      `"You're running OpenSearch Dashboards 5.1.0 with some different versions of OpenSearch. Update OpenSearch Dashboards or OpenSearch to the same version to prevent compatibility issues: v5.1.1 @ http_address (ip)"`
+      `"You're running Dashboards 5.1.0 with some different versions of Supra. Update Dashboards or to the same version to prevent compatibility issues: v5.1.1 @ http_address (ip)"`
     );
   });
 
@@ -174,7 +174,7 @@ describe('mapNodesVersionCompatibility', () => {
     );
     expect(result.isCompatible).toBe(true);
     expect(result.message).toMatchInlineSnapshot(
-      `"You're running OpenSearch Dashboards 5.1.0 with some different versions of OpenSearch. Update OpenSearch Dashboards or OpenSearch to the same version to prevent compatibility issues: v5.1.1 @ http_address (ip)"`
+      `"You're running Dashboards 5.1.0 with some different versions of Supra. Update Dashboards or to the same version to prevent compatibility issues: v5.1.1 @ http_address (ip)"`
     );
   });
 });

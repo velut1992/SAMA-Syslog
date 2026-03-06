@@ -37,7 +37,7 @@ import { replaceUrlHashQuery, replaceUrlQuery } from './format';
 import { url as urlUtils } from '../../../common';
 
 /**
- * Parses a OpenSearch Dashboards url and retrieves all the states encoded into url,
+ * Parses a Dashboards url and retrieves all the states encoded into url,
  * Handles both expanded rison state and hashed state (where the actual state stored in sessionStorage)
  * e.g.:
  *

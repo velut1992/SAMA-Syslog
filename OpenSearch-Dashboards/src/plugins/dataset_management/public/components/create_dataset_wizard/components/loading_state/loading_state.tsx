@@ -16,7 +16,7 @@ export const LoadingState = () => (
         <h2 style={{ textAlign: 'center' }}>
           <FormattedMessage
             id="datasetManagement.createDataset.loadingState.checkingLabel"
-            defaultMessage="Checking for OpenSearch data"
+            defaultMessage="Checking for data"
           />
         </h2>
       </EuiTitle>

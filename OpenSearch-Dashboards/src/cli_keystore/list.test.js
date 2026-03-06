@@ -51,7 +51,7 @@ import { Keystore } from '../legacy/server/keystore';
 import { list } from './list';
 import { Logger } from '../cli_plugin/lib/logger';
 
-describe('OpenSearch Dashboards keystore', () => {
+describe('Dashboards keystore', () => {
   describe('list', () => {
     const sandbox = sinon.createSandbox();
 
@@ -79,7 +79,7 @@ describe('OpenSearch Dashboards keystore', () => {
       sinon.assert.calledOnce(Logger.prototype.error);
       sinon.assert.calledWith(
         Logger.prototype.error,
-        "ERROR: OpenSearch Dashboards keystore not found. Use 'create' command to create one."
+        "ERROR: Dashboards keystore not found. Use 'create' command to create one."
       );
     });
   });

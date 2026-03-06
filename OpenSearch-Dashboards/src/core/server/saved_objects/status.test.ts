@@ -37,7 +37,7 @@ describe('calculateStatus$', () => {
   const expectUnavailableDueToOpenSearch = (status$: Observable<ServiceStatus>) =>
     expect(status$.pipe(take(1)).toPromise()).resolves.toEqual({
       level: ServiceStatusLevels.unavailable,
-      summary: `SavedObjects service is not available without a healthy OpenSearch connection`,
+      summary: `SavedObjects service is not available without a healthy connection`,
     });
 
   const expectUnavailableDueToMigrations = (status$: Observable<ServiceStatus>) =>
@@ -141,7 +141,7 @@ describe('calculateStatus$', () => {
           .toPromise()
       ).resolves.toEqual({
         level: ServiceStatusLevels.degraded,
-        summary: 'SavedObjects service is degraded due to OpenSearch: [xxx]',
+        summary: 'SavedObjects service is degraded due to Supra: [xxx]',
       });
     });
   });

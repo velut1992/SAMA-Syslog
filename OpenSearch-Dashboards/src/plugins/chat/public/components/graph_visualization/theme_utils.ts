@@ -8,7 +8,7 @@ import { useOpenSearchDashboards } from '../../../../opensearch_dashboards_react
 import { AppPluginStartDependencies } from '../../types';
 
 /**
- * Hook to access the charts theme service from OpenSearch Dashboards context
+ * Hook to access the charts theme service from Dashboards context
  */
 export const useChartsThemeService = () => {
   const { services } = useOpenSearchDashboards<AppPluginStartDependencies>();

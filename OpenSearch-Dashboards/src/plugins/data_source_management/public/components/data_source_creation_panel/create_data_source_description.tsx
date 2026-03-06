@@ -16,7 +16,7 @@ export const NewDatasourceDescription = () => {
       <EuiSpacer size="s" />
       <EuiText size="s" color="subdued">
         Connect to a compatible data source or compute engine to bring your data into OpenSearch and
-        OpenSearch Dashboards.
+        Dashboards.
       </EuiText>
       <EuiHorizontalRule size="full" />
     </div>

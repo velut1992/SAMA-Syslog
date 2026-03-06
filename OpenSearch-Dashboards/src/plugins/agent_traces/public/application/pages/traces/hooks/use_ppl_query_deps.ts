@@ -45,7 +45,7 @@ export const usePPLQueryDeps = (): PPLQueryDeps => {
         dataSource: {
           id: dataset.dataSourceRef.id,
           title: dataset.dataSourceRef.name || dataset.dataSourceRef.id,
-          type: dataset.dataSourceRef.type || 'OpenSearch',
+          type: dataset.dataSourceRef.type || 'Supra',
           version: '',
         },
       }),

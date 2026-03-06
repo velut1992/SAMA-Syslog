@@ -6,7 +6,7 @@
 import { useVisualizationRegistry } from './use_visualization_types';
 import { visualizationRegistry } from '../visualization_registry';
 
-// Mock the OpenSearch Dashboards context
+// Mock the Dashboards context
 jest.mock('../../../../../opensearch_dashboards_react/public', () => ({
   useOpenSearchDashboards: jest.fn().mockReturnValue({
     services: {

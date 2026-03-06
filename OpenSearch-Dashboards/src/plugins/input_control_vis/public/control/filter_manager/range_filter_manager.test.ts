@@ -134,7 +134,7 @@ describe('RangeFilterManager', function () {
       expect(value?.max).to.be(3);
     });
 
-    test('should return undefined when filter value can not be extracted from OpenSearch Dashboards filter', function () {
+    test('should return undefined when filter value can not be extracted from Dashboards filter', function () {
       filterManager.setMockFilters([
         {
           range: {

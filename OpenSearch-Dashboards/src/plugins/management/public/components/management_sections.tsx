@@ -68,7 +68,7 @@ const opensearchDashboardsTitle = i18n.translate('management.sections.opensearch
 });
 
 const opensearchDashboardsTip = i18n.translate('management.sections.opensearchDashboardsTip', {
-  defaultMessage: 'Customize OpenSearch Dashboards and manage saved objects',
+  defaultMessage: 'Customize Dashboards and manage saved objects',
 });
 
 const stackTitle = i18n.translate('management.sections.stackTitle', {

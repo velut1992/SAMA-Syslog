@@ -37,7 +37,7 @@ import { CspConfig } from '.';
 // extra attention if defaults are modified in any way.
 //
 // A test failure here does not necessarily mean this change cannot be made,
-// but any change here should undergo sufficient scrutiny by the OpenSearch Dashboards
+// but any change here should undergo sufficient scrutiny by the Dashboards
 // security team.
 //
 // The tests use inline snapshots to make it as easy as possible to identify

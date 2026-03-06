@@ -39,7 +39,7 @@ describe('CSVProcessor', () => {
     });
 
     it.each<CSVTestCaseFormat>(VALID_CSV_CASES)(
-      'should index $expected.length documents into OpenSearch',
+      'should index $expected.length documents into Supra',
       async ({ rawStringArray, delimiter, expected }) => {
         const response = await processor.ingestText(rawStringArray.join(''), {
           client: clientMock,
@@ -78,7 +78,7 @@ describe('CSVProcessor', () => {
     );
 
     it.each<CSVTestCaseFormat>(VALID_CSV_CASES)(
-      'should handle OpenSearch errors and show the correct failedRow',
+      'should handle errors and show the correct failedRow',
       async ({ rawStringArray, delimiter, expected }) => {
         const mockSuccessfulResponse = opensearchServiceMock.createApiResponse<IndexResponse>();
         clientMock.index
@@ -111,7 +111,7 @@ describe('CSVProcessor', () => {
     });
 
     it.each<CSVTestCaseFormat>(VALID_CSV_CASES)(
-      'should index $expected.length documents into OpenSearch',
+      'should index $expected.length documents into Supra',
       async ({ expected, delimiter, rawStringArray }) => {
         const validCSVFileStream = Readable.from(rawStringArray);
         const response = await processor.ingestFile(validCSVFileStream, {
@@ -151,7 +151,7 @@ describe('CSVProcessor', () => {
     );
 
     it.each<CSVTestCaseFormat>(VALID_CSV_CASES)(
-      'should handle OpenSearch errors and show the correct failedRow',
+      'should handle errors and show the correct failedRow',
       async ({ rawStringArray, delimiter, expected }) => {
         const mockSuccessfulResponse = opensearchServiceMock.createApiResponse<IndexResponse>();
         clientMock.index
@@ -179,7 +179,7 @@ describe('CSVProcessor', () => {
     );
 
     it.each<CSVTestCaseFormat>(INVALID_CSV_CASES)(
-      'should throw errors when attempting to ingest documents into OpenSearch',
+      'should throw errors when attempting to ingest documents into Supra',
       async ({ rawStringArray, delimiter, expected }) => {
         const invalidCSVFileStream = Readable.from(rawStringArray);
         try {

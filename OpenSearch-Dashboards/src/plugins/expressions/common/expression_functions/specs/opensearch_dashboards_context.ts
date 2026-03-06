@@ -70,21 +70,21 @@ export const opensearchDashboardsContextFunction: ExpressionFunctionOpenSearchDa
       aliases: ['query', '_'],
       default: null,
       help: i18n.translate('expressions.functions.opensearch_dashboards_context.q.help', {
-        defaultMessage: 'Specify OpenSearch Dashboards free form text query',
+        defaultMessage: 'Specify Dashboards free form text query',
       }),
     },
     filters: {
       types: ['string', 'null'],
       default: '"[]"',
       help: i18n.translate('expressions.functions.opensearch_dashboards_context.filters.help', {
-        defaultMessage: 'Specify OpenSearch Dashboards generic filters',
+        defaultMessage: 'Specify Dashboards generic filters',
       }),
     },
     timeRange: {
       types: ['string', 'null'],
       default: null,
       help: i18n.translate('expressions.functions.opensearch_dashboards_context.timeRange.help', {
-        defaultMessage: 'Specify OpenSearch Dashboards time range filter',
+        defaultMessage: 'Specify Dashboards time range filter',
       }),
     },
     savedSearchId: {

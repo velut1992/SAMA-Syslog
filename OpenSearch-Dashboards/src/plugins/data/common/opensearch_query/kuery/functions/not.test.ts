@@ -60,7 +60,7 @@ describe('kuery functions', () => {
     });
 
     describe('toOpenSearchQuery', () => {
-      test("should wrap a subquery in an OpenSearch bool query's must_not clause", () => {
+      test("should wrap a subquery in an bool query's must_not clause", () => {
         const node = nodeTypes.function.buildNode('not', childNode);
         const result = not.toOpenSearchQuery(node, indexPattern);
 

@@ -46,7 +46,7 @@ describe('ServerStatus', () => {
     const status = getStatus();
     const component = mountWithIntl(<ServerStatus serverState={status} name="My Computer" />);
     expect(component.find('EuiTitle').text()).toMatchInlineSnapshot(
-      `"OpenSearch Dashboards status is Green"`
+      `"Dashboards status is Green"`
     );
     expect(component.find('EuiBadge')).toMatchSnapshot();
   });
@@ -58,7 +58,7 @@ describe('ServerStatus', () => {
     });
     const component = mountWithIntl(<ServerStatus serverState={status} name="My Computer" />);
     expect(component.find('EuiTitle').text()).toMatchInlineSnapshot(
-      `"OpenSearch Dashboards status is Red"`
+      `"Dashboards status is Red"`
     );
     expect(component.find('EuiBadge')).toMatchSnapshot();
   });

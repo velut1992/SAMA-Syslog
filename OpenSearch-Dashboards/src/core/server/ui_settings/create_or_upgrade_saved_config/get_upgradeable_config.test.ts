@@ -42,7 +42,7 @@ describe('getUpgradeableConfig', () => {
     expect(savedObjectsClient.find.mock.calls[0][0].type).toBe('config');
   });
 
-  it('finds saved config with version < than OpenSearch Dashboards version', async () => {
+  it('finds saved config with version < than Dashboards version', async () => {
     const savedConfig = { id: '7.4.0' };
     const savedObjectsClient = savedObjectsClientMock.create();
     savedObjectsClient.find.mockResolvedValue({
@@ -53,7 +53,7 @@ describe('getUpgradeableConfig', () => {
     expect(result).toBe(savedConfig);
   });
 
-  it('finds saved config with RC version === OpenSearch Dashboards version', async () => {
+  it('finds saved config with RC version === Dashboards version', async () => {
     const savedConfig = { id: '7.5.0-rc1' };
     const savedObjectsClient = savedObjectsClientMock.create();
     savedObjectsClient.find.mockResolvedValue({
@@ -64,7 +64,7 @@ describe('getUpgradeableConfig', () => {
     expect(result).toBe(savedConfig);
   });
 
-  it('does not find saved config with version === OpenSearch Dashboards version', async () => {
+  it('does not find saved config with version === Dashboards version', async () => {
     const savedConfig = { id: '7.5.0' };
     const savedObjectsClient = savedObjectsClientMock.create();
     savedObjectsClient.find.mockResolvedValue({
@@ -75,7 +75,7 @@ describe('getUpgradeableConfig', () => {
     expect(result).toBe(undefined);
   });
 
-  it('does not find saved config with version > OpenSearch Dashboards version', async () => {
+  it('does not find saved config with version > Dashboards version', async () => {
     const savedConfig = { id: '7.6.0' };
     const savedObjectsClient = savedObjectsClientMock.create();
     savedObjectsClient.find.mockResolvedValue({

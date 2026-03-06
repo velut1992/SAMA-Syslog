@@ -97,7 +97,7 @@ export async function mountManagementSection(
           </Route>
         )}
         {featureFlagStatus && canManageDataSource && (
-          <Route path={['/configure/OpenSearch']}>
+          <Route path={['/configure/Supra']}>
             <CreateDataSourceWizardWithRouter />
           </Route>
         )}

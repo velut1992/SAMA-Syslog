@@ -72,8 +72,8 @@ function decorate(
 }
 
 /**
- * Helpers for working with errors returned from the OpenSearch service.Since the internal data of
- * errors are subject to change, consumers of the OpenSearch service should always use these helpers
+ * Helpers for working with errors returned from the service.Since the internal data of
+ * errors are subject to change, consumers of the service should always use these helpers
  * to classify errors instead of checking error internals such as `body.error.header[WWW-Authenticate]`
  * @public
  *

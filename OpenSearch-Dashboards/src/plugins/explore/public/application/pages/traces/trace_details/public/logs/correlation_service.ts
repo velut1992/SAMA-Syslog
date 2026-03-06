@@ -157,7 +157,7 @@ export class CorrelationService {
             logDataset.dataSource = {
               id: dataSource.id,
               title: dataSourceAttrs?.title || dataSourceRef.name || dataSource.id,
-              type: dataSourceAttrs?.dataSourceEngineType || 'OpenSearch',
+              type: dataSourceAttrs?.dataSourceEngineType || 'Supra',
             };
           } catch (dataSourceError) {
             // eslint-disable-next-line no-console
@@ -166,7 +166,7 @@ export class CorrelationService {
             logDataset.dataSource = {
               id: dataSourceRef.id,
               title: dataSourceRef.name || dataSourceRef.id,
-              type: 'OpenSearch', // Default type
+              type: 'Supra', // Default type
             };
           }
         }

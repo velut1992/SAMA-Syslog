@@ -39,7 +39,7 @@ export function navigateToDefaultApp(
   currentAppId: string | undefined,
   overwriteHash: boolean
 ) {
-  // navigate to the respective path in the legacy OpenSearch Dashboards plugin by default (for unmigrated plugins)
+  // navigate to the respective path in the legacy Dashboards plugin by default (for unmigrated plugins)
   let targetAppId = 'opensearchDashboards';
   let targetAppPath = `#/${defaultAppId}`;
 

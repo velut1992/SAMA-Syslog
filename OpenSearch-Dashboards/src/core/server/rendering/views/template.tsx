@@ -67,7 +67,7 @@ export const Template: FunctionComponent<Props> = ({
   );
 
   const favicon = injectedMetadata.branding.faviconUrl;
-  const applicationTitle = injectedMetadata.branding.applicationTitle || 'OpenSearch Dashboards';
+  const applicationTitle = injectedMetadata.branding.applicationTitle || 'Supra';
 
   return (
     <html lang={locale}>
@@ -217,7 +217,7 @@ export const Template: FunctionComponent<Props> = ({
           <div className="osdWelcomeText">
             {i18n('core.ui.legacyBrowserMessage', {
               defaultMessage:
-                'This OpenSearch installation has strict security requirements enabled that your current browser does not meet.',
+                'This installation has strict security requirements enabled that your current browser does not meet.',
             })}
           </div>
         </div>

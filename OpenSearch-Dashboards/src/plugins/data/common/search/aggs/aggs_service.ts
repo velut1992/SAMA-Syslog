@@ -69,7 +69,7 @@ export interface AggsCommonStartDependencies {
 
 /**
  * The aggs service provides a means of modeling and manipulating the various
- * OpenSearch aggregations supported by OpenSearch Dashboards, providing the ability to
+ * OpenSearch aggregations supported by Dashboards, providing the ability to
  * output the correct DSL when you are ready to send your request to OpenSearch.
  */
 export class AggsCommonService {

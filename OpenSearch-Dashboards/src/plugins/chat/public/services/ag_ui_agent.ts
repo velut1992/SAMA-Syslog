@@ -55,7 +55,7 @@ export class AgUiAgent {
         headers: {
           'Content-Type': 'application/json',
           Accept: 'text/event-stream',
-          'osd-xsrf': 'true', // Required for OpenSearch Dashboards API calls
+          'osd-xsrf': 'true', // Required for Dashboards API calls
         },
         body: JSON.stringify(input),
         signal: this.abortController.signal,

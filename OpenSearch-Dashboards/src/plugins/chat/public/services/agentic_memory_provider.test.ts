@@ -220,11 +220,11 @@ describe('AgenticMemoryProvider', () => {
         {
           type: 'MESSAGES_SNAPSHOT',
           messages: [
-            { id: 'msg-1', role: 'user', content: 'What is OpenSearch?' },
+            { id: 'msg-1', role: 'user', content: 'What is Supra?' },
             {
               id: 'msg-2',
               role: 'assistant',
-              content: 'OpenSearch is an open-source search and analytics suite.',
+              content: 'is an open-source search and analytics suite.',
             },
           ],
         },
@@ -247,7 +247,7 @@ describe('AgenticMemoryProvider', () => {
       expect(events!.length).toBe(3);
       expect(events![0].type).toBe('RUN_STARTED');
       expect((events![1] as any).messages.length).toBe(2);
-      expect((events![1] as any).messages[0].content).toBe('What is OpenSearch?');
+      expect((events![1] as any).messages[0].content).toBe('What is Supra?');
     });
 
     it('should handle pagination across multiple pages', async () => {

@@ -89,8 +89,8 @@ export const sampleDataSchema = {
   defaultIndex: Joi.string().required(),
   getDataSourceIntegratedDefaultIndex: Joi.func().required(),
 
-  // OpenSearch Dashboards saved objects (index patter, visualizations, dashboard, ...)
-  // Should provide a nice demo of OpenSearch Dashboards's functionality with the sample data set
+  // Dashboards saved objects (index patter, visualizations, dashboard, ...)
+  // Should provide a nice demo of Dashboards's functionality with the sample data set
   savedObjects: Joi.array().items(Joi.object()).required(),
   getDataSourceIntegratedSavedObjects: Joi.func().required(),
   dataIndices: Joi.array().items(dataIndexSchema).required(),

@@ -61,7 +61,7 @@ function VegaHelpMenu() {
     <EuiContextMenuItem key="vegaHelp" href={vegaHelpDoc} target="_blank" onClick={closePopover}>
       <FormattedMessage
         id="visTypeVega.editor.vegaHelpLinkText"
-        defaultMessage="OpenSearch Dashboards Vega help"
+        defaultMessage="Dashboards Vega help"
       />
     </EuiContextMenuItem>,
     <EuiContextMenuItem

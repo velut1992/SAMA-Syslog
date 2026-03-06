@@ -95,7 +95,7 @@ export default new Datasource('es', {
       types: ['boolean', 'null'],
       help: i18n.translate('timeline.help.functions.opensearch.args.opensearchDashboardsHelpText', {
         defaultMessage:
-          'Respect filters on OpenSearch Dashboards dashboards. Only has an effect when using on OpenSearch Dashboards dashboards',
+          'Respect filters on Dashboards dashboards. Only has an effect when using on Dashboards dashboards',
       }),
     },
     {
@@ -103,7 +103,7 @@ export default new Datasource('es', {
       types: ['boolean', 'null'],
       help: i18n.translate('timeline.help.functions.opensearch.args.opensearchDashboardsHelpText', {
         defaultMessage:
-          'Respect filters on OpenSearch Dashboards dashboards. Only has an effect when using on OpenSearch Dashboards dashboards',
+          'Respect filters on Dashboards dashboards. Only has an effect when using on Dashboards dashboards',
       }),
     },
     {
@@ -176,7 +176,7 @@ export default new Datasource('es', {
     if (!resp.rawResponse._shards.total) {
       throw new Error(
         i18n.translate('timeline.serverSideErrors.opensearchFunction.indexNotFoundErrorMessage', {
-          defaultMessage: 'OpenSearch index not found: {index}',
+          defaultMessage: 'index not found: {index}',
           values: {
             index: config.index,
           },

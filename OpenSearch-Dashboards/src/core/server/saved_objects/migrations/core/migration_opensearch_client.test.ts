@@ -47,7 +47,7 @@ describe('MigrationOpenSearchClient', () => {
     migrationRetryCallClusterMock.mockClear();
   });
 
-  it('delegates call to OpenSearch client method', async () => {
+  it('delegates call to client method', async () => {
     expect(migrationOpenSearchClient.bulk).toStrictEqual(expect.any(Function));
     await migrationOpenSearchClient.bulk({ body: [] });
     expect(client.bulk).toHaveBeenCalledTimes(1);

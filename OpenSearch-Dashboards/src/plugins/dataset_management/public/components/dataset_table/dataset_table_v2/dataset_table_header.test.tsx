@@ -50,7 +50,7 @@ describe('DatasetTableHeader', () => {
     expect(screen.getByText('Datasets')).toBeInTheDocument();
     expect(
       screen.getByText(
-        'Create and manage the datasets that help you retrieve your data from OpenSearch.'
+        'Create and manage the datasets that help you retrieve your data from Supra.'
       )
     ).toBeInTheDocument();
   });

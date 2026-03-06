@@ -32,7 +32,7 @@ import _ from 'lodash';
 import { flattenSeries } from './flatten_series';
 
 /*
- * Accepts a OpenSearch Dashboards data object and returns an array of values objects.
+ * Accepts a Dashboards data object and returns an array of values objects.
  */
 export function dataArray(obj) {
   if (!_.isObject(obj) || (!obj.rows && !obj.columns && !obj.series)) {

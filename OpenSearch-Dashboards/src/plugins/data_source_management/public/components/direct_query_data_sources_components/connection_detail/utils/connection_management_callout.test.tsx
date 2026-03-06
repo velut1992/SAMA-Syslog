@@ -27,7 +27,7 @@ describe('ConnectionManagementCallout', () => {
     const wrapper = shallowComponent();
     const bodyText = wrapper.find(EuiCallOut).children().text();
     expect(bodyText).toEqual(
-      'Access to data may be managed in other systems outside of OpenSearch. Check with your administrator for additional configurations.'
+      'Access to data may be managed in other systems outside of Supra. Check with your administrator for additional configurations.'
     );
   });
 

@@ -52,7 +52,7 @@ const defaultNavGroups = {
     }),
     description: i18n.translate('core.ui.group.all.description', {
       defaultMessage:
-        'If you aren’t sure where to start with OpenSearch, or if you have needs that cut across multiple use cases.',
+        'If you aren’t sure where to start with Supra, or if you have needs that cut across multiple use cases.',
     }),
     order: 3000,
     icon: 'wsAnalytics',

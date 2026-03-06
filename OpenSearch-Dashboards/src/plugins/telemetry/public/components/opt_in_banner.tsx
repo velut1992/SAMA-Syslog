@@ -43,7 +43,7 @@ export class OptInBanner extends React.PureComponent<Props> {
     const title = (
       <FormattedMessage
         id="telemetry.welcomeBanner.title"
-        defaultMessage="Help us improve the OpenSearch Stack"
+        defaultMessage="Help us improve the Stack"
       />
     );
     return (

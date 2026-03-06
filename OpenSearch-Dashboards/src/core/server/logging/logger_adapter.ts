@@ -38,7 +38,7 @@ export class LoggerAdapter implements Logger {
    * The current logger can be updated "on the fly", e.g. when the log config
    * has changed.
    *
-   * This is not intended for external use, only internally in OpenSearch Dashboards
+   * This is not intended for external use, only internally in Dashboards
    *
    * @internal
    */

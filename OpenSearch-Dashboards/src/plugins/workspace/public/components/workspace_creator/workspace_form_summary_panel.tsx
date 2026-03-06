@@ -158,7 +158,7 @@ export const WorkspaceFormSummaryPanel = ({
   privacyType,
 }: WorkspaceFormSummaryPanelProps) => {
   const useCase = availableUseCases.find((item) => item.id === formData.useCase);
-  const useCaseIcon = useCase?.icon || 'logoOpenSearch';
+  const useCaseIcon = useCase?.icon || 'logoSupra';
   const isPermissionEnabled = application?.capabilities.workspaces.permissionEnabled;
 
   return (

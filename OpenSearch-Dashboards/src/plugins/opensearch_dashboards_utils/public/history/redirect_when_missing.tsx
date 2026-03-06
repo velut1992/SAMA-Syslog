@@ -127,7 +127,7 @@ export function redirectWhenMissing({
     }
     if (typeof redirectTarget !== 'string') {
       if (redirectTarget.app === 'opensearch-dashboards') {
-        // exception for OpenSearch Dashboards app because redirect won't work right otherwise
+        // exception for Dashboards app because redirect won't work right otherwise
         window.location.href = basePath.prepend(`/app/opensearch-dashboards${redirectTarget.path}`);
       } else {
         navigateToApp(redirectTarget.app, { path: redirectTarget.path });

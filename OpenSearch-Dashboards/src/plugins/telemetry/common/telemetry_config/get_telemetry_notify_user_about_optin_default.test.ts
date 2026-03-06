@@ -31,7 +31,7 @@
 import { getNotifyUserAboutOptInDefault } from './get_telemetry_notify_user_about_optin_default';
 
 describe('getNotifyUserAboutOptInDefault: get a flag that describes if the user must be notified about optin default', () => {
-  it('should return true when OpenSearch Dashboards has fresh defaults', () => {
+  it('should return true when Dashboards has fresh defaults', () => {
     expect(
       getNotifyUserAboutOptInDefault({
         allowChangingOptInStatus: true,
@@ -102,7 +102,7 @@ describe('getNotifyUserAboutOptInDefault: get a flag that describes if the user 
     ).toBe(false);
   });
 
-  it('should return false if OpenSearch Dashboards is opted out via config', () => {
+  it('should return false if Dashboards is opted out via config', () => {
     expect(
       getNotifyUserAboutOptInDefault({
         allowChangingOptInStatus: true,

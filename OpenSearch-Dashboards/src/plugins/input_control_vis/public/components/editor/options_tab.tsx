@@ -69,7 +69,7 @@ export class OptionsTab extends PureComponent<OptionsTabProps> {
             label={
               <FormattedMessage
                 id="inputControl.editor.optionsTab.updateFilterLabel"
-                defaultMessage="Update OpenSearch Dashboards filters on each change"
+                defaultMessage="Update Dashboards filters on each change"
               />
             }
             checked={this.props.stateParams.updateFiltersOnChange}

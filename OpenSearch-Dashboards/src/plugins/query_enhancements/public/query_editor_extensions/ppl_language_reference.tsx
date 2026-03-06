@@ -27,7 +27,7 @@ const PPLReference = () => {
         <p>
           <FormattedMessage
             id="queryEnhancements.queryBar.pplSyntaxOptionsDescription"
-            defaultMessage="Piped Processing Language ({pplDocsLink}) is a query language that focuses on processing data in a sequential, step-by-step manner. OpenSearch SQL/PPL language limitations can be found {limitationDocsLink}."
+            defaultMessage="Piped Processing Language ({pplDocsLink}) is a query language that focuses on processing data in a sequential, step-by-step manner. SQL/PPL language limitations can be found {limitationDocsLink}."
             values={{
               pplDocsLink: (
                 <EuiLink href={pplDocs} target="_blank">

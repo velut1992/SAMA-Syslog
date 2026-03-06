@@ -66,7 +66,7 @@ export function assertVersion(settings, logger) {
 
   if (!actualVersion || !expectedVersion) {
     throw new Error(
-      `Invalid version format. Plugin: ${actual}, OpenSearch Dashboards: ${expected}`
+      `Invalid version format. Plugin: ${actual}, Dashboards: ${expected}`
     );
   }
 
@@ -76,7 +76,7 @@ export function assertVersion(settings, logger) {
     case 'strict':
       if (!semver.eq(actualVersion, expectedVersion)) {
         throw new Error(
-          `Plugin ${settings.plugins[0].id} [${actual}] is incompatible with OpenSearch Dashboards [${expected}]. Strict mode requires exact version match.`
+          `Plugin ${settings.plugins[0].id} [${actual}] is incompatible with Dashboards [${expected}]. Strict mode requires exact version match.`
         );
       }
       break;
@@ -84,7 +84,7 @@ export function assertVersion(settings, logger) {
     case 'ignore':
       if (actualVersion.major !== expectedVersion.major) {
         logger.log(
-          `WARNING: Plugin ${settings.plugins[0].id} [${actual}] major version differs from OpenSearch Dashboards [${expected}]. Plugin may not function correctly.`
+          `WARNING: Plugin ${settings.plugins[0].id} [${actual}] major version differs from Dashboards [${expected}]. Plugin may not function correctly.`
         );
       }
       break;

@@ -82,7 +82,7 @@ export const setupUrlOverflowDetection = ({ basePath, history, toasts, uiSetting
     } else if (absUrlLength >= URL_WARNING_LENGTH) {
       toasts.addWarning({
         title: i18n.translate('core.ui.errorUrlOverflow.bigUrlWarningNotificationTitle', {
-          defaultMessage: 'The URL is big and OpenSearch Dashboards might stop working',
+          defaultMessage: 'The URL is big and Dashboards might stop working',
         }),
         text: mountReactNode(
           <FormattedMessage

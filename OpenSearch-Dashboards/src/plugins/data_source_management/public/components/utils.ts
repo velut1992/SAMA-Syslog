@@ -134,7 +134,7 @@ export const mergeDataSourcesWithConnections = (
   if (localClusterConnections) {
     dataSourcesList.push({
       id: LOCAL_CLUSTER,
-      type: 'OpenSearch',
+      type: 'Supra',
       connectionType: DataSourceConnectionType.OpenSearchConnection,
       title: LOCAL_CLUSTER,
       relatedConnections: localClusterConnections,
@@ -577,7 +577,7 @@ interface DataSourceOptionGroupLabel {
 export const dataSourceOptionGroupLabel = deepFreeze<Readonly<DataSourceOptionGroupLabel>>({
   opensearchCluster: {
     id: 'opensearchClusterGroupLabel',
-    label: 'OpenSearch cluster',
+    label: 'cluster',
     isGroupLabel: true,
   },
   // TODO: add other group labels if needed

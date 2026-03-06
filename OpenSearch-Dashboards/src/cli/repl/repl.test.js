@@ -72,9 +72,9 @@ describe('repl', () => {
     expect(replServer.context.osdServer).toBe(testServer);
   });
 
-  test('it prompts with OpenSearch Dashboards>', () => {
+  test('it prompts with Dashboards>', () => {
     const { startRepl } = require('.');
-    expect(startRepl({}).opts.prompt).toBe('OpenSearch Dashboards> ');
+    expect(startRepl({}).opts.prompt).toBe('Dashboards> ');
   });
 
   test('it colorizes raw values', () => {

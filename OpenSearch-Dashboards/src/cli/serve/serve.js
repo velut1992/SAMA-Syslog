@@ -203,7 +203,7 @@ export default function (program) {
   command
     .description('Run the opensearch-dashboards server')
     .collectUnknownOptions()
-    .option('-e, --opensearch <uri1,uri2>', 'OpenSearch instances')
+    .option('-e, --opensearch <uri1,uri2>', 'instances')
     .option(
       '-c, --config <path>',
       'Path to the config file, use multiple --config args to include multiple config files',
@@ -240,7 +240,7 @@ export default function (program) {
   if (!IS_OPENSEARCH_DASHBOARDS_DISTRIBUTABLE) {
     command.option(
       '--run-examples',
-      'Adds plugin paths for all the OpenSearch Dashboards example plugins and runs with no base path'
+      'Adds plugin paths for all the Dashboards example plugins and runs with no base path'
     );
   }
 

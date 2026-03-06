@@ -84,7 +84,7 @@ export const AdvancedOptions: React.FC<AdvancedOptionsProps> = ({
           helpText={
             <FormattedMessage
               id="indexPatternManagement.createIndexPattern.stepTime.options.patternLabel"
-              defaultMessage="OpenSearch Dashboards will provide a unique identifier for each index pattern. If you do not want to use this unique ID,
+              defaultMessage="Dashboards will provide a unique identifier for each index pattern. If you do not want to use this unique ID,
             enter a custom one."
             />
           }

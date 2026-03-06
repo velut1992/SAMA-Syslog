@@ -83,15 +83,15 @@ describe('index_patterns/field_capabilities/field_caps_response', () => {
         sinon.assert.callCount(shouldReadFieldFromDocValues, fields.length - conflictCount + 2);
       });
 
-      it('converts opensearch types to OpenSearch Dashboards types', () => {
+      it('converts opensearch types to Dashboards types', () => {
         readFieldCapsResponse(opensearchResponse).forEach((field) => {
           if (!getOsdFieldType(field.type)) {
-            throw new Error(`expected field to have OpenSearch Dashboards type, got ${field.type}`);
+            throw new Error(`expected field to have Dashboards type, got ${field.type}`);
           }
         });
       });
 
-      it('should include the original OpenSearch types found for each field across indices', () => {
+      it('should include the original types found for each field across indices', () => {
         const fields = readFieldCapsResponse(opensearchResponse);
         fields.forEach((field) => {
           const fixtureTypes = Object.keys(opensearchResponse.fields[field.name]);
@@ -118,7 +118,7 @@ describe('index_patterns/field_capabilities/field_caps_response', () => {
         ]);
       });
 
-      it('does not return conflicted fields if the types are resolvable to the same OpenSearch Dashboards type', () => {
+      it('does not return conflicted fields if the types are resolvable to the same Dashboards type', () => {
         const fields = readFieldCapsResponse(opensearchResponse);
         const resolvableToString = fields.find((f) => f.name === 'resolvable_to_string');
         const resolvableToNumber = fields.find((f) => f.name === 'resolvable_to_number');

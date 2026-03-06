@@ -53,7 +53,7 @@ describe('ppl_request_helpers', () => {
         dataSource: {
           id: 'external-datasource-id',
           title: 'external',
-          type: 'OpenSearch',
+          type: 'Supra',
         },
       };
       const result = buildPPLDataset(datasetWithDataSource);
@@ -65,7 +65,7 @@ describe('ppl_request_helpers', () => {
         dataSource: {
           id: 'external-datasource-id',
           title: 'external',
-          type: 'OpenSearch',
+          type: 'Supra',
         },
       });
     });
@@ -116,14 +116,14 @@ describe('ppl_request_helpers', () => {
         dataSource: {
           id: 'external-datasource-id',
           title: 'external',
-          type: 'OpenSearch',
+          type: 'Supra',
         },
       };
       const result = buildPPLQueryRequest(datasetWithDataSource, 'source = test-index');
       expect(result.params.body.query.dataset.dataSource).toEqual({
         id: 'external-datasource-id',
         title: 'external',
-        type: 'OpenSearch',
+        type: 'Supra',
       });
     });
   });

@@ -257,7 +257,7 @@ export const IndexPatternTable = ({ canSave, history }: Props) => {
         'indexPatternManagement.indexPatternTable.indexPatternExplanationWithWorkspace',
         {
           defaultMessage:
-            'Create and manage the index patterns that help you retrieve your data from OpenSearch for {name} workspace.',
+            'Create and manage the index patterns that help you retrieve your data from for {name} workspace.',
           values: {
             name: currentWorkspace.name,
           },
@@ -265,7 +265,7 @@ export const IndexPatternTable = ({ canSave, history }: Props) => {
       )
     : i18n.translate('indexPatternManagement.indexPatternTable.indexPatternExplanation', {
         defaultMessage:
-          'Create and manage the index patterns that help you retrieve your data from OpenSearch.',
+          'Create and manage the index patterns that help you retrieve your data from Supra.',
       });
   const pageTitleAndDescription = useUpdatedUX ? (
     <HeaderControl

@@ -358,7 +358,7 @@ export class ExploreEmbeddable
       defaultMessage: 'Data',
     });
     const description = i18n.translate('explore.embeddable.inspectorRequestDescription', {
-      defaultMessage: 'This request queries OpenSearch to fetch the data for the explore.',
+      defaultMessage: 'This request queries to fetch the data for the explore.',
     });
     const inspectorRequest = this.inspectorAdaptors.requests.start(title, { description });
     inspectorRequest.stats(getRequestInspectorStats(searchSource));
@@ -458,7 +458,7 @@ export class ExploreEmbeddable
     this.updateOutput({ loading: false, error: undefined });
     inspectorRequest.stats(getResponseInspectorStats(resp, searchSource)).ok({ json: resp });
     this.searchProps.rows = rows;
-    // NOTE: PPL response is not the same as OpenSearch response, resp.hits.total here is 0.
+    // NOTE: PPL response is not the same as response, resp.hits.total here is 0.
     this.searchProps.hits = resp.hits.hits.length;
     this.searchProps.isLoading = false;
   };

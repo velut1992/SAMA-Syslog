@@ -142,7 +142,7 @@ export function createRootWithCorePlugins(settings = {}) {
 }
 
 /**
- * Returns `osdServer` instance used in the "legacy" OpenSearch Dashboards.
+ * Returns `osdServer` instance used in the "legacy" Dashboards.
  * @param root
  */
 export function getOsdServer(root: Root): OsdServer {

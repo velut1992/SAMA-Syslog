@@ -100,7 +100,7 @@ const callAPI = async (
 
 /**
  * Represents an OpenSearch cluster API client created by the platform.
- * It allows to call API on behalf of the internal OpenSearch Dashboards user and
+ * It allows to call API on behalf of the internal Dashboards user and
  * the actual user that is derived from the request headers (via `asScoped(...)`).
  *
  * See {@link LegacyClusterClient}.
@@ -112,7 +112,7 @@ export type ILegacyClusterClient = Pick<LegacyClusterClient, 'callAsInternalUser
 
 /**
  * Represents an OpenSearch cluster API client created by a plugin.
- * It allows to call API on behalf of the internal OpenSearch Dashboards user and
+ * It allows to call API on behalf of the internal Dashboards user and
  * the actual user that is derived from the request headers (via `asScoped(...)`).
  *
  * See {@link LegacyClusterClient}.
@@ -131,7 +131,7 @@ export type ILegacyCustomClusterClient = Pick<
  */
 export class LegacyClusterClient implements ILegacyClusterClient {
   /**
-   * Raw OpenSearch JS client that acts on behalf of the OpenSearch Dashboards internal user.
+   * Raw OpenSearch JS client that acts on behalf of the Dashboards internal user.
    */
   private readonly client: Client;
 
@@ -157,7 +157,7 @@ export class LegacyClusterClient implements ILegacyClusterClient {
 
   /**
    * Calls specified endpoint with provided clientParams on behalf of the
-   * OpenSearch Dashboards internal user.
+   * Dashboards internal user.
    * See {@link LegacyAPICaller}.
    *
    * @param endpoint - String descriptor of the endpoint e.g. `cluster.getSettings` or `ping`.
@@ -245,7 +245,7 @@ export class LegacyClusterClient implements ILegacyClusterClient {
 
   /**
    * Calls specified endpoint with provided clientParams on behalf of the
-   * user initiated request to the OpenSearch Dashboards server (via HTTP request headers).
+   * user initiated request to the Dashboards server (via HTTP request headers).
    * See {@link LegacyAPICaller}.
    *
    * @param endpoint - String descriptor of the endpoint e.g. `cluster.getSettings` or `ping`.

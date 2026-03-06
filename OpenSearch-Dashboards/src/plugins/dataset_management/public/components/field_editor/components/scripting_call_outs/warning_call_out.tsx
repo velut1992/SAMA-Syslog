@@ -62,7 +62,7 @@ export const ScriptingWarningCallOut = ({ isVisible = false }: ScriptingWarningC
           <FormattedMessage
             id="datasetManagement.warningCallOut.descriptionLabel"
             defaultMessage="Scripted fields can be used to display and aggregate calculated values. As such, they can be very slow, and
-            if done incorrectly, can cause OpenSearch Dashboards to be unusable. There's no safety net here. If you make a typo, unexpected exceptions
+            if done incorrectly, can cause Dashboards to be unusable. There's no safety net here. If you make a typo, unexpected exceptions
             will be thrown all over the place!"
           />
         </p>

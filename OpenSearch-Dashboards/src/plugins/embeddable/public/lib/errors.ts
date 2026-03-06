@@ -49,7 +49,7 @@ export class EmbeddableFactoryNotFoundError extends Error {
   constructor(type: string) {
     super(
       i18n.translate('embeddableApi.errors.embeddableFactoryNotFound', {
-        defaultMessage: `OpenSearch Dashboards can't load "{type}" visualizations. Check for a missing plugin or an incompatible visualization type.`,
+        defaultMessage: `Dashboards can't load "{type}" visualizations. Check for a missing plugin or an incompatible visualization type.`,
         values: {
           type,
         },

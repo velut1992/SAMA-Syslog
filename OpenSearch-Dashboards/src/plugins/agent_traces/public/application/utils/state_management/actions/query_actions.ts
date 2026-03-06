@@ -303,7 +303,7 @@ const executeQueryBase = async (
       defaultMessage: 'data',
     });
     const description = i18n.translate('agentTraces.discover.inspectorRequestDescription', {
-      defaultMessage: 'This request queries OpenSearch to fetch the data for the search.',
+      defaultMessage: 'This request queries to fetch the data for the search.',
     });
     const inspectorRequest = services.inspectorAdapters.requests.start(title, { description });
 

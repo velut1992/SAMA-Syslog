@@ -57,7 +57,7 @@ const artifactsSchema = Joi.object({
   exportedFields: Joi.object({
     documentationUrl: Joi.string().required(),
   }),
-  // OpenSearch Dashboards dashboards created by this product.
+  // Dashboards dashboards created by this product.
   dashboards: Joi.array().items(dashboardSchema).required(),
   application: Joi.object({
     path: Joi.string().required(),
@@ -129,13 +129,13 @@ export const tutorialSchema = {
   completionTimeMinutes: Joi.number().integer(),
   previewImagePath: Joi.string(),
 
-  // OpenSearch Dashboards and OpenSearch cluster running on prem
+  // Dashboards and OpenSearch cluster running on prem
   onPrem: instructionsSchema.required(),
 
-  // OpenSearch Dashboards and OpenSearch cluster running in OpenSearch's cloud
+  // Dashboards and OpenSearch cluster running in OpenSearch's cloud
   OpenSearchCloud: instructionsSchema,
 
-  // OpenSearch Dashboards running on prem and OpenSearch cluster running in OpenSearch's cloud
+  // Dashboards running on prem and OpenSearch cluster running in OpenSearch's cloud
   onPremElasticCloud: instructionsSchema,
 
   // OpenSearch stack artifacts produced by product when it is setup and run.

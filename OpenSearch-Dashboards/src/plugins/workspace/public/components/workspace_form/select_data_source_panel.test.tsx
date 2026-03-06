@@ -22,7 +22,7 @@ const dataSources = [
     auth: '',
     dataSourceEngineType: '' as DataSourceEngineType,
     workspaces: [],
-    type: 'OpenSearch',
+    type: 'Supra',
     connectionType: DataSourceConnectionType.OpenSearchConnection,
   },
   {
@@ -32,7 +32,7 @@ const dataSources = [
     auth: '',
     dataSourceEngineType: '' as DataSourceEngineType,
     workspaces: [],
-    type: 'OpenSearch',
+    type: 'Supra',
     connectionType: DataSourceConnectionType.OpenSearchConnection,
   },
 ];
@@ -42,7 +42,7 @@ const dataSourceConnectionsMock = [
     id: 'ds1',
     name: 'Data Source 1',
     connectionType: DataSourceConnectionType.OpenSearchConnection,
-    type: 'OpenSearch',
+    type: 'Supra',
     relatedConnections: [
       {
         id: 'ds1-dqc1',
@@ -64,7 +64,7 @@ const dataSourceConnectionsMock = [
     id: 'ds2',
     name: 'Data Source 2',
     connectionType: DataSourceConnectionType.OpenSearchConnection,
-    type: 'OpenSearch',
+    type: 'Supra',
     relatedConnections: [],
   },
   {

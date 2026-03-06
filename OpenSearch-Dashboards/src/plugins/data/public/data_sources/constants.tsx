@@ -10,7 +10,7 @@ export const S3_GLUE_DATA_SOURCE_DISPLAY_NAME = 'Amazon S3';
 export const S3_GLUE_DATA_SOURCE_TYPE = 's3glue';
 export const DEFAULT_DATA_SOURCE_TYPE = 'DEFAULT_INDEX_PATTERNS';
 export const DEFAULT_DATA_SOURCE_NAME = i18n.translate('data.datasource.type.openSearchDefault', {
-  defaultMessage: 'OpenSearch Default',
+  defaultMessage: 'Default',
 });
 export const DEFAULT_DATA_SOURCE_DISPLAY_NAME = i18n.translate(
   'data.datasource.type.openSearchDefaultDisplayName',

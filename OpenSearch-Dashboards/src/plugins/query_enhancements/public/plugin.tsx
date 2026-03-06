@@ -160,7 +160,7 @@ export class QueryEnhancementsPlugin
     // Register SQL language configuration
     const sqlLanguageConfig: LanguageConfig = {
       id: 'SQL',
-      title: 'OpenSearch SQL',
+      title: 'SQL',
       search: new SQLSearchInterceptor({
         toasts: core.notifications.toasts,
         http: core.http,

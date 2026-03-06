@@ -350,7 +350,7 @@ export class CreateDataSourceForm extends React.Component<
         // @ts-expect-error TS2532 TODO(ts-error): fixme
         secretKey: this.state.auth.credentials.secretKey,
         // @ts-expect-error TS2532 TODO(ts-error): fixme
-        service: this.state.auth.credentials.service || SigV4ServiceName.OpenSearch,
+        service: this.state.auth.credentials.service || SigV4ServiceName.Supra,
       } as SigV4Content;
     } else {
       const currentCredentials = (credentials ?? {}) as { [key: string]: string };
@@ -393,7 +393,7 @@ export class CreateDataSourceForm extends React.Component<
         <EuiText size="s" color="subdued">
           <FormattedMessage
             id="dataSourcesManagement.createDataSource.description"
-            defaultMessage="Create a new data source connection to help you retrieve data from an external OpenSearch compatible source."
+            defaultMessage="Create a new data source connection to help you retrieve data from an external compatible source."
           />
         </EuiText>
       ),
@@ -773,7 +773,7 @@ export class CreateDataSourceForm extends React.Component<
             >
               <FormattedMessage
                 id="dataSourcesManagement.createDataSource.createButtonLabel"
-                defaultMessage="Connect to OpenSearch Cluster"
+                defaultMessage="Connect to Cluster"
               />
             </EuiButton>
           </EuiFlexItem>

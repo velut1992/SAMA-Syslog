@@ -70,7 +70,7 @@ export const NameRow: React.FC<ConfigureNameProps> = ({
       label="Data source name"
       isInvalid={currentError.length !== 0}
       error={currentError}
-      helpText="Connection name that OpenSearch Dashboards references. This name should be descriptive and concise."
+      helpText="Connection name that Dashboards references. This name should be descriptive and concise."
     >
       <EuiCompressedFieldText
         data-test-subj="direct_query-data-source-name"

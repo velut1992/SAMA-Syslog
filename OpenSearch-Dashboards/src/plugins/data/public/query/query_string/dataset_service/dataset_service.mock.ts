@@ -13,7 +13,7 @@ const createSetupDatasetServiceMock = (): jest.Mocked<DatasetServiceContract> =>
     title: 'Index Patterns',
     meta: {
       icon: { type: 'indexPatternApp' },
-      tooltip: 'OpenSearch Index Patterns',
+      tooltip: 'Index Patterns',
     },
     toDataset: jest.fn(),
     fetch: jest.fn(),

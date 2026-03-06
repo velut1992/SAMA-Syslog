@@ -51,7 +51,7 @@ const render = renderFn(() => {
   const gettingStartedLinks: EuiListGroupItemProps[] = [
     {
       label: i18n.translate('home.sections.learnBasics.gettingStarted.quickstart', {
-        defaultMessage: 'OpenSearch Dashboards quickstart',
+        defaultMessage: 'Dashboards quickstart',
       }),
       href: 'https://opensearch.org/docs/latest/dashboards/quickstart/',
       target: '_blank',
@@ -152,10 +152,10 @@ const render = renderFn(() => {
 export const learnBasicsSection: Section = {
   id: 'home:learnBasics',
   title: i18n.translate('home.sections.learnBasics.title', {
-    defaultMessage: 'Learn OpenSearch basics',
+    defaultMessage: 'Learn basics',
   }),
   description: i18n.translate('home.sections.learnBasics.description', {
-    defaultMessage: 'Core concepts to get you started with OpenSearch.',
+    defaultMessage: 'Core concepts to get you started with Supra.',
   }),
   links: [
     {

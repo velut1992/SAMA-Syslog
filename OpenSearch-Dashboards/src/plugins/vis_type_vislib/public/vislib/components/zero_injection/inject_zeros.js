@@ -33,13 +33,13 @@ import { createZeroFilledArray } from './zero_filled_array';
 import { zeroFillDataArray } from './zero_fill_data_array';
 
 /*
- * A OpenSearch Dashboards data object may have multiple series with different array lengths.
+ * A Dashboards data object may have multiple series with different array lengths.
  * This proves an impediment to stacking in the visualization library.
  * Therefore, zero values must be injected wherever these arrays do not line up.
  * That is, each array must have the same x values with zeros filled in where the
  * x values were added.
  *
- * This function and its helper functions accepts a OpenSearch Dashboards data object
+ * This function and its helper functions accepts a Dashboards data object
  * and injects zeros where needed.
  */
 

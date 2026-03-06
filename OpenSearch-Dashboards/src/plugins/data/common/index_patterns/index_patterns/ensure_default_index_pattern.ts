@@ -93,7 +93,7 @@ export const createEnsureDefaultIndexPattern = (
               let isDataSourceReferenceValid = false;
               /**
                * The reference is valid when either:
-               * 1. No data source is referenced (using local cluster, which must be available for OpenSearch Dashboards to function)
+               * 1. No data source is referenced (using local cluster, which must be available for Dashboards to function)
                * 2. A data source is referenced with a valid ID
                */
               if (!sourceRef) {

@@ -51,7 +51,7 @@ export class IndexMigrator {
   }
 
   /**
-   * Migrates the index, or, if another OpenSearch Dashboards instance appears to be running the migration,
+   * Migrates the index, or, if another Dashboards instance appears to be running the migration,
    * waits for the migration to complete.
    *
    * @returns {Promise<MigrationResult>}

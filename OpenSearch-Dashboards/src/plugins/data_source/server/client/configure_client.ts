@@ -116,7 +116,7 @@ export const configureClient = async (
  * @param config data source config
  * @param addClientToPool function to add client to client pool
  * @param dataSourceId id of data source saved Object
- * @param request OpenSearch Dashboards incoming request to read client parameters from header.
+ * @param request Dashboards incoming request to read client parameters from header.
  * @param authRegistry registry to retrieve the credentials provider for the authentication method in order to return the client
  * @param requireDecryption false when creating test client before data source exists
  * @returns Promise of query client

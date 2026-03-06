@@ -41,8 +41,8 @@ const program = new Command('bin/opensearch-dashboards');
 program
   .version(pkg.version)
   .description(
-    'OpenSearch Dashboards is an open source (Apache Licensed), browser ' +
-      'based analytics and search dashboard for OpenSearch.'
+    'Dashboards is an open source (Apache Licensed), browser ' +
+      'based analytics and search dashboard for Supra.'
   );
 
 // attach commands

@@ -57,7 +57,7 @@ interface PluginSearchPathEntry {
  * all the errors that occurred during discovery process.
  *
  * @param config Plugin config instance.
- * @param coreContext OpenSearch Dashboards core values.
+ * @param coreContext Dashboards core values.
  * @internal
  */
 export function discover(
@@ -193,7 +193,7 @@ function mapSubdirectories(
  * isn't valid.
  * @param path Path to the plugin directory where manifest should be loaded from.
  * @param log Plugin discovery logger instance.
- * @param coreContext OpenSearch Dashboards core context.
+ * @param coreContext Dashboards core context.
  */
 function createPlugin$(
   path: string,

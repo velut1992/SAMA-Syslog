@@ -38,7 +38,7 @@ export interface UiSettingsState {
 
 /**
  * Client-side client that provides access to the advanced settings stored in elasticsearch.
- * The settings provide control over the behavior of the OpenSearch Dashboards application.
+ * The settings provide control over the behavior of the Dashboards application.
  * For example, a user can specify how to display numeric or date fields.
  * Users can adjust the settings via Management UI.
  * {@link IUiSettingsClient}

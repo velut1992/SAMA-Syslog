@@ -234,7 +234,7 @@ describe('plugins discovery system', () => {
       expect.arrayContaining([
         expect.arrayContaining([
           expect.stringMatching(
-            /Plugin "plugin" is version "1", but used OpenSearch Dashboards version is "1\.2\.3"\./
+            /Plugin "plugin" is version "1", but used Dashboards version is "1\.2\.3"\./
           ),
         ]),
       ])

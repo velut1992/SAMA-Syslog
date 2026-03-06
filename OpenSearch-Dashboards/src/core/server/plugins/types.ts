@@ -137,7 +137,7 @@ export interface PluginManifest {
   readonly version: string;
 
   /**
-   * The version of OpenSearch Dashboards the plugin is compatible with, defaults to "version".
+   * The version of Dashboards the plugin is compatible with, defaults to "version".
    */
   readonly opensearchDashboardsVersion: string;
 

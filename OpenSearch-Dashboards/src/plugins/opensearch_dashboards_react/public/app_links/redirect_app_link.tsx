@@ -44,7 +44,7 @@ interface RedirectCrossAppLinksProps {
 /**
  * Utility component that will intercept click events on children anchor (`<a>`) elements to call
  * `application.navigateToUrl` with the link's href. This will trigger SPA friendly navigation
- * when the link points to a valid OpenSearch Dashboards app.
+ * when the link points to a valid Dashboards app.
  *
  * @example
  * ```tsx

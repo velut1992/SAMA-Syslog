@@ -220,7 +220,7 @@ Make sure the file exists at that location.",
             {
               defaultMessage:
                 'The vector map {name} is not available. Please ensure the \
-CORS configuration of the server permits requests from the OpenSearch Dashboards application on this host.',
+CORS configuration of the server permits requests from the Dashboards application on this host.',
               values: { name: name },
             }
           );

@@ -26,7 +26,7 @@ export const registerSampleDataCard = (
       kind: 'card',
       order,
       description: i18n.translate('home.sampleData.card.description', {
-        defaultMessage: 'Install sample data to experiment with OpenSearch.',
+        defaultMessage: 'Install sample data to experiment with Supra.',
       }),
       title: '',
       onClick: () => {

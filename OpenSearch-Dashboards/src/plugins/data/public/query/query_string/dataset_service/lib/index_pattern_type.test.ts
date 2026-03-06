@@ -97,7 +97,7 @@ describe('indexPatternTypeConfig', () => {
       id: 'test-pattern',
       title: 'Test',
       type: 'INDEX_PATTERN',
-      dataSource: { id: 'dataSourceId', title: 'Cluster 1', type: 'OpenSearch' },
+      dataSource: { id: 'dataSourceId', title: 'Cluster 1', type: 'Supra' },
     };
     expect(indexPatternTypeConfig.supportedLanguages(mockDataset)).toEqual([
       'kuery',
@@ -142,7 +142,7 @@ describe('indexPatternTypeConfig', () => {
             {
               id: 'datasource-abc',
               type: 'data-source',
-              attributes: { title: 'My Data Source', dataSourceEngineType: 'OpenSearch' },
+              attributes: { title: 'My Data Source', dataSourceEngineType: 'Supra' },
             },
           ],
         }),
@@ -173,7 +173,7 @@ describe('indexPatternTypeConfig', () => {
         parent: {
           id: 'datasource-abc',
           title: 'My Data Source',
-          type: 'OpenSearch',
+          type: 'Supra',
         },
       });
     });
@@ -198,7 +198,7 @@ describe('indexPatternTypeConfig', () => {
             {
               id: 'datasource-xyz',
               type: 'data-source',
-              attributes: { title: 'External Data Source', dataSourceEngineType: 'OpenSearch' },
+              attributes: { title: 'External Data Source', dataSourceEngineType: 'Supra' },
             },
           ],
         }),
@@ -221,7 +221,7 @@ describe('indexPatternTypeConfig', () => {
         parent: {
           id: 'datasource-xyz',
           title: 'External Data Source',
-          type: 'OpenSearch',
+          type: 'Supra',
         },
       });
     });
@@ -292,12 +292,12 @@ describe('indexPatternTypeConfig', () => {
             {
               id: 'datasource-1',
               type: 'data-source',
-              attributes: { title: 'Data Source 1', dataSourceEngineType: 'OpenSearch' },
+              attributes: { title: 'Data Source 1', dataSourceEngineType: 'Supra' },
             },
             {
               id: 'datasource-2',
               type: 'data-source',
-              attributes: { title: 'Data Source 2', dataSourceEngineType: 'OpenSearch' },
+              attributes: { title: 'Data Source 2', dataSourceEngineType: 'Supra' },
             },
           ],
         }),
@@ -317,14 +317,14 @@ describe('indexPatternTypeConfig', () => {
       expect(result.children![0].parent).toEqual({
         id: 'datasource-1',
         title: 'Data Source 1',
-        type: 'OpenSearch',
+        type: 'Supra',
       });
 
       // Namespaced method
       expect(result.children![1].parent).toEqual({
         id: 'datasource-2',
         title: 'Data Source 2',
-        type: 'OpenSearch',
+        type: 'Supra',
       });
 
       // No data source

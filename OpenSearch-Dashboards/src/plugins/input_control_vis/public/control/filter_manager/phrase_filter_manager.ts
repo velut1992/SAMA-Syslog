@@ -89,7 +89,7 @@ export class PhraseFilterManager extends FilterManager {
   }
 
   /**
-   * Extract filtering value from OpenSearch Dashboards filters
+   * Extract filtering value from Dashboards filters
    *
    * @param  {PhraseFilter} osdFilter
    * @return {Array.<string>} array of values pulled from filter

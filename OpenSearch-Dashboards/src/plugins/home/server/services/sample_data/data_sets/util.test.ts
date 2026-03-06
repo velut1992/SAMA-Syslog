@@ -31,7 +31,7 @@ describe('getSavedObjectsWithDataSource()', () => {
     references: [],
   };
 
-  test('when processing Vega Visualization saved objects, it should attach data_source_name to each OpenSearch query', () => {
+  test('when processing Vega Visualization saved objects, it should attach data_source_name to each query', () => {
     const dataSourceId = 'some-datasource-id';
     const dataSourceName = 'Data Source Name';
     const expectedUpdatedFields = getVisualizationSavedObjects().map((object) => {

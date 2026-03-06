@@ -12,7 +12,7 @@ import { MLAgentRouter } from '../ml_routes/ml_agent_router';
  *
  * @param mlRouter - The ML agent router instance
  * @param context - The request context
- * @param request - The OpenSearch Dashboards request
+ * @param request - The Dashboards request
  * @param mlCommonsAgentId - The ML Commons agent ID
  * @param dataSourceId - Optional data source ID
  * @param logger - Logger instance

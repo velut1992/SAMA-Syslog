@@ -18,7 +18,7 @@ const mockDataStructures: DataStructure[] = [
     parent: {
       id: '8f26d980-63f5-11ef-b231-09f3ad4fb0e0',
       title: 'mock-data-source-title',
-      type: 'OpenSearch',
+      type: 'Supra',
     },
     meta: { type: DATA_STRUCTURE_META_TYPES.CUSTOM },
   },

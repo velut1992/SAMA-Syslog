@@ -100,7 +100,7 @@ export function persistState<State>(state: State): string {
     'opensearch_dashboards_utils.stateManagement.stateHash.unableToStoreHistoryInSessionErrorMessage',
     {
       defaultMessage:
-        'OpenSearch Dashboards is unable to store history items in your session ' +
+        'Dashboards is unable to store history items in your session ' +
         `because it is full and there don't seem to be items any items safe ` +
         'to delete.\n\n' +
         'This can usually be fixed by moving to a fresh tab, but could ' +

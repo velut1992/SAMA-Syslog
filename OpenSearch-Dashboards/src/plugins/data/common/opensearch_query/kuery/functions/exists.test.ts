@@ -64,7 +64,7 @@ describe('kuery functions', () => {
     });
 
     describe('toOpenSearchQuery', () => {
-      test('should return an OpenSearch exists query', () => {
+      test('should return an exists query', () => {
         const expected = {
           exists: { field: 'response' },
         };
@@ -74,7 +74,7 @@ describe('kuery functions', () => {
         expect(expected).toEqual(result);
       });
 
-      test('should return an OpenSearch exists query without an index pattern', () => {
+      test('should return an exists query without an index pattern', () => {
         const expected = {
           exists: { field: 'response' },
         };

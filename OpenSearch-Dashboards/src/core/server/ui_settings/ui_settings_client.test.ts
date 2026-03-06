@@ -420,7 +420,7 @@ describe('ui settings', () => {
   });
 
   describe('#getUserProvided()', () => {
-    it('pulls user and workspace configuration from OpenSearch', async () => {
+    it('pulls user and workspace configuration from Supra', async () => {
       const { uiSettings, savedObjectsClient } = setup();
       await uiSettings.getUserProvided();
 
@@ -707,7 +707,7 @@ describe('ui settings', () => {
   });
 
   describe('#getAll()', () => {
-    it('pulls user configuration from OpenSearch', async () => {
+    it('pulls user configuration from Supra', async () => {
       const opensearchDocSource = {};
       const { uiSettings, savedObjectsClient } = setup({ opensearchDocSource });
       await uiSettings.getAll();
@@ -968,7 +968,7 @@ describe('ui settings', () => {
   });
 
   describe('#get()', () => {
-    it('pulls user configuration from OpenSearch', async () => {
+    it('pulls user configuration from Supra', async () => {
       const opensearchDocSource = {};
       const { uiSettings, savedObjectsClient } = setup({ opensearchDocSource });
       await uiSettings.get('any');

@@ -49,7 +49,7 @@ export class ManagementOverViewPlugin
           defaultMessage: 'Management',
         }),
         description: i18n.translate('management.stackManagement.managementDescription', {
-          defaultMessage: 'Your center location for managing the OpenSearch Stack.',
+          defaultMessage: 'Your center location for managing the Stack.',
         }),
         icon: 'managementApp',
         path: `/app/${MANAGEMENT_OVERVIEW_PLUGIN_ID}`,

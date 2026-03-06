@@ -42,8 +42,8 @@ const program = new Command('bin/opensearch-dashboards-plugin');
 program
   .version(pkg.version)
   .description(
-    'The OpenSearch Dashboards plugin manager enables you to install and remove plugins that ' +
-      'provide additional functionality to OpenSearch Dashboards'
+    'The Dashboards plugin manager enables you to install and remove plugins that ' +
+      'provide additional functionality to Dashboards'
   );
 
 listCommand(program);

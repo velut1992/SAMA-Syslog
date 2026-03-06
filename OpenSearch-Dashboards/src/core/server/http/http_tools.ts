@@ -40,7 +40,7 @@ import { OpenSearchDashboardsRequest } from './router';
 import { WORKSPACE_PATH_PREFIX } from '../../../core/utils';
 
 /**
- * Converts OpenSearch Dashboards `HttpConfig` into `ServerOptions` that are accepted by the Hapi server.
+ * Converts Dashboards `HttpConfig` into `ServerOptions` that are accepted by the Hapi server.
  */
 export function getServerOptions(config: HttpConfig, { configureTLS = true } = {}) {
   // Note that all connection options configured here should be exactly the same
@@ -74,7 +74,7 @@ export function getServerOptions(config: HttpConfig, { configureTLS = true } = {
     state: {
       strictHeader: false,
       isHttpOnly: true,
-      isSameSite: false, // necessary to allow using OpenSearch Dashboards inside an iframe
+      isSameSite: false, // necessary to allow using Dashboards inside an iframe
     },
   };
 

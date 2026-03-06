@@ -325,7 +325,7 @@ export class HomePublicPlugin
     this.featuresCatalogueRegistry.start({ capabilities });
     this.sectionTypeService.start({ core, data });
 
-    // If the home app is the initial location when loading OpenSearch Dashboards...
+    // If the home app is the initial location when loading Dashboards...
     if (
       window.location.pathname === http.basePath.prepend(HOME_APP_BASE_PATH) &&
       window.location.hash === ''

@@ -22,7 +22,7 @@ export const getFieldStatsQuery = (index: string, fieldName: string): string => 
 
 /**
  * Execute a PPL query and return the results
- * @param services OpenSearch Dashboards services containing data plugin
+ * @param services Dashboards services containing data plugin
  * @param queryString The PPL query string to execute
  * @param datasetId The dataset ID (index pattern ID)
  * @param datasetType The type of dataset (default: 'INDEX_PATTERN')

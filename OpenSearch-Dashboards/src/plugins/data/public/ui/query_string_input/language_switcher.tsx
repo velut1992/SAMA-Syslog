@@ -64,7 +64,7 @@ export function QueryLanguageSwitcher(props: Props) {
   const dqlFullName = (
     <FormattedMessage
       id="data.query.queryBar.dqlFullLanguageName"
-      defaultMessage="OpenSearch Dashboards Query Language"
+      defaultMessage="Dashboards Query Language"
     />
   );
 
@@ -107,7 +107,7 @@ export function QueryLanguageSwitcher(props: Props) {
               id="data.query.queryBar.syntaxOptionsLongDescription"
               defaultMessage="The {docsLink} (DQL) offers a simplified query
               syntax and support for scripted fields. If you turn off DQL,
-              OpenSearch Dashboards uses Lucene."
+              Dashboards uses Lucene."
               values={{
                 docsLink: (
                   <EuiLink href={osdDQLDocs} target="_blank">

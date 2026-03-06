@@ -97,7 +97,7 @@ export const ConfigurePrometheusDatasourcePanel = (props: ConfigurePrometheusDat
     <EuiText size="s" color="subdued">
       <FormattedMessage
         id="dataSourcesManagement.configurePrometheusDataSource.description"
-        defaultMessage="Connect to Prometheus with OpenSearch and OpenSearch Dashboards. "
+        defaultMessage="Connect to Prometheus with and Dashboards. "
       />
       <EuiLink external={true} href={OPENSEARCH_DOCUMENTATION_URL} target="blank">
         Learn more

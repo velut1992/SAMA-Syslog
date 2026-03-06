@@ -20,7 +20,7 @@ export interface MLAgentRouter {
   /**
    * Forward the request to the appropriate ML agent implementation
    * @param context Request handler context
-   * @param request OpenSearch Dashboards request
+   * @param request Dashboards request
    * @param response Response factory
    * @param logger Logger instance
    * @param configuredAgentId ML Commons agent ID

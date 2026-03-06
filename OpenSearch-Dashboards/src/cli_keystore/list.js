@@ -35,7 +35,7 @@ export function list(keystore, command, options = {}) {
 
   if (!keystore.exists()) {
     return logger.error(
-      "ERROR: OpenSearch Dashboards keystore not found. Use 'create' command to create one."
+      "ERROR: Dashboards keystore not found. Use 'create' command to create one."
     );
   }
 

@@ -79,7 +79,7 @@ export const SelectDataSourcePanel = ({
       data-test-subj={testingId}
     >
       {i18n.translate('workspace.form.selectDataSourcePanel.addNew', {
-        defaultMessage: 'Associate OpenSearch data sources',
+        defaultMessage: 'Associate data sources',
       })}
     </EuiSmallButton>
   );

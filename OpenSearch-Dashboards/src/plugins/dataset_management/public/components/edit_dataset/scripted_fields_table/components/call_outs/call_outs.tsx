@@ -33,7 +33,7 @@ export const CallOuts = ({ deprecatedLangsInUse, painlessDocLink }: CallOutsProp
           <FormattedMessage
             id="datasetManagement.editDataset.scripted.deprecationLangLabel.deprecationLangDetail"
             defaultMessage="The following deprecated languages are in use: {deprecatedLangsInUse}. Support for these languages will be
-            removed in the next major version of OpenSearch Dashboards and OpenSearch. Convert you scripted fields to {link} to avoid any problems."
+            removed in the next major version of Dashboards and OpenSearch. Convert you scripted fields to {link} to avoid any problems."
             values={{
               deprecatedLangsInUse: deprecatedLangsInUse.join(', '),
               link: (

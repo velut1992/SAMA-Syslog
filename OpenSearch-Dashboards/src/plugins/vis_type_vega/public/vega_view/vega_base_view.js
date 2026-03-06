@@ -336,7 +336,7 @@ export class VegaBaseView {
 
   /**
    * @param {object} query Query DSL snippet, as used in the query DSL editor
-   * @param {string} [index] as defined in OpenSearch Dashboards, or default if missing
+   * @param {string} [index] as defined in Dashboards, or default if missing
    * @param {string} alias OpenSearch Query DSL's custom label for `opensearchDashboardsAddFilter`, as used in '+ Add Filter'
    */
   async addFilterHandler(query, index, alias) {
@@ -363,7 +363,7 @@ export class VegaBaseView {
 
   /**
    * @param {object} query Query DSL snippet, as used in the query DSL editor
-   * @param {string} [index] as defined in OpenSearch Dashboards, or default if missing
+   * @param {string} [index] as defined in Dashboards, or default if missing
    */
   async removeFilterHandler(query, index) {
     const indexId = await this.findIndex(Utils.handleNonStringIndex(index));
@@ -497,7 +497,7 @@ export class VegaBaseView {
     if (window && this._exposeDebugObjectToWindow) {
       if (window.VEGA_DEBUG === undefined && console) {
         console.log(
-          '%cWelcome to OpenSearch Dashboards Vega Plugin!',
+          '%cWelcome to Dashboards Vega Plugin!',
           'font-size: 16px; font-weight: bold;'
         );
         console.log(

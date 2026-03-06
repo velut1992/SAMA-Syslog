@@ -29,8 +29,8 @@
  */
 
 /**
- * OpenSearch and OpenSearch Dashboards versions are locked, so OpenSearch Dashboards should require that OpenSearch has the same version as
- * that defined in OpenSearch Dashboards's package.json.
+ * and Dashboards versions are locked, so Dashboards should require that has the same version as
+ * that defined in Dashboards's package.json.
  */
 
 import { timer, of, from, Observable } from 'rxjs';
@@ -72,7 +72,7 @@ export const getNodeId = async (
 
     /*
      * Using _cluster/state/nodes to retrieve the cluster_id of each node from local cluster state of the node
-     * which would be be a lightweight operation to aggegrate different cluster_ids from the OpenSearch nodes.
+     * which would be be a lightweight operation to aggegrate different cluster_ids from the nodes.
      */
     const state = (await internalClient.cluster.state({
       metric: 'nodes',
@@ -167,7 +167,7 @@ export function mapNodesVersionCompatibility(
   if (Object.keys(nodesInfo.nodes ?? {}).length === 0) {
     return {
       isCompatible: false,
-      message: 'Unable to retrieve version information from OpenSearch nodes.',
+      message: 'Unable to retrieve version information from nodes.',
       incompatibleNodes: [],
       warningNodes: [],
       opensearchDashboardsVersion,
@@ -178,7 +178,7 @@ export function mapNodesVersionCompatibility(
     .map((key) => nodesInfo.nodes[key])
     .map((node) => Object.assign({}, node, { name: getHumanizedNodeName(node) }));
 
-  // Aggregate incompatible OpenSearch nodes.
+  // Aggregate incompatible nodes.
   const incompatibleNodes = nodes.filter(
     (node) =>
       !opensearchVersionCompatibleWithOpenSearchDashboards(
@@ -187,8 +187,8 @@ export function mapNodesVersionCompatibility(
       )
   );
 
-  // Aggregate OpenSearch nodes which should prompt a OpenSearch Dashboards upgrade. It's acceptable
-  // if OpenSearch and OpenSearch Dashboards versions are not the same as long as they are not
+  // Aggregate nodes which should prompt a Dashboards upgrade. It's acceptable
+  // if and Dashboards versions are not the same as long as they are not
   // incompatible, but we should warn about it.
   // Ignore version qualifiers https://github.com/elastic/elasticsearch/issues/36859
   const warningNodes = nodes.filter(
@@ -202,15 +202,15 @@ export function mapNodesVersionCompatibility(
   if (incompatibleNodes.length > 0) {
     const incompatibleNodeNames = incompatibleNodes.map((node) => node.name).join(', ');
     if (ignoreVersionMismatch) {
-      message = `Ignoring version incompatibility between OpenSearch Dashboards v${opensearchDashboardsVersion} and the following OpenSearch nodes: ${incompatibleNodeNames}`;
+      message = `Ignoring version incompatibility between Dashboards v${opensearchDashboardsVersion} and the following nodes: ${incompatibleNodeNames}`;
     } else {
-      message = `This version of OpenSearch Dashboards (v${opensearchDashboardsVersion}) is incompatible with the following OpenSearch nodes in your cluster: ${incompatibleNodeNames}`;
+      message = `This version of Dashboards (v${opensearchDashboardsVersion}) is incompatible with the following nodes in your cluster: ${incompatibleNodeNames}`;
     }
   } else if (warningNodes.length > 0) {
     const warningNodeNames = warningNodes.map((node) => node.name).join(', ');
     message =
-      `You're running OpenSearch Dashboards ${opensearchDashboardsVersion} with some different versions of ` +
-      'OpenSearch. Update OpenSearch Dashboards or OpenSearch to the same ' +
+      `You're running Dashboards ${opensearchDashboardsVersion} with some different versions of ` +
+      'Supra. Update Dashboards or to the same ' +
       `version to prevent compatibility issues: ${warningNodeNames}`;
   }
 
@@ -243,11 +243,11 @@ export const pollOpenSearchNodesVersion = ({
   ignoreVersionMismatch,
   opensearchVersionCheckInterval: healthCheckInterval,
 }: PollOpenSearchNodesVersionOptions): Observable<NodesVersionCompatibility> => {
-  log.debug('Checking OpenSearch version');
+  log.debug('Checking version');
   return timer(0, healthCheckInterval).pipe(
     exhaustMap(() => {
       /*
-       * Originally, Dashboards queries OpenSearch cluster to get the version info of each node and check the version compatibility with each node.
+       * Originally, Dashboards queries cluster to get the version info of each node and check the version compatibility with each node.
        * The /nodes request could fail even one node in cluster fail to response
        * For better dashboards resilience, the behaviour is changed to only query the local node when all the nodes have the same cluster_id
        * Using _cluster/state/nodes to retrieve the cluster_id of each node from the cluster manager node

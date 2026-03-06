@@ -88,7 +88,7 @@ export interface InternalCoreStart extends Omit<CoreStart, 'application'> {
 
 /**
  * The CoreSystem is the root of the new platform, and setups all parts
- * of OpenSearch Dashboards in the UI, including the LegacyPlatform which is managed
+ * of Dashboards in the UI, including the LegacyPlatform which is managed
  * by the LegacyPlatformService. As we migrate more things to the new
  * platform the CoreSystem will get many more Services.
  *

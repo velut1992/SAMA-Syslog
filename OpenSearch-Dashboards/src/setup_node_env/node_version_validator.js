@@ -46,7 +46,7 @@ var versionMatcher = /^\s*v?\s*(\d+)(?:\.(\d+))?(?:\.(\d+))?(?:\D.*)?$/;
 var rangeMatcher = /^\s*(>=?|\^|~|=)?\s*(\d+)(?:\.(\d+))?(?:\.(\d+))?(?:[^\d.].*)?$/;
 
 var ERR_MISSING_REQUIREMENTS =
-  'OpenSearch Dashboards did not report its required version of the Node.js runtime';
+  'Dashboards did not report its required version of the Node.js runtime';
 var ERR_BAD_REQUIREMENTS = ERR_MISSING_REQUIREMENTS + ' in a valid format';
 var _BAD_REQUIREMENTS_SUFFIX =
   '. Please revert any changes that might have been made to the package.json file and try again.';
@@ -191,7 +191,7 @@ function versionCompare(versionA, versionB) {
 var currentVersion = process && process.version;
 if (!currentVersion) {
   console.error(
-    'OpenSearch Dashboards cannot start up because the JavaScript runtime did not report its version. ' +
+    'Dashboards cannot start up because the JavaScript runtime did not report its version. ' +
       getVersionCompatibilityMessage()
   );
   process.exit(25);
@@ -200,7 +200,7 @@ if (!currentVersion) {
 var currentParts = currentVersion.match(versionMatcher);
 if (currentParts === null) {
   console.error(
-    'OpenSearch Dashboards cannot start up because the JavaScript runtime did not report its version in a ' +
+    'Dashboards cannot start up because the JavaScript runtime did not report its version in a ' +
       'discernible format. ' +
       getVersionCompatibilityMessage()
   );
@@ -228,10 +228,10 @@ if (satisfiesBottom && rangeTop) {
   else if (rangeTop.inclusive && versionComparedToRangeTop === 0) satisfiesTop = true;
 }
 
-// Fail if the Node.js version doesn't satisfy the requirements of OpenSearch Dashboards
+// Fail if the Node.js version doesn't satisfy the requirements of Dashboards
 if (!satisfiesBottom || (rangeTop && !satisfiesTop)) {
   console.error(
-    'OpenSearch Dashboards cannot start up using the Node.js runtime v' +
+    'Dashboards cannot start up using the Node.js runtime v' +
       version.major +
       '.' +
       version.minor +

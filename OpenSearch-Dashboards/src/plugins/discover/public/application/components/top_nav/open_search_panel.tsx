@@ -69,7 +69,7 @@ export function OpenSearchPanel({ onClose, makeUrl }: Props) {
           <h2>
             <FormattedMessage
               id="discover.topNav.openSearchPanel.openSearchTitle"
-              defaultMessage="OpenSearch"
+              defaultMessage="Supra"
             />
           </h2>
         </EuiText>

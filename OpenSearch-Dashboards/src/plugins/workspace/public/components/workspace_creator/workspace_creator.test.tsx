@@ -85,14 +85,14 @@ const dataSourceConnectionsList = [
     id: 'id1',
     name: 'ds1',
     connectionType: DataSourceConnectionType.OpenSearchConnection,
-    type: 'OpenSearch',
+    type: 'Supra',
     relatedConnections: [],
   },
   {
     id: 'id2',
     name: 'ds2',
     connectionType: DataSourceConnectionType.OpenSearchConnection,
-    type: 'OpenSearch',
+    type: 'Supra',
   },
   {
     id: 'id3',

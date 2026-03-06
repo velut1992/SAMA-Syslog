@@ -113,7 +113,7 @@ describe('resolveInstanceUuid', () => {
         expect(logger.debug).toHaveBeenCalledTimes(1);
         expect(logger.debug.mock.calls[0]).toMatchInlineSnapshot(`
           Array [
-            "Updating OpenSearch Dashboards instance UUID to: CONFIG_UUID (was: FILE_UUID)",
+            "Updating Dashboards instance UUID to: CONFIG_UUID (was: FILE_UUID)",
           ]
         `);
       });
@@ -128,7 +128,7 @@ describe('resolveInstanceUuid', () => {
         expect(logger.debug).toHaveBeenCalledTimes(1);
         expect(logger.debug.mock.calls[0]).toMatchInlineSnapshot(`
           Array [
-            "OpenSearch Dashboards instance UUID: CONFIG_UUID",
+            "Dashboards instance UUID: CONFIG_UUID",
           ]
         `);
       });
@@ -148,7 +148,7 @@ describe('resolveInstanceUuid', () => {
       expect(logger.debug).toHaveBeenCalledTimes(1);
       expect(logger.debug.mock.calls[0]).toMatchInlineSnapshot(`
         Array [
-          "Setting new OpenSearch Dashboards instance UUID: CONFIG_UUID",
+          "Setting new Dashboards instance UUID: CONFIG_UUID",
         ]
       `);
     });
@@ -163,7 +163,7 @@ describe('resolveInstanceUuid', () => {
       expect(logger.debug).toHaveBeenCalledTimes(1);
       expect(logger.debug.mock.calls[0]).toMatchInlineSnapshot(`
         Array [
-          "Resuming persistent OpenSearch Dashboards instance UUID: FILE_UUID",
+          "Resuming persistent Dashboards instance UUID: FILE_UUID",
         ]
       `);
     });
@@ -189,7 +189,7 @@ describe('resolveInstanceUuid', () => {
               "UUID from 7.6.0 bug detected, ignoring file UUID",
             ],
             Array [
-              "Setting new OpenSearch Dashboards instance UUID: NEW_UUID",
+              "Setting new Dashboards instance UUID: NEW_UUID",
             ],
           ]
         `);
@@ -215,7 +215,7 @@ describe('resolveInstanceUuid', () => {
               "UUID from 7.6.0 bug detected, ignoring file UUID",
             ],
             Array [
-              "Setting new OpenSearch Dashboards instance UUID: CONFIG_UUID",
+              "Setting new Dashboards instance UUID: CONFIG_UUID",
             ],
           ]
         `);
@@ -237,7 +237,7 @@ describe('resolveInstanceUuid', () => {
       expect(logger.debug).toHaveBeenCalledTimes(1);
       expect(logger.debug.mock.calls[0]).toMatchInlineSnapshot(`
         Array [
-          "Setting new OpenSearch Dashboards instance UUID: NEW_UUID",
+          "Setting new Dashboards instance UUID: NEW_UUID",
         ]
       `);
     });
@@ -249,7 +249,7 @@ describe('resolveInstanceUuid', () => {
       await expect(
         resolveInstanceUuid({ pathConfig, serverConfig, logger })
       ).rejects.toThrowErrorMatchingInlineSnapshot(
-        `"Unable to read OpenSearch Dashboards UUID file, please check the uuid.server configuration value in opensearch_dashboards.yml and ensure OpenSearch Dashboards has sufficient permissions to read / write to this file. Error was: EACCES"`
+        `"Unable to read Dashboards UUID file, please check the uuid.server configuration value in opensearch_dashboards.yml and ensure Dashboards has sufficient permissions to read / write to this file. Error was: EACCES"`
       );
     });
     it('throws an explicit error for file write errors', async () => {
@@ -257,7 +257,7 @@ describe('resolveInstanceUuid', () => {
       await expect(
         resolveInstanceUuid({ pathConfig, serverConfig, logger })
       ).rejects.toThrowErrorMatchingInlineSnapshot(
-        `"Unable to write OpenSearch Dashboards UUID file, please check the uuid.server configuration value in opensearch_dashboards.yml and ensure OpenSearch Dashboards has sufficient permissions to read / write to this file. Error was: EISDIR"`
+        `"Unable to write Dashboards UUID file, please check the uuid.server configuration value in opensearch_dashboards.yml and ensure Dashboards has sufficient permissions to read / write to this file. Error was: EISDIR"`
       );
     });
   });

@@ -22,7 +22,7 @@ export const ScriptingSyntax = () => {
         <p>
           <FormattedMessage
             id="datasetManagement.syntax.defaultLabel.defaultDetail"
-            defaultMessage="By default, OpenSearch Dashboards scripted fields use {painless}, a simple and secure scripting language designed
+            defaultMessage="By default, Dashboards scripted fields use {painless}, a simple and secure scripting language designed
           specifically for use with OpenSearch, to access values in the document use the following format:"
             values={{
               painless: (
@@ -77,14 +77,14 @@ export const ScriptingSyntax = () => {
         <p>
           <FormattedMessage
             id="datasetManagement.syntax.opensearchDashboardsLabel"
-            defaultMessage="OpenSearch Dashboards currently imposes one special limitation on the painless scripts you write. They cannot contain named
+            defaultMessage="Dashboards currently imposes one special limitation on the painless scripts you write. They cannot contain named
           functions."
           />
         </p>
         <p>
           <FormattedMessage
             id="datasetManagement.syntax.lucene.commonLabel.commonDetail"
-            defaultMessage="Coming from an older version of OpenSearch Dashboards? The {lucene} you know and love are still available. Lucene expressions
+            defaultMessage="Coming from an older version of Dashboards? The {lucene} you know and love are still available. Lucene expressions
           are a lot like JavaScript, but limited to basic arithmetic, bitwise and comparison operations."
             values={{
               lucene: (

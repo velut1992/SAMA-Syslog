@@ -6,13 +6,13 @@
 import { CrossCompatibilityResult } from '../../types/cross_compatibility';
 
 /**
- * API to check if the OpenSearch Dashboards plugin version is compatible with the installed OpenSearch plugin.
+ * API to check if the Dashboards plugin version is compatible with the installed OpenSearch plugin.
  *
  * @public
  */
 export interface CrossCompatibilityServiceStart {
   /**
-   * Checks if the OpenSearch Dashboards plugin version is compatible with the installed OpenSearch plugin.
+   * Checks if the Dashboards plugin version is compatible with the installed OpenSearch plugin.
    *
    * @returns {Promise<CrossCompatibilityResult[]>}
    */

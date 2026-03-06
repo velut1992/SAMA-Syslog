@@ -76,7 +76,7 @@ export const GettingStarted: FC<Props> = ({ addBasePath, isDarkTheme, apps }) =>
               <h2 id="osdOverviewGettingStarted__title">
                 <FormattedMessage
                   id="opensearchDashboardsOverview.gettingStarted.title"
-                  defaultMessage="Getting started with OpenSearch Dashboards"
+                  defaultMessage="Getting started with Dashboards"
                 />
               </h2>
             </EuiTitle>
@@ -87,7 +87,7 @@ export const GettingStarted: FC<Props> = ({ addBasePath, isDarkTheme, apps }) =>
               <p>
                 <FormattedMessage
                   id="opensearchDashboardsOverview.gettingStarted.description"
-                  defaultMessage="OpenSearch Dashboards empowers you to visualize your data, your way.  Start with one question, and see where the answer leads you."
+                  defaultMessage="Dashboards empowers you to visualize your data, your way.  Start with one question, and see where the answer leads you."
                 />
               </p>
             </EuiText>
@@ -130,7 +130,7 @@ export const GettingStarted: FC<Props> = ({ addBasePath, isDarkTheme, apps }) =>
 
         <EuiFlexItem className="osdOverviewGettingStarted__graphic">
           <EuiImage
-            alt="OpenSearch Dashboards visualizations illustration"
+            alt="Dashboards visualizations illustration"
             url={addBasePath(gettingStartedGraphicURL)}
           />
         </EuiFlexItem>

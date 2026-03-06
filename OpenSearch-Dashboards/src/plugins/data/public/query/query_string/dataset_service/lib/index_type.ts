@@ -32,8 +32,8 @@ export const indexTypeConfig: DatasetTypeConfig = {
   id: DEFAULT_DATA.SET_TYPES.INDEX,
   title: 'Indexes',
   meta: {
-    icon: { type: 'logoOpenSearch' },
-    tooltip: 'OpenSearch Indexes',
+    icon: { type: 'logoSupra' },
+    tooltip: 'Indexes',
     searchOnLoad: true,
     cacheOptions: false,
   },

@@ -209,7 +209,7 @@ export const AssociatedObjectsDetailsFlyout = ({
           {i18n.translate(
             'dataSourcesManagement.associatedObjectsFlyout.noAccelerationDescription',
             {
-              defaultMessage: 'Accelerate query performing through OpenSearch Indexing',
+              defaultMessage: 'Accelerate query performing through Indexing',
             }
           )}
         </p>

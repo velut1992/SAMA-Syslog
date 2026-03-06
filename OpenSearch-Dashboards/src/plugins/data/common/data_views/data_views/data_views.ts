@@ -727,7 +727,7 @@ export class DataViewsService {
 
   /**
    * Deletes an data view from .kibana index
-   * @param dataViewId: Id of OpenSearch Dashboards Index Pattern to delete
+   * @param dataViewId: Id of Dashboards Index Pattern to delete
    */
   async delete(dataViewId: string) {
     this.patterns.clearCache(dataViewId);

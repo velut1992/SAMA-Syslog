@@ -35,7 +35,7 @@ import { FeatureCatalogueCategory } from '../../../../services';
 
 const solutionEntry1 = {
   id: 'opensearchDashboards',
-  title: 'OpenSearch Dashboards',
+  title: 'Dashboards',
   subtitle: 'Visualize & analyze',
   appDescriptions: ['Analyze data in dashboards'],
   icon: 'inputOutput',
@@ -141,7 +141,7 @@ describe('SolutionsSection', () => {
     expect(component).toMatchSnapshot();
   });
 
-  test('renders multiple solutions in two columns with OpenSearch Dashboards in its own column', () => {
+  test('renders multiple solutions in two columns with Dashboards in its own column', () => {
     const component = shallow(
       // @ts-expect-error TS2741 TODO(ts-error): fixme
       <SolutionsSection
@@ -153,7 +153,7 @@ describe('SolutionsSection', () => {
     );
     expect(component).toMatchSnapshot();
   });
-  test('renders multiple solutions in a single column when OpenSearch Dashboards apps are not enabled', () => {
+  test('renders multiple solutions in a single column when Dashboards apps are not enabled', () => {
     const component = shallow(
       // @ts-expect-error TS2741 TODO(ts-error): fixme
       <SolutionsSection

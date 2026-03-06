@@ -343,7 +343,7 @@ class FilterEditorUI extends Component<Props, State> {
     return (
       <EuiCompressedFormRow
         label={i18n.translate('data.filter.filterEditor.queryDslLabel', {
-          defaultMessage: 'OpenSearch Query DSL',
+          defaultMessage: 'Query DSL',
         })}
         fullWidth={true}
       >

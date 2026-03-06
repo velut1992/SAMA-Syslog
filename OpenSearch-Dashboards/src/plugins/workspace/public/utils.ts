@@ -368,7 +368,7 @@ export const mergeDataSourcesWithConnections = (
     dataConnections,
   } = convertDataSourcesToOpenSearchAndDataConnections(dataSources);
   let result;
-  // if the mode is set to OpenSearchConnections, then only display OpenSearch connections
+  // if the mode is set to OpenSearchConnections, then only display connections
   if (mode === AssociationDataSourceModalMode.OpenSearchConnections) {
     result = openSearchConnections.sort((a, b) => a.name.localeCompare(b.name));
 
@@ -584,7 +584,7 @@ export const getRemoteClusterConnections = async (dataSourceId: string, http: Ht
       name: remoteClusterConnection.connectionAlias,
       type: DataSourceEngineType.OpenSearchCrossCluster,
       connectionType: DataSourceConnectionType.OpenSearchConnection,
-      description: 'OpenSearch (Cross cluster connection)',
+      description: '(Cross cluster connection)',
       parentId: dataSourceId,
     })
   );

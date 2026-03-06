@@ -109,7 +109,7 @@ describe('Welcome page', () => {
   });
 
   describe('renders the welcome logo', () => {
-    it('with OpenSearch center mark when not branded', () => {
+    it('with center mark when not branded', () => {
       const props = {
         ...makeProps(),
       };

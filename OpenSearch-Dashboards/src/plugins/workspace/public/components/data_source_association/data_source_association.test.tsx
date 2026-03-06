@@ -52,7 +52,7 @@ describe('<DataSourceAssociation />', () => {
     render(<DataSourceAssociation excludedDataSourceIds={[]} />);
     expect(screen.getByText('Associate data sources')).toBeInTheDocument();
     fireEvent.click(screen.getByTestId('workspaceAssociateDataSourceButton'));
-    expect(screen.getByText('OpenSearch data sources')).toBeInTheDocument();
+    expect(screen.getByText('data sources')).toBeInTheDocument();
     expect(screen.getByText('Direct query data sources')).toBeInTheDocument();
   });
 
@@ -62,7 +62,7 @@ describe('<DataSourceAssociation />', () => {
     ));
     render(<DataSourceAssociation excludedDataSourceIds={[]} />);
     fireEvent.click(screen.getByTestId('workspaceAssociateDataSourceButton'));
-    fireEvent.click(screen.getByText('OpenSearch data sources'));
+    fireEvent.click(screen.getByText('data sources'));
     expect(servicesMock.overlays.openModal).toHaveBeenCalled();
     expect(screen.getByText('Mocked association data source modal')).toBeInTheDocument();
   });
@@ -92,7 +92,7 @@ describe('<DataSourceAssociation />', () => {
 
     render(<DataSourceAssociation excludedDataSourceIds={[]} />);
     fireEvent.click(screen.getByTestId('workspaceAssociateDataSourceButton'));
-    fireEvent.click(screen.getByText('OpenSearch data sources'));
+    fireEvent.click(screen.getByText('data sources'));
     fireEvent.click(screen.getByText('Mocked association button'));
     await waitFor(() => {
       expect(associateMock).toHaveBeenCalled();
@@ -160,7 +160,7 @@ describe('<DataSourceAssociation />', () => {
 
     render(<DataSourceAssociation excludedDataSourceIds={[]} />);
     fireEvent.click(screen.getByTestId('workspaceAssociateDataSourceButton'));
-    fireEvent.click(screen.getByText('OpenSearch data sources'));
+    fireEvent.click(screen.getByText('data sources'));
     fireEvent.click(screen.getByText('Mocked association button'));
     await waitFor(() => {
       expect(associateMock).toHaveBeenCalled();
@@ -197,7 +197,7 @@ describe('<DataSourceAssociation />', () => {
 
     render(<DataSourceAssociation excludedDataSourceIds={[]} />);
     fireEvent.click(screen.getByTestId('workspaceAssociateDataSourceButton'));
-    fireEvent.click(screen.getByText('OpenSearch data sources'));
+    fireEvent.click(screen.getByText('data sources'));
     fireEvent.click(screen.getByText('Mocked association button'));
     await waitFor(() => {
       expect(associateMock).toHaveBeenCalled();

@@ -30,7 +30,7 @@ const dummyArgs: OpenSearchRequestArgs = {
   ],
 };
 
-describe('test sendRequestToOpenSearch', () => {
+describe('test sendRequestToSupra', () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
@@ -206,7 +206,7 @@ describe('test sendRequestToOpenSearch', () => {
     jest.spyOn(opensearch, 'send').mockRejectedValue(mockHttpError);
     sendRequestToOpenSearch(dummyArgs).catch((error) => {
       expect(error.response.value).toBe(
-        "\n\nFailed to connect to Console's backend.\nPlease check the OpenSearch Dashboards server is up and running"
+        "\n\nFailed to connect to Console's backend.\nPlease check the Dashboards server is up and running"
       );
     });
   });

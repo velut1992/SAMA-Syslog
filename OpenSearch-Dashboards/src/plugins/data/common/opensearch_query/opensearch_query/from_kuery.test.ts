@@ -40,7 +40,7 @@ describe('build query', () => {
   } as unknown) as IIndexPattern;
 
   describe('buildQueryFromKuery', () => {
-    test('should return the parameters of an OpenSearch bool query', () => {
+    test('should return the parameters of an bool query', () => {
       const result = buildQueryFromKuery(undefined, [], true);
       const expected = {
         must: [],
@@ -51,7 +51,7 @@ describe('build query', () => {
       expect(result).toEqual(expected);
     });
 
-    test("should transform an array of kuery queries into OpenSearch queries combined in the bool's filter clause", () => {
+    test("should transform an array of kuery queries into queries combined in the bool's filter clause", () => {
       const queries = [
         { query: 'extension:jpg', language: 'kuery' },
         { query: 'machine.os:osx', language: 'kuery' },
@@ -66,7 +66,7 @@ describe('build query', () => {
       expect(result.filter).toEqual(expectedOpenSearchQueries);
     });
 
-    test("should accept a specific date format for a kuery query into an OpenSearch query in the bool's filter clause", () => {
+    test("should accept a specific date format for a kuery query into an query in the bool's filter clause", () => {
       const queries = [{ query: '@timestamp:"2018-04-03T19:04:17"', language: 'kuery' }] as Query[];
       const expectedOpenSearchQueries = queries.map((query) => {
         return toOpenSearchQuery(fromKueryExpression(query.query), indexPattern, {

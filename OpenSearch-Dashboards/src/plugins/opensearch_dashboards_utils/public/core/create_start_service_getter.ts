@@ -46,7 +46,7 @@ export type StartServicesGetter<
  * Use this utility to create a synchronous *start* service getter in *setup*
  * life-cycle of your plugin.
  *
- * Below is a usage example in a OpenSearch Dashboards plugin.
+ * Below is a usage example in a Dashboards plugin.
  *
  * ```ts
  * export interface MyPluginStartDeps {

@@ -92,7 +92,7 @@ export async function rollDailyData(logger: Logger, savedObjectsClient?: ISavedO
             type: SAVED_OBJECTS_DAILY_TYPE,
             id,
             attributes,
-            version, // Providing version to ensure via conflict matching that only 1 OpenSearch Dashboards instance (or interval) is taking care of the updates
+            version, // Providing version to ensure via conflict matching that only 1 Dashboards instance (or interval) is taking care of the updates
           })),
           { overwrite: true }
         );

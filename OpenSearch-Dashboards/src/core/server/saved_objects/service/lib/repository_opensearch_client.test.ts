@@ -47,7 +47,7 @@ describe('RepositoryOpenSearchClient', () => {
     retryCallClusterMock.mockClear();
   });
 
-  it('delegates call to OpenSearch client method', async () => {
+  it('delegates call to client method', async () => {
     expect(repositoryClient.bulk).toStrictEqual(expect.any(Function));
     await repositoryClient.bulk({ body: [] });
     expect(client.bulk).toHaveBeenCalledTimes(1);

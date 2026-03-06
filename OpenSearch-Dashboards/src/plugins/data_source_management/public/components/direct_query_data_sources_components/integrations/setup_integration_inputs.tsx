@@ -57,7 +57,7 @@ const integrationConnectionSelectorItems = [
   },
   {
     value: 'index',
-    text: 'OpenSearch Index',
+    text: 'Index',
   },
 ];
 

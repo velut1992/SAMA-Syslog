@@ -72,7 +72,7 @@ export interface SavedObjectReference {
 
 /**
  * Information about the migrations that have been applied to this SavedObject.
- * When OpenSearch Dashboards starts up, OpenSearchDashboardsMigrator detects outdated documents and
+ * When Dashboards starts up, OpenSearchDashboardsMigrator detects outdated documents and
  * migrates them based on this value. For each migration that has been applied,
  * the plugin's name is used as a key and the latest migration version as the
  * value.

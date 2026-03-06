@@ -79,7 +79,7 @@ export class TypesService {
       },
       /**
        * registers a visualization alias
-       * alias is a visualization type without implementation, it just redirects somewhere in OpenSearch Dashboards
+       * alias is a visualization type without implementation, it just redirects somewhere in Dashboards
        * @param {VisTypeAlias} config - visualization alias definition
        */
       registerAlias: visTypeAliasRegistry.add,

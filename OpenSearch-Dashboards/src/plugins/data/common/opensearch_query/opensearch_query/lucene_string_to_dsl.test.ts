@@ -32,7 +32,7 @@ import { luceneStringToDsl } from './lucene_string_to_dsl';
 
 describe('build query', () => {
   describe('luceneStringToDsl', () => {
-    test('should wrap strings with an OpenSearch query_string query', () => {
+    test('should wrap strings with an query_string query', () => {
       const result = luceneStringToDsl('foo:bar');
       const expectedResult = {
         query_string: { query: 'foo:bar' },

@@ -45,7 +45,7 @@ export type ExpressionFunctionVar = ExpressionFunctionDefinition<
 export const variable: ExpressionFunctionVar = {
   name: 'var',
   help: i18n.translate('expressions.functions.var.help', {
-    defaultMessage: 'Updates the OpenSearch Dashboards global context.',
+    defaultMessage: 'Updates the Dashboards global context.',
   }),
   args: {
     name: {

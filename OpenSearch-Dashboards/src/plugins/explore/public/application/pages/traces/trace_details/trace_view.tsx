@@ -95,7 +95,7 @@ export const TraceDetails: React.FC<TraceDetailsProps> = ({
           ? {
               id: dataView.dataSourceRef.id,
               title: dataView.dataSourceRef.name || dataView.dataSourceRef.id,
-              type: dataView.dataSourceRef.type || 'OpenSearch',
+              type: dataView.dataSourceRef.type || 'Supra',
             }
           : undefined,
       };

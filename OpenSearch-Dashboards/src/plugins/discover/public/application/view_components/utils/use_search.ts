@@ -293,7 +293,7 @@ export const useSearch = (services: DiscoverViewServices) => {
         defaultMessage: 'data',
       });
       const description = i18n.translate('discover.inspectorRequestDescription', {
-        defaultMessage: 'This request queries OpenSearch to fetch the data for the search.',
+        defaultMessage: 'This request queries to fetch the data for the search.',
       });
       const inspectorRequest = inspectorAdapters.requests.start(title, { description });
       inspectorRequest.stats(getRequestInspectorStats(searchSource));

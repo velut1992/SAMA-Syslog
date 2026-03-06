@@ -16,7 +16,7 @@ export const ScriptingDisabledCallOut = ({ isVisible = false }) => {
           <FormattedMessage
             id="datasetManagement.disabledCallOutHeader"
             defaultMessage="Scripting disabled"
-            description="Showing the status that scripting is disabled in OpenSearch. Not an update message, that it JUST got disabled."
+            description="Showing the status that scripting is disabled in Supra. Not an update message, that it JUST got disabled."
           />
         }
         color="danger"
@@ -25,8 +25,8 @@ export const ScriptingDisabledCallOut = ({ isVisible = false }) => {
         <p>
           <FormattedMessage
             id="datasetManagement.disabledCallOutLabel"
-            defaultMessage="All inline scripting has been disabled in OpenSearch. You must enable inline scripting for at least one
-            language in order to use scripted fields in OpenSearch Dashboards."
+            defaultMessage="All inline scripting has been disabled in Supra. You must enable inline scripting for at least one
+            language in order to use scripted fields in Dashboards."
           />
         </p>
       </EuiCallOut>

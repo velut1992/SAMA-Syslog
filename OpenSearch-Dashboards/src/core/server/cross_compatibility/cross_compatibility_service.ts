@@ -34,7 +34,7 @@ export class CrossCompatibilityService {
   }
 
   public async getOpenSearchPlugins(opensearch: OpenSearchServiceStart) {
-    // Makes cat.plugin api call to fetch list of OpenSearch plugins installed on the cluster
+    // Makes cat.plugin api call to fetch list of plugins installed on the cluster
     try {
       const { body } = await opensearch.client.asInternalUser.cat.plugins<any[]>({
         format: 'JSON',
@@ -42,7 +42,7 @@ export class CrossCompatibilityService {
       return body;
     } catch (error) {
       this.log.warn(
-        `Cat API call to OpenSearch to get list of plugins installed on the cluster has failed: ${error}`
+        `Cat API call to to get list of plugins installed on the cluster has failed: ${error}`
       );
       return [];
     }
@@ -55,7 +55,7 @@ export class CrossCompatibilityService {
   ) {
     const results: CrossCompatibilityResult[] = [];
     for (const [pluginName, versionRange] of Object.entries(pluginOpenSearchDeps)) {
-      // add check to see if the Dashboards plugin version is compatible with installed OpenSearch plugin
+      // add check to see if the Dashboards plugin version is compatible with installed plugin
       const { isCompatible, installedPluginVersions } = this.isVersionCompatibleOSPluginInstalled(
         opensearchInstalledPlugins,
         pluginName,
@@ -65,14 +65,14 @@ export class CrossCompatibilityService {
         pluginName,
         isCompatible: !isCompatible ? false : true,
         incompatibilityReason: !isCompatible
-          ? `OpenSearch plugin "${pluginName}" in the version range "${versionRange}" is not installed on the OpenSearch for the OpenSearch Dashboards plugin to function as expected.`
+          ? `plugin "${pluginName}" in the version range "${versionRange}" is not installed on the for the Dashboards plugin to function as expected.`
           : '',
         installedVersions: installedPluginVersions,
       });
 
       if (!isCompatible) {
         this.log.warn(
-          `OpenSearch plugin "${pluginName}" is not installed on the cluster for the OpenSearch Dashboards plugin "${dashboardsPluginName}" to function as expected.`
+          `plugin "${pluginName}" is not installed on the cluster for the Dashboards plugin "${dashboardsPluginName}" to function as expected.`
         );
       }
     }
@@ -85,7 +85,7 @@ export class CrossCompatibilityService {
     pluginName: string
   ): Promise<CrossCompatibilityResult[]> {
     this.log.info('Checking OpenSearch Plugin version compatibility');
-    // make _cat/plugins?format=json call to the OpenSearch instance
+    // make _cat/plugins?format=json call to the instance
     const opensearchInstalledPlugins = await this.getOpenSearchPlugins(opensearch);
     const results = this.checkPluginVersionCompatibility(
       pluginOpenSearchDeps,

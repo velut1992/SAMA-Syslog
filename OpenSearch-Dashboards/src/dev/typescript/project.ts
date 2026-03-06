@@ -82,7 +82,7 @@ export class Project {
 
     if (files || !include) {
       throw new Error(
-        'tsconfig.json files in the OpenSearch Dashboards repo must use "include" keys and not "files"'
+        'tsconfig.json files in the Dashboards repo must use "include" keys and not "files"'
       );
     }
 

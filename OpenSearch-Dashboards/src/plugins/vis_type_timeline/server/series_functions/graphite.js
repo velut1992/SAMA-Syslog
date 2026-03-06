@@ -49,7 +49,7 @@ export default new Datasource('graphite', {
     },
   ],
   help: i18n.translate('timeline.help.functions.graphiteHelpText', {
-    defaultMessage: `[experimental] Pull data from graphite. Configure your graphite server in OpenSearch Dashboards's Advanced Settings`,
+    defaultMessage: `[experimental] Pull data from graphite. Configure your graphite server in Dashboards's Advanced Settings`,
   }),
   fn: function graphite(args, tlConfig) {
     const config = args.byName;
@@ -75,7 +75,7 @@ export default new Datasource('graphite', {
     if (!isValidConfig(blockedIPs, allowedUrls, configuredUrl)) {
       throw new Error(
         i18n.translate('timeline.help.functions.invalidGraphiteConfig', {
-          defaultMessage: `The Graphite URL provided by you is invalid. Please update your config from OpenSearch Dashboards' Advanced Settings.`,
+          defaultMessage: `The Graphite URL provided by you is invalid. Please update your config from Dashboards' Advanced Settings.`,
         })
       );
     }

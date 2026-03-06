@@ -8,7 +8,7 @@ import { config } from './config';
 const DEFAULT_CONFIG = Object.freeze(config.schema.validate({}));
 
 /**
- * CSP-Report-Only configuration for use in OpenSearch Dashboards.
+ * CSP-Report-Only configuration for use in Dashboards.
  * @public
  */
 export interface ICspReportOnlyConfig {
@@ -18,7 +18,7 @@ export interface ICspReportOnlyConfig {
   readonly isEmitting: boolean;
 
   /**
-   * The CSP-Report-Only rules used for OpenSearch Dashboards.
+   * The CSP-Report-Only rules used for Dashboards.
    */
   readonly rules: string[];
 
@@ -91,7 +91,7 @@ interface AllowedSourcesConfig {
 }
 
 /**
- * CSP-Report-Only configuration for use in OpenSearch Dashboards.
+ * CSP-Report-Only configuration for use in Dashboards.
  * @public
  */
 export class CspReportOnlyConfig implements ICspReportOnlyConfig {

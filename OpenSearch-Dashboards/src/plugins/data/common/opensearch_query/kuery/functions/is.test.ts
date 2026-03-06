@@ -82,7 +82,7 @@ describe('kuery functions', () => {
     });
 
     describe('toOpenSearchQuery', () => {
-      test('should return an OpenSearch match_all query when fieldName and value are both "*"', () => {
+      test('should return an match_all query when fieldName and value are both "*"', () => {
         const expected = {
           match_all: {},
         };
@@ -92,7 +92,7 @@ describe('kuery functions', () => {
         expect(result).toEqual(expected);
       });
 
-      test('should return an OpenSearch multi_match query using default_field when fieldName is null', () => {
+      test('should return an multi_match query using default_field when fieldName is null', () => {
         const expected = {
           multi_match: {
             query: 200,
@@ -106,7 +106,7 @@ describe('kuery functions', () => {
         expect(result).toEqual(expected);
       });
 
-      test('should return an OpenSearch query_string query using default_field when fieldName is null and value contains a wildcard', () => {
+      test('should return an query_string query using default_field when fieldName is null and value contains a wildcard', () => {
         const expected = {
           query_string: {
             query: 'jpg*',
@@ -118,7 +118,7 @@ describe('kuery functions', () => {
         expect(result).toEqual(expected);
       });
 
-      test('should return an OpenSearch bool query with a sub-query for each field when fieldName is "*"', () => {
+      test('should return an bool query with a sub-query for each field when fieldName is "*"', () => {
         const node = nodeTypes.function.buildNode('is', '*', 200);
         const result = is.toOpenSearchQuery(node, indexPattern);
 
@@ -126,7 +126,7 @@ describe('kuery functions', () => {
         expect(result.bool!.should!.length).toBe(indexPattern.fields.length);
       });
 
-      test('should return an OpenSearch exists query when value is "*"', () => {
+      test('should return an exists query when value is "*"', () => {
         const expected = {
           bool: {
             should: [{ exists: { field: 'extension' } }],
@@ -139,7 +139,7 @@ describe('kuery functions', () => {
         expect(result).toEqual(expected);
       });
 
-      test('should return an OpenSearch match query when a concrete fieldName and value are provided', () => {
+      test('should return an match query when a concrete fieldName and value are provided', () => {
         const expected = {
           bool: {
             should: [{ match: { extension: 'jpg' } }],
@@ -152,7 +152,7 @@ describe('kuery functions', () => {
         expect(result).toEqual(expected);
       });
 
-      test('should return an OpenSearch match query when a concrete fieldName and value are provided without an index pattern', () => {
+      test('should return an match query when a concrete fieldName and value are provided without an index pattern', () => {
         const expected = {
           bool: {
             should: [{ match: { extension: 'jpg' } }],

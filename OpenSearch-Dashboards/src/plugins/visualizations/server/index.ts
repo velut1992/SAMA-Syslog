@@ -37,7 +37,7 @@ export {
 } from '../common/constants';
 
 //  This exports static code and TypeScript types,
-//  as well as, OpenSearch Dashboards Platform `plugin()` initializer.
+//  as well as, Dashboards Platform `plugin()` initializer.
 
 export function plugin(initializerContext: PluginInitializerContext) {
   return new VisualizationsPlugin(initializerContext);

@@ -46,7 +46,7 @@ export const NewsEmptyPrompt = () => {
         <p>
           <FormattedMessage
             id="newsfeed.emptyPrompt.noNewsText"
-            defaultMessage="If your OpenSearch Dashboards instance doesn’t have internet access, ask your administrator to disable this feature. Otherwise, we’ll keep trying to fetch the news."
+            defaultMessage="If your Dashboards instance doesn’t have internet access, ask your administrator to disable this feature. Otherwise, we’ll keep trying to fetch the news."
           />
         </p>
       }

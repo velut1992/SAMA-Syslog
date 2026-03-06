@@ -800,7 +800,7 @@ export class EditDataSourceForm extends React.Component<EditDataSourceProps, Edi
                 {i18n.translate(
                   'dataSourcesManagement.editDataSource.crossclustersearch.type.value',
                   {
-                    defaultMessage: 'OpenSearch (Cross cluster search)',
+                    defaultMessage: '(Cross cluster search)',
                   }
                 )}{' '}
               </EuiDescriptionListDescription>

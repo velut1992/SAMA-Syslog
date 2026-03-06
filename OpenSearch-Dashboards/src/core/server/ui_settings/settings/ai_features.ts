@@ -16,7 +16,7 @@ export const getAIFeaturesSetting = (): Record<string, UiSettingsParams> => {
       }),
       value: true,
       description: i18n.translate('core.ui_settings.params.enableAIFeaturesText', {
-        defaultMessage: 'The setting to enable all AI-powered features in OpenSearch Dashboards.',
+        defaultMessage: 'The setting to enable all AI-powered features in Dashboards.',
       }),
       requiresPageReload: true,
       scope: UiSettingScope.DASHBOARD_ADMIN,

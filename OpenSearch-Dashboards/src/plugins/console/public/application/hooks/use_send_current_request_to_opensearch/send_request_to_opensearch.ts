@@ -169,7 +169,7 @@ export function sendRequestToOpenSearch(
           }
         } else {
           value =
-            "\n\nFailed to connect to Console's backend.\nPlease check the OpenSearch Dashboards server is up and running";
+            "\n\nFailed to connect to Console's backend.\nPlease check the Dashboards server is up and running";
           contentType = 'text/plain';
         }
 

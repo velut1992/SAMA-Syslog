@@ -34,7 +34,7 @@ import { SolutionPanel } from './solution_panel';
 
 const solutionEntry = {
   id: 'opensearchDashboards',
-  title: 'OpenSearch Dashboards',
+  title: 'Dashboards',
   subtitle: 'Visualize & analyze',
   description: 'Explore and analyze your data',
   appDescriptions: ['Analyze data in dashboards'],

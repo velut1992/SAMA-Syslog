@@ -235,7 +235,7 @@ describe('indexTypeConfig', () => {
           attributes: {
             title: 'DataSource 1',
             dataSourceVersion: '1.0',
-            dataSourceEngineType: 'OpenSearch',
+            dataSourceEngineType: 'Supra',
           },
         },
         {

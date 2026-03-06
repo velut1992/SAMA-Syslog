@@ -73,7 +73,7 @@ describe('CrossCompatibilityService', () => {
     expect(results[0].pluginName).toEqual('os-plugin');
     expect(results[0].isCompatible).toEqual(false);
     expect(results[0].incompatibilityReason).toEqual(
-      'OpenSearch plugin "os-plugin" in the version range "^3.0.0" is not installed on the OpenSearch for the OpenSearch Dashboards plugin to function as expected.'
+      'plugin "os-plugin" in the version range "^3.0.0" is not installed on the for the Dashboards plugin to function as expected.'
     );
     expect(results[0].installedVersions).toEqual(['1.1.0.0']);
     expect(opensearch.client.asInternalUser.cat.plugins).toHaveBeenCalledTimes(1);

@@ -85,7 +85,7 @@ describe('mountManagementSection', () => {
             <Switch>
               <Route path={['/create']} component={CreateDataSourcePanel} />
               <Route
-                path={['/configure/OpenSearch']}
+                path={['/configure/Supra']}
                 component={CreateDataSourceWizardWithRouter}
               />
               <Route

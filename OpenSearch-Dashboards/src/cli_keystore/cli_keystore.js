@@ -47,7 +47,7 @@ const program = new Command('bin/opensearch-dashboards-keystore');
 
 program
   .version(pkg.version)
-  .description('A tool for managing settings stored in the OpenSearch Dashboards keystore');
+  .description('A tool for managing settings stored in the Dashboards keystore');
 
 const keystore = new Keystore(getKeystore());
 

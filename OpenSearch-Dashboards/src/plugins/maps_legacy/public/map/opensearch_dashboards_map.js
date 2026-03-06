@@ -116,7 +116,7 @@ function makeLegendControl(container, opensearchDashboardsMap, position) {
 }
 
 /**
- * Collects map functionality required for OpenSearch Dashboards.
+ * Collects map functionality required for Dashboards.
  * Serves as simple abstraction for leaflet as well.
  */
 export class OpenSearchDashboardsMap extends EventEmitter {

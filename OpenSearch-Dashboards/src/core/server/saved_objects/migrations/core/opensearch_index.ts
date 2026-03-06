@@ -297,10 +297,10 @@ export async function claimAlias(
 
 /**
  * This is a rough check to ensure that the index being migrated satisfies at least
- * some rudimentary expectations. Past OpenSearch Dashboards indices had multiple root documents, etc
+ * some rudimentary expectations. Past Dashboards indices had multiple root documents, etc
  * and the migration system does not (yet?) handle those indices. They need to be upgraded
  * via v5 -> v6 upgrade tools first. This file contains index-agnostic logic, and this
- * check is itself index-agnostic, though the error hint is a bit OpenSearch Dashboards specific.
+ * check is itself index-agnostic, though the error hint is a bit Dashboards specific.
  *
  * @param {FullIndexInfo} indexInfo
  */
@@ -310,7 +310,7 @@ function assertIsSupportedIndex(indexInfo: FullIndexInfo) {
 
   if (!isV7Index) {
     throw new Error(
-      `Index ${indexInfo.indexName} belongs to a version of OpenSearch Dashboards ` +
+      `Index ${indexInfo.indexName} belongs to a version of Dashboards ` +
         `that cannot be automatically migrated. Reset it.`
     );
   }

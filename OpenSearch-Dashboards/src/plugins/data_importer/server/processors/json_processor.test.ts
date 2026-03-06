@@ -34,7 +34,7 @@ describe('JSONProcessor', () => {
       clientMock.index.mockClear();
     });
 
-    it('should ingest the document into OpenSearch', async () => {
+    it('should ingest the document into Supra', async () => {
       const response = await processor.ingestText(JSON.stringify(validJson), {
         client: clientMock,
         indexName: 'foo',
@@ -47,7 +47,7 @@ describe('JSONProcessor', () => {
       });
     });
 
-    it('should handle OpenSearch errors and show the correct failedRow', async () => {
+    it('should handle errors and show the correct failedRow', async () => {
       clientMock.index.mockRejectedValueOnce({});
 
       const response = await processor.ingestText(JSON.stringify(validJson), {
@@ -83,7 +83,7 @@ describe('JSONProcessor', () => {
       clientMock.index.mockClear();
     });
 
-    it('should ingest the document into OpenSearch', async () => {
+    it('should ingest the document into Supra', async () => {
       const validJsonFileStream = Readable.from([JSON.stringify(validJson)]);
       const response = await processor.ingestFile(validJsonFileStream, {
         client: clientMock,
@@ -97,7 +97,7 @@ describe('JSONProcessor', () => {
       });
     });
 
-    it('should populate failedRows when attempting to ingest an invalid document into OpenSearch', async () => {
+    it('should populate failedRows when attempting to ingest an invalid document into Supra', async () => {
       const invalidJsonFileStream = Readable.from([invalidJsonString]);
       const response = await processor.ingestFile(invalidJsonFileStream, {
         client: clientMock,
@@ -107,7 +107,7 @@ describe('JSONProcessor', () => {
       expect(response.failedRows).toMatchObject([1]);
     });
 
-    it('should populate failedRows when attempting to ingest the document with empty fields into OpenSearch', async () => {
+    it('should populate failedRows when attempting to ingest the document with empty fields into Supra', async () => {
       const invalidJsonFileStream = Readable.from([JSON.stringify(invalidJson)]);
       const response = await processor.ingestFile(invalidJsonFileStream, {
         client: clientMock,
@@ -117,7 +117,7 @@ describe('JSONProcessor', () => {
       expect(response.failedRows).toMatchObject([1]);
     });
 
-    it('should handle OpenSearch errors and show the correct failedRow', async () => {
+    it('should handle errors and show the correct failedRow', async () => {
       clientMock.index.mockRejectedValueOnce({});
 
       const validJSONFileStream = Readable.from(JSON.stringify(validJson));

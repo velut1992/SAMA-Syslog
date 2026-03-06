@@ -311,7 +311,7 @@ export const AssociationDataSourceModalContent = ({
           {mode === AssociationDataSourceModalMode.OpenSearchConnections ? (
             <FormattedMessage
               id="workspace.detail.dataSources.associateModal.title.openSearchDataSources"
-              defaultMessage="Associate OpenSearch data sources"
+              defaultMessage="Associate data sources"
             />
           ) : (
             <FormattedMessage

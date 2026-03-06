@@ -160,7 +160,7 @@ export function getUiSettings(
       value: DEFAULT_QUERY_LANGUAGE,
       description: i18n.translate('data.advancedSettings.searchQueryLanguageText', {
         defaultMessage:
-          'Query language used by the query bar. DQL is a new language built specifically for OpenSearch Dashboards.',
+          'Query language used by the query bar. DQL is a new language built specifically for Dashboards.',
       }),
       type: 'select',
       options: ['lucene', 'kuery'],
@@ -178,7 +178,7 @@ export function getUiSettings(
       }),
       value: '{ "unmapped_type": "boolean" }',
       description: i18n.translate('data.advancedSettings.sortOptionsText', {
-        defaultMessage: '{optionsLink} for the OpenSearch sort parameter',
+        defaultMessage: '{optionsLink} for the sort parameter',
         description:
           'Part of composite text: data.advancedSettings.sortOptions.optionsLinkText + ' +
           'data.advancedSettings.sortOptionsText',
@@ -288,8 +288,8 @@ export function getUiSettings(
       type: 'number',
       description: i18n.translate('data.advancedSettings.courier.maxRequestsText', {
         defaultMessage:
-          'Controls the {maxRequestsLink} setting used for _msearch requests sent by OpenSearch Dashboards. ' +
-          'Set to 0 to disable this config and use the OpenSearch default.',
+          'Controls the {maxRequestsLink} setting used for _msearch requests sent by Dashboards. ' +
+          'Set to 0 to disable this config and use the default.',
         values: {
           maxRequestsLink: `<a href="https://opensearch.org/docs/latest/opensearch/query-dsl/full-text/#multi-match"
             target="_blank" rel="noopener noreferrer" >max_concurrent_shard_requests</a>`,
@@ -575,7 +575,7 @@ export function getUiSettings(
       type: 'json',
       description: i18n.translate('data.advancedSettings.timepicker.timeDefaultsText', {
         defaultMessage:
-          'The timefilter selection to use when OpenSearch Dashboards is started without one',
+          'The timefilter selection to use when Dashboards is started without one',
       }),
       requiresPageReload: true,
       schema: schema.object({

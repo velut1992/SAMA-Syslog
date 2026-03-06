@@ -52,7 +52,7 @@ const config = ({
 } as unknown) as IUiSettingsClient;
 
 describe('getOpenSearchQueryConfig', () => {
-  test('should return the parameters of an OpenSearch query config requested', () => {
+  test('should return the parameters of an query config requested', () => {
     const result = getOpenSearchQueryConfig(config);
     const expected = {
       allowLeadingWildcards: {

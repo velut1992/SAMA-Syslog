@@ -43,7 +43,7 @@ import { confirmModalPromise } from './confirm_modal_promise';
  * @param savedObject - savedObject
  * @param opensearchType - type of the saved object
  * @param options - options to pass to the saved object create method
- * @param services - provides OpenSearch Dashboards services savedObjectsClient and overlays
+ * @param services - provides Dashboards services savedObjectsClient and overlays
  * @returns {Promise} - A promise that is resolved with the objects id if the object is
  * successfully indexed. If the overwrite confirmation was rejected, an error is thrown with
  * a confirmRejected = true parameter so that case can be handled differently than

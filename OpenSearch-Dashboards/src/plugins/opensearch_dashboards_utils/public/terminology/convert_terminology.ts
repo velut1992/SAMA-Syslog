@@ -91,7 +91,7 @@ function applyCaseStyle(str: string, caseStyle: CaseStyle): string {
 /**
  * Converts "index pattern" terminology to "dataset" terminology in a string.
  *
- * This function helps maintain consistent terminology across the OpenSearch Dashboards UI
+ * This function helps maintain consistent terminology across the Dashboards UI
  * based on whether dataset management is enabled. It preserves the case style of the original
  * text (Title Case, UPPER CASE, or lower case).
  *

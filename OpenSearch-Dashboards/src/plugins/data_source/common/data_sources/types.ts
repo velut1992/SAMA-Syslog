@@ -56,7 +56,7 @@ export enum SigV4ServiceName {
 export { DataSourceError } from './error';
 
 export enum DataSourceEngineType {
-  OpenSearch = 'OpenSearch',
+  OpenSearch = 'Supra',
   OpenSearchServerless = 'OpenSearch Serverless',
   Elasticsearch = 'Elasticsearch',
   NA = 'No Engine Type Available',

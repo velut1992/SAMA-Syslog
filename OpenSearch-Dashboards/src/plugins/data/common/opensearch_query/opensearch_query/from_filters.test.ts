@@ -39,7 +39,7 @@ describe('build query', () => {
   } as unknown) as IIndexPattern;
 
   describe('buildQueryFromFilters', () => {
-    test('should return the parameters of an OpenSearch bool query', () => {
+    test('should return the parameters of an bool query', () => {
       const result = buildQueryFromFilters([], indexPattern, false);
       const expected = {
         must: [],
@@ -50,7 +50,7 @@ describe('build query', () => {
       expect(result).toEqual(expected);
     });
 
-    test('should transform an array of OpenSearch Dashboards filters into OpenSearch queries combined in the bool clauses', () => {
+    test('should transform an array of Dashboards filters into queries combined in the bool clauses', () => {
       const filters = [
         {
           match_all: {},
@@ -104,7 +104,7 @@ describe('build query', () => {
       expect(result.must_not).toEqual(expectedOpenSearchQueries);
     });
 
-    test('should translate old OpenSearch filter syntax into OpenSearch 5+ query objects', () => {
+    test('should translate old filter syntax into OpenSearch 5+ query objects', () => {
       const filters = [
         {
           query: { exists: { field: 'foo' } },

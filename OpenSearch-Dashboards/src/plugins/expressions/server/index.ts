@@ -33,7 +33,7 @@ import { ExpressionsServerPlugin } from './plugin';
 
 export { ExpressionsServerSetup, ExpressionsServerStart } from './plugin';
 
-// OpenSearch Dashboards Platform.
+// Dashboards Platform.
 export { ExpressionsServerPlugin as Plugin };
 export * from './plugin';
 export function plugin(initializerContext: PluginInitializerContext) {

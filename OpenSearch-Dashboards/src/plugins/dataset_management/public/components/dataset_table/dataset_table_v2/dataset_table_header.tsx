@@ -36,14 +36,14 @@ export const DatasetTableHeader: React.FC<DatasetTableHeaderProps> = ({
   const description = currentWorkspaceName
     ? i18n.translate('datasetManagement.datasetTable.datasetExplanationWithWorkspace', {
         defaultMessage:
-          'Create and manage the datasets that help you retrieve your data from OpenSearch for {name} workspace.',
+          'Create and manage the datasets that help you retrieve your data from for {name} workspace.',
         values: {
           name: currentWorkspaceName,
         },
       })
     : i18n.translate('datasetManagement.datasetTable.datasetExplanation', {
         defaultMessage:
-          'Create and manage the datasets that help you retrieve your data from OpenSearch.',
+          'Create and manage the datasets that help you retrieve your data from Supra.',
       });
 
   const createButton = (() => {

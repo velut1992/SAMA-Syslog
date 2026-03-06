@@ -67,7 +67,7 @@ export const opensearchdsl = (): OpenSearchdslExpressionFunctionDefinition => ({
   type: 'opensearch_raw_response',
   inputTypes: ['opensearch_dashboards_context', 'null'],
   help: i18n.translate('data.search.opensearchdsl.help', {
-    defaultMessage: 'Run OpenSearch request',
+    defaultMessage: 'Run request',
   }),
   args: {
     dsl: {
@@ -81,14 +81,14 @@ export const opensearchdsl = (): OpenSearchdslExpressionFunctionDefinition => ({
     index: {
       types: ['string'],
       help: i18n.translate('data.search.opensearchdsl.index.help', {
-        defaultMessage: 'OpenSearch index to query',
+        defaultMessage: 'index to query',
       }),
       required: true,
     },
     size: {
       types: ['number'],
       help: i18n.translate('data.search.opensearchdsl.size.help', {
-        defaultMessage: 'OpenSearch searchAPI size parameter',
+        defaultMessage: 'searchAPI size parameter',
       }),
       default: 10,
     },
@@ -127,7 +127,7 @@ export const opensearchdsl = (): OpenSearchdslExpressionFunctionDefinition => ({
       {
         description: i18n.translate('data.search.opensearch_search.dataRequest.description', {
           defaultMessage:
-            'This request queries OpenSearch to fetch the data for the visualization.',
+            'This request queries to fetch the data for the visualization.',
         }),
       }
     );
@@ -139,7 +139,7 @@ export const opensearchdsl = (): OpenSearchdslExpressionFunctionDefinition => ({
         }),
         value: args.index,
         description: i18n.translate('data.search.opensearch_search.indexPatternDescription', {
-          defaultMessage: 'The index pattern that connected to the OpenSearch indices.',
+          defaultMessage: 'The index pattern that connected to the indices.',
         }),
       },
     });

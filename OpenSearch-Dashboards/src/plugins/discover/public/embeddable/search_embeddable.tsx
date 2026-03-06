@@ -334,7 +334,7 @@ export class SearchEmbeddable
       defaultMessage: 'Data',
     });
     const description = i18n.translate('discover.embeddable.inspectorRequestDescription', {
-      defaultMessage: 'This request queries OpenSearch to fetch the data for the search.',
+      defaultMessage: 'This request queries to fetch the data for the search.',
     });
     const inspectorRequest = this.inspectorAdaptors.requests.start(title, { description });
     inspectorRequest.stats(getRequestInspectorStats(searchSource));

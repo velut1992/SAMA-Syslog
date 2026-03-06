@@ -62,9 +62,9 @@ export type HttpResourcesResponseOptions = HttpResponseOptions;
  * @public
  */
 export interface HttpResourcesServiceToolkit {
-  /** To respond with HTML page bootstrapping OpenSearch Dashboards application. */
+  /** To respond with HTML page bootstrapping Dashboards application. */
   renderCoreApp: (options?: HttpResourcesRenderOptions) => Promise<IOpenSearchDashboardsResponse>;
-  /** To respond with HTML page bootstrapping OpenSearch Dashboards application without retrieving user-specific information. */
+  /** To respond with HTML page bootstrapping Dashboards application without retrieving user-specific information. */
   renderAnonymousCoreApp: (
     options?: HttpResourcesRenderOptions
   ) => Promise<IOpenSearchDashboardsResponse>;
@@ -113,9 +113,9 @@ export interface InternalHttpResourcesSetup {
 }
 
 /**
- * HttpResources service is responsible for serving static & dynamic assets for OpenSearch Dashboards application via HTTP.
+ * HttpResources service is responsible for serving static & dynamic assets for Dashboards application via HTTP.
  * Provides API allowing plug-ins to respond with:
- * - a pre-configured HTML page bootstrapping OpenSearch Dashboards client app
+ * - a pre-configured HTML page bootstrapping Dashboards client app
  * - custom HTML page
  * - custom JS script file.
  * @public

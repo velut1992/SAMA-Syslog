@@ -132,7 +132,7 @@ export const config = {
           rawConfig.ssl.redirectHttpFromPort === rawConfig.port
         ) {
           return (
-            'OpenSearch Dashboards does not accept http traffic to [port] when ssl is ' +
+            'Dashboards does not accept http traffic to [port] when ssl is ' +
             'enabled (only https is allowed), so [ssl.redirectHttpFromPort] ' +
             `cannot be configured to the same value. Both are [${rawConfig.port}].`
           );

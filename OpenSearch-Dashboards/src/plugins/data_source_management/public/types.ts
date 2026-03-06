@@ -121,15 +121,15 @@ export const sigV4CredentialOption = {
 
 export const sigV4ServiceOptions = [
   {
-    value: SigV4ServiceName.OpenSearch,
-    inputDisplay: i18n.translate('dataSourcesManagement.SigV4ServiceOptions.OpenSearch', {
-      defaultMessage: 'Amazon OpenSearch Service',
+    value: SigV4ServiceName.Supra,
+    inputDisplay: i18n.translate('dataSourcesManagement.SigV4ServiceOptions.Supra', {
+      defaultMessage: 'Amazon Supra Service',
     }),
   },
   {
     value: SigV4ServiceName.OpenSearchServerless,
     inputDisplay: i18n.translate('dataSourcesManagement.SigV4ServiceOptions.OpenSearchServerless', {
-      defaultMessage: 'Amazon OpenSearch Serverless',
+      defaultMessage: 'Amazon Supra Serverless',
     }),
   },
 ];
@@ -138,7 +138,7 @@ export const sigV4CredentialField = {
   region: '',
   accessKey: '',
   secretKey: '',
-  service: SigV4ServiceName.OpenSearch,
+  service: SigV4ServiceName.Supra,
 };
 
 export const sigV4AuthMethod = {

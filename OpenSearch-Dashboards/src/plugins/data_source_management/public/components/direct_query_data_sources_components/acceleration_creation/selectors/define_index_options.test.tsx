@@ -104,7 +104,7 @@ describe('DefineIndexOptions', () => {
     wrapper.update();
     expect(wrapper.find(EuiModal).exists()).toBe(true);
     const markdownText = wrapper.find(EuiMarkdownFormat).text();
-    expect(markdownText).toContain('All OpenSearch acceleration indices have a naming format');
+    expect(markdownText).toContain('All acceleration indices have a naming format');
     expect(markdownText).toContain('Skipping Index');
     expect(markdownText).toContain('Covering Index');
     expect(markdownText).toContain('Materialized View Index');

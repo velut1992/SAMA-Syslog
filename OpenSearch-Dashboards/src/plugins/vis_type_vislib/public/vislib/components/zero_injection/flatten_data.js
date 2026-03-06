@@ -31,7 +31,7 @@
 import _ from 'lodash';
 
 /*
- * Accepts a OpenSearch Dashboards data object, flattens the data.series values array,
+ * Accepts a Dashboards data object, flattens the data.series values array,
  * and returns an array of values objects.
  */
 export function flattenData(obj) {

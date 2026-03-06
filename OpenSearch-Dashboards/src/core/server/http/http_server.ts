@@ -162,7 +162,7 @@ export class HttpServer {
         protocol: this.server!.info.protocol,
       }),
       // Return server instance with the connection options so that we can properly
-      // bridge core and the "legacy" OpenSearch Dashboards internally. Once this bridge isn't
+      // bridge core and the "legacy" Dashboards internally. Once this bridge isn't
       // needed anymore we shouldn't return the instance from this method.
       server: this.server,
     };

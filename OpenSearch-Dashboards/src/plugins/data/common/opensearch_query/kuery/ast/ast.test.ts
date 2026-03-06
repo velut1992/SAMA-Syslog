@@ -363,7 +363,7 @@ describe('kuery AST API', () => {
   });
 
   describe('toOpenSearchQuery', () => {
-    test("should return the given node type's OpenSearch query representation", () => {
+    test("should return the given node type's query representation", () => {
       const node = nodeTypes.function.buildNode('exists', 'response');
       const expected = nodeTypes.function.toOpenSearchQuery(node, indexPattern);
       const result = toOpenSearchQuery(node, indexPattern);
@@ -391,7 +391,7 @@ describe('kuery AST API', () => {
       expect(toOpenSearchQuery(unknownTypeNode)).toEqual(expected);
     });
 
-    test("should return the given node type's OpenSearch query representation including a time zone parameter when one is provided", () => {
+    test("should return the given node type's query representation including a time zone parameter when one is provided", () => {
       const config = { dateFormatTZ: 'America/Phoenix' };
       const node = nodeTypes.function.buildNode('is', '@timestamp', '"2018-04-03T19:04:17"');
       const expected = nodeTypes.function.toOpenSearchQuery(node, indexPattern, config);

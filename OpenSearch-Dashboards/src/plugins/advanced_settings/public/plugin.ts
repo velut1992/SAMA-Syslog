@@ -102,7 +102,7 @@ export class AdvancedSettingsPlugin
         : AppNavLinkStatus.hidden,
       workspaceAvailability: WorkspaceAvailability.outsideWorkspace,
       description: i18n.translate('advancedSettings.description', {
-        defaultMessage: 'Customize the appearance and behavior of OpenSearch Dashboards.',
+        defaultMessage: 'Customize the appearance and behavior of Dashboards.',
       }),
       mount: async (params: AppMountParameters) => {
         const { mountManagementSection } = await import(
@@ -174,7 +174,7 @@ export class AdvancedSettingsPlugin
         title,
         description: i18n.translate('advancedSettings.featureCatalogueTitle', {
           defaultMessage:
-            'Customize your OpenSearch Dashboards experience — change the date format, turn on dark mode, and more.',
+            'Customize your Dashboards experience — change the date format, turn on dark mode, and more.',
         }),
         icon: 'gear',
         path: '/app/management/opensearch-dashboards/settings',

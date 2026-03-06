@@ -196,7 +196,7 @@ export interface OpenSearchStatusMeta {
 }
 
 /**
- * Fake request object created manually by OpenSearch Dashboards plugins.
+ * Fake request object created manually by Dashboards plugins.
  * @public
  */
 export interface FakeRequest {

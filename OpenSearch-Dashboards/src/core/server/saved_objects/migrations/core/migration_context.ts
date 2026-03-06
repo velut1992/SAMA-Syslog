@@ -177,7 +177,7 @@ function createDestContext(
  * target index.)
  *
  * @param activeMappings The mappings compiled from all the Saved Object types
- * known to this OpenSearch Dashboards node.
+ * known to this Dashboards node.
  * @param sourceMappings The mappings of index used as the migration source.
  * @returns The mappings that should be applied to the target index.
  */

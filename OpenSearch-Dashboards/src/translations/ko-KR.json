@@ -1155,7 +1155,7 @@
     "data.search.opensearchdsl.help": "OpenSearch 요청 실행",
     "data.search.opensearchdsl.index.help": "쿼리할 OpenSearch 인덱스",
     "data.search.opensearchdsl.q.help": "쿼리 DSL",
-    "data.search.opensearchdsl.size.help": "OpenSearch searchAPI 크기 파라미터",
+    "data.search.opensearchdsl.size.help": "searchAPI 크기 파라미터",
     "data.search.searchBar.savedQueryDescriptionLabelText": "설명",
     "data.search.searchBar.savedQueryDescriptionText": "다시 사용하려는 쿼리 텍스트와 필터를 저장합니다.",
     "data.search.searchBar.savedQueryForm.titleConflictText": "기존 저장된 쿼리와 이름이 충돌함",

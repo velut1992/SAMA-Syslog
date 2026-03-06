@@ -256,7 +256,7 @@ describe('QueryAssistBar', () => {
           dataSource: {
             id: 'mock-data-source-id',
             title: 'Default Data Source',
-            type: 'OpenSearch',
+            type: 'Supra',
           },
           id: 'default-index-pattern',
           timeFieldName: '@timestamp',

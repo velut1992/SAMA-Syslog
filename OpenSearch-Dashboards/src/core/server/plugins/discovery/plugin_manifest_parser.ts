@@ -80,7 +80,7 @@ const KNOWN_MANIFEST_FIELDS = (() => {
  * directory path and produces an error result if it fails to do so or plugin manifest
  * isn't valid.
  * @param pluginPath Path to the plugin directory where manifest should be loaded from.
- * @param packageInfo OpenSearch Dashboards package info.
+ * @param packageInfo Dashboards package info.
  * @internal
  */
 export async function parseManifest(
@@ -204,7 +204,7 @@ export async function parseManifest(
       : manifest.version;
   if (!isVersionCompatible(expectedOpenSearchDashboardsVersion, packageInfo.version)) {
     log.warn(
-      `Plugin "${manifest.id}" is version "${expectedOpenSearchDashboardsVersion}", but used OpenSearch Dashboards version is "${packageInfo.version}".`
+      `Plugin "${manifest.id}" is version "${expectedOpenSearchDashboardsVersion}", but used Dashboards version is "${packageInfo.version}".`
     );
   }
 
@@ -255,7 +255,7 @@ export async function parseManifest(
 }
 
 /**
- * Checks whether specified folder contains OpenSearch Dashboards new platform plugin. It's only
+ * Checks whether specified folder contains Dashboards new platform plugin. It's only
  * intended to be used by the legacy systems when they need to check whether specific
  * plugin path is handled by the core plugin system or not.
  * @param pluginPath Path to the plugin.
@@ -270,9 +270,9 @@ export async function isNewPlatformPlugin(pluginPath: string) {
 }
 
 /**
- * Checks whether plugin expected OpenSearch Dashboards version is compatible with the used OpenSearch Dashboards version.
- * @param expectedOpenSearchDashboardsVersion OpenSearch Dashboards version expected by the plugin.
- * @param actualOpenSearchDashboardsVersion Used OpenSearch Dashboards version.
+ * Checks whether plugin expected Dashboards version is compatible with the used Dashboards version.
+ * @param expectedOpenSearchDashboardsVersion Dashboards version expected by the plugin.
+ * @param actualOpenSearchDashboardsVersion Used Dashboards version.
  */
 function isVersionCompatible(
   expectedOpenSearchDashboardsVersion: string,

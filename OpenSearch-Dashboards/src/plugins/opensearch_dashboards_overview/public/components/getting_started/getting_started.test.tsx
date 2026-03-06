@@ -76,7 +76,7 @@ const mockApps = [
   },
   {
     category: FeatureCatalogueCategory.DATA,
-    description: 'Explore geospatial data from OpenSearch and the Elastic Maps Service.',
+    description: 'Explore geospatial data from and the Elastic Maps Service.',
     icon: 'gisApp',
     id: 'maps',
     order: 400,
@@ -101,7 +101,7 @@ const mockApps = [
   },
   {
     category: FeatureCatalogueCategory.DATA,
-    description: 'Surface and analyze relevant relationships in your OpenSearch data.',
+    description: 'Surface and analyze relevant relationships in your data.',
     icon: 'graphApp',
     id: 'graph',
     order: 600,

@@ -194,7 +194,7 @@ describe('#callAsInternalUser', () => {
   test('aborts the request and rejects if a signal is provided and aborted', async () => {
     const controller = new AbortController();
 
-    // The OpenSearch client returns a promise with an additional `abort` method to abort the request
+    // The client returns a promise with an additional `abort` method to abort the request
     const mockValue: any = Promise.resolve();
     mockValue.abort = jest.fn();
     mockOpenSearchClientInstance.ping.mockReturnValue(mockValue);
@@ -210,7 +210,7 @@ describe('#callAsInternalUser', () => {
     await expect(promise).rejects.toThrowErrorMatchingInlineSnapshot(`"Request was aborted"`);
   });
 
-  test('does not override WWW-Authenticate if returned by OpenSearch', async () => {
+  test('does not override WWW-Authenticate if returned by Supra', async () => {
     const mockAuthenticationError = new (errors.AuthenticationException as any)(
       'Authentication Exception',
       { statusCode: 401 }
@@ -270,7 +270,7 @@ describe('#asScoped', () => {
     jest.clearAllMocks();
   });
 
-  test('creates additional OpenSearch client only once', () => {
+  test('creates additional client only once', () => {
     const firstScopedClusterClient = clusterClient.asScoped(
       httpServerMock.createRawRequest({ headers: { one: '1' } })
     );
@@ -581,14 +581,14 @@ describe('#close', () => {
     );
   });
 
-  test('closes underlying OpenSearch client', () => {
+  test('closes underlying client', () => {
     expect(mockOpenSearchClientInstance.close).not.toHaveBeenCalled();
 
     clusterClient.close();
     expect(mockOpenSearchClientInstance.close).toHaveBeenCalledTimes(1);
   });
 
-  test('closes both internal and scoped underlying OpenSearch clients', () => {
+  test('closes both internal and scoped underlying clients', () => {
     clusterClient.asScoped(httpServerMock.createRawRequest({ headers: { one: '1' } }));
 
     expect(mockOpenSearchClientInstance.close).not.toHaveBeenCalled();

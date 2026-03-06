@@ -155,7 +155,7 @@ export class TelemetryService {
     }
 
     try {
-      // Report the option to the OpenSearch Dashboards server to store the settings.
+      // Report the option to the Dashboards server to store the settings.
       // It returns the encrypted update to send to the telemetry cluster [{cluster_uuid, opt_in_status}]
       const optInPayload = await this.http.post<string[]>('/api/telemetry/v2/optIn', {
         body: JSON.stringify({ enabled: optedIn }),

@@ -228,7 +228,7 @@ describe('validateWorkspaceForm', () => {
             id: '',
             name: 'title',
             connectionType: DataSourceConnectionType.OpenSearchConnection,
-            type: 'OpenSearch',
+            type: 'Supra',
           },
         ],
       }).selectedDataSourceConnections
@@ -246,13 +246,13 @@ describe('validateWorkspaceForm', () => {
             id: 'id',
             name: 'title1',
             connectionType: DataSourceConnectionType.OpenSearchConnection,
-            type: 'OpenSearch',
+            type: 'Supra',
           },
           {
             id: 'id',
             name: 'title2',
             connectionType: DataSourceConnectionType.OpenSearchConnection,
-            type: 'OpenSearch',
+            type: 'Supra',
           },
         ],
       }).selectedDataSourceConnections

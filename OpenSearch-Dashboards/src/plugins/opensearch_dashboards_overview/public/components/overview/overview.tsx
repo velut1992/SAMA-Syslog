@@ -150,7 +150,7 @@ export const Overview: FC<Props> = ({ newsFetchResult, solutions, features, logo
         showIcon={true}
         title={
           <FormattedMessage
-            defaultMessage="OpenSearch Dashboards"
+            defaultMessage="Dashboards"
             id="opensearchDashboardsOverview.header.title"
           />
         }
@@ -222,7 +222,7 @@ export const Overview: FC<Props> = ({ newsFetchResult, solutions, features, logo
                       <h2 id="osdOverviewMore__title">
                         <FormattedMessage
                           id="opensearchDashboardsOverview.more.title"
-                          defaultMessage="Do more with OpenSearch"
+                          defaultMessage="Do more with Supra"
                         />
                       </h2>
                     </EuiTitle>

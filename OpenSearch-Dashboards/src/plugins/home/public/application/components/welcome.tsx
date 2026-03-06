@@ -30,7 +30,7 @@
 
 /*
  * The UI and related logic for the welcome screen that *should* show only
- * when it is enabled (the default) and there is no OpenSearch Dashboards-consumed data
+ * when it is enabled (the default) and there is no Dashboards-consumed data
  * in Elasticsearch.
  */
 

@@ -215,7 +215,7 @@ export const Homepage = () => {
   const branding = getBranding();
   // TODO: is there a better way to check if the title is custom?
   const title =
-    branding.applicationTitle !== 'OpenSearch Dashboards'
+    branding.applicationTitle !== 'Dashboards'
       ? i18n.translate('home.customBrandingTitle', {
           defaultMessage: '{title} - Home',
           values: { title: branding.applicationTitle },

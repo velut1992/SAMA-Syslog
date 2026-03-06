@@ -40,7 +40,7 @@ export const Header = () => {
             <p>
               <FormattedMessage
                 id="dataSourcesManagement.createDataSource.description"
-                defaultMessage="Create a new data source connection to help you retrieve data from an external OpenSearch compatible source."
+                defaultMessage="Create a new data source connection to help you retrieve data from an external compatible source."
               />
               <br />
             </p>

@@ -50,7 +50,7 @@ export class ThemeService {
   /** An observable of the current charts base theme */
   public chartsBaseTheme$ = this._chartsBaseTheme$.asObservable();
 
-  /** An observable boolean for dark mode of OpenSearch Dashboards */
+  /** An observable boolean for dark mode of Dashboards */
   public get darkModeEnabled$(): Observable<boolean> {
     if (!this._uiSettingsDarkMode$) {
       throw new Error('ThemeService not initialized');

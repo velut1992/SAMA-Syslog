@@ -188,7 +188,7 @@ export class UrlFormat extends FieldFormat {
 
         let prefix = '';
         /**
-         * This code attempts to convert a relative url into a OpenSearch Dashboards absolute url
+         * This code attempts to convert a relative url into a Dashboards absolute url
          *
          * SUPPORTED:
          *  - /app/opensearch-dashboards/

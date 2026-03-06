@@ -72,7 +72,7 @@ describe('kuery node types', () => {
     });
 
     describe('toOpenSearchQuery', () => {
-      test("should return the given function type's OpenSearch query representation", () => {
+      test("should return the given function type's query representation", () => {
         const node = buildNode('is', 'extension', 'jpg');
         const expected = isFunctionToOpenSearchQuery(node, indexPattern);
         const result = toOpenSearchQuery(node, indexPattern);

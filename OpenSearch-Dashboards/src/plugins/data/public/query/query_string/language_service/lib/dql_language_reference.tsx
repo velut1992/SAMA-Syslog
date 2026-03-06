@@ -15,7 +15,7 @@ const DqlReference = () => {
   const dqlFullName = (
     <FormattedMessage
       id="data.query.queryBar.dqlFullLanguageName"
-      defaultMessage="OpenSearch Dashboards Query Language"
+      defaultMessage="Dashboards Query Language"
     />
   );
 

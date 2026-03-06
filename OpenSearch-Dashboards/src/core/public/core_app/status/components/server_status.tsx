@@ -45,7 +45,7 @@ export const ServerStatus: FunctionComponent<ServerStateProps> = ({ name, server
         <h2 data-test-subj="serverStatusTitle">
           <FormattedMessage
             id="core.statusPage.serverStatus.statusTitle"
-            defaultMessage="OpenSearch Dashboards status is {opensearchDashboardsStatus}"
+            defaultMessage="Dashboards status is {opensearchDashboardsStatus}"
             values={{
               opensearchDashboardsStatus: (
                 <EuiBadge

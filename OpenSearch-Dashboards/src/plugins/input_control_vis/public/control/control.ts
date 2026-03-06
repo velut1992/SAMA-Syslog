@@ -77,7 +77,7 @@ export abstract class Control<FilterManager extends BaseFilterManager> {
     this.type = controlParams.type;
     this.label = controlParams.label ? controlParams.label : controlParams.fieldName;
 
-    // restore state from OpenSearch Dashboards filter context
+    // restore state from Dashboards filter context
     this.reset();
     // disable until initialized
     this.disable(
@@ -146,7 +146,7 @@ export abstract class Control<FilterManager extends BaseFilterManager> {
   }
 
   /*
-   * Remove any user changes to value by resetting value to that as provided by OpenSearch Dashboards filter pills
+   * Remove any user changes to value by resetting value to that as provided by Dashboards filter pills
    */
   reset() {
     this.osdFilter = null;

@@ -34,6 +34,6 @@ var uid = process.getuid && process.getuid();
 var isRoot = require('./is_root')(uid);
 
 if (isRoot && !force) {
-  console.error('OpenSearch Dashboards should not be run as root.  Use --allow-root to continue.');
+  console.error('Dashboards should not be run as root.  Use --allow-root to continue.');
   process.exit(1);
 }

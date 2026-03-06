@@ -143,7 +143,7 @@ export const DatasetDetailsBody: FC<DatasetDetailsProps> = ({ dataset, className
               <EuiIcon
                 type={
                   dataset.type === DEFAULT_DATA.SET_TYPES.INDEX_PATTERN
-                    ? 'logoOpenSearch'
+                    ? 'logoSupra'
                     : datasetService.getType(dataset.type)?.meta?.icon?.type || 'database'
                 }
                 size="s"

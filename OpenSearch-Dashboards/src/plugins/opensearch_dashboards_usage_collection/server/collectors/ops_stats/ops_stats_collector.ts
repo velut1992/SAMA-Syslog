@@ -44,7 +44,7 @@ interface OpsStatsMetrics extends Omit<OpsMetrics, 'response_times' | 'collected
 }
 
 /**
- * Initialize a collector for OpenSearch Dashboards Ops Stats
+ * Initialize a collector for Dashboards Ops Stats
  */
 export function getOpsStatsCollector(
   usageCollection: UsageCollectionSetup,

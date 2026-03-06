@@ -15,7 +15,7 @@ import {
 } from '../associated_object_management/utils/associated_objects_tab_utils';
 export const ACC_PANEL_TITLE = 'Accelerations';
 export const ACC_PANEL_DESC =
-  'Accelerations optimize query performance by indexing external data into OpenSearch.';
+  'Accelerations optimize query performance by indexing external data into Supra.';
 export const ACC_LOADING_MSG = 'Loading/Refreshing accelerations...';
 export const ACC_DELETE_MSG = (name: string) =>
   `Are you sure you want to delete ${name}? Any accelerations associated with this data source will also be deleted.This action cannot be undone.`;

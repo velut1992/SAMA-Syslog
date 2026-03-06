@@ -41,7 +41,7 @@ export interface FlyoutComponentProps {
    */
   dependencies: QueryPanelActionDependencies;
   /**
-   * OpenSearch Dashboards services
+   * Dashboards services
    */
   services: ExploreServices;
 }

@@ -280,7 +280,7 @@ export const DirectQueryDataConnectionDetail: React.FC<DirectQueryDataConnection
           <EuiCard
             icon={<EuiIcon size="xxl" type="bolt" />}
             title={'Accelerate performance'}
-            description="Accelerate query performance through OpenSearch indexing"
+            description="Accelerate query performance through indexing"
             onClick={() =>
               renderCreateAccelerationFlyout({
                 dataSourceName,

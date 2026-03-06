@@ -149,7 +149,7 @@ export class IndexPatternManagementPlugin
       id: IPM_APP_ID,
       title: sectionsHeader,
       description: i18n.translate('indexPatternManagement.indexPattern.description', {
-        defaultMessage: 'Manage index patterns to retrieve data from OpenSearch.',
+        defaultMessage: 'Manage index patterns to retrieve data from Supra.',
       }),
       status: core.chrome.navGroup.getNavGroupEnabled()
         ? AppStatus.accessible

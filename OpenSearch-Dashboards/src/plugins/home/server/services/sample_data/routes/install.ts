@@ -96,7 +96,7 @@ const insertDataIntoIndex = (
       logger.warn(errMsg);
       return Promise.reject(
         new Error(
-          `Unable to load sample data into index "${index}", see OpenSearch Dashboards logs for details`
+          `Unable to load sample data into index "${index}", see Dashboards logs for details`
         )
       );
     }

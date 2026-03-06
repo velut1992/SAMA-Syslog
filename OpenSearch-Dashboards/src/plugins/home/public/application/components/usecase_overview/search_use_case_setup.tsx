@@ -75,7 +75,7 @@ export const registerContentToSearchUseCasePage = (
       icon: <EuiIcon type="bookOpen" size="l" color="primary" />,
       title: '',
       description: i18n.translate('home.searchOverview.setup.accessSearch.description', {
-        defaultMessage: 'Explore search capabilities and functionality of OpenSearch.',
+        defaultMessage: 'Explore search capabilities and functionality of Supra.',
       }),
       footer: (
         <EuiTextColor color="subdued">
@@ -159,7 +159,7 @@ export const registerContentToSearchUseCasePage = (
       }),
       description: i18n.translate('home.searchOverview.searchTypes.textSearch.description', {
         defaultMessage:
-          'Lexical or keyword search matches documents based on exact words or phrases. Search the text using human-friendly query string query syntax or create complex, customizable queries using Query DSL—the OpenSearch query language.',
+          'Lexical or keyword search matches documents based on exact words or phrases. Search the text using human-friendly query string query syntax or create complex, customizable queries using Query DSL—the query language.',
       }),
       icon: searchIcon,
       footer: (
@@ -203,7 +203,7 @@ export const registerContentToSearchUseCasePage = (
         'home.searchOverview.searchTypes.semanticVectorSearch.description',
         {
           defaultMessage:
-            'Using semantic vector search, you can search for documents similar to your query in a vector space. With OpenSearch’s neural search capability, you specify an embedding model, and OpenSearch manages the operational complexity for you.',
+            'Using semantic vector search, you can search for documents similar to your query in a vector space. With OpenSearch’s neural search capability, you specify an embedding model, and manages the operational complexity for you.',
         }
       ),
       icon: searchIcon,

@@ -194,7 +194,7 @@ describe('get_local_stats', () => {
   };
 
   describe('handleLocalStats', () => {
-    it('returns expected object without OpenSearch Dashboards data', () => {
+    it('returns expected object without Dashboards data', () => {
       const result = handleLocalStats(
         clusterInfo,
         clusterStatsWithNodesUsage,
@@ -213,7 +213,7 @@ describe('get_local_stats', () => {
   });
 
   describe('getLocalStats', () => {
-    it('returns expected object with OpenSearch Dashboards data', async () => {
+    it('returns expected object with Dashboards data', async () => {
       const callCluster = jest.fn();
       const usageCollection = mockUsageCollection(opensearchDashboards);
       const opensearchClient = mockGetLocalStats(clusterInfo, clusterStats);

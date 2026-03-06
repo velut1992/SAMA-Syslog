@@ -46,7 +46,7 @@ export const getEnabledScriptingLanguages = (
   http.get('/api/opensearch-dashboards/scripts/languages').catch(() => {
     toasts.addDanger(
       i18n.translate('indexPatternManagement.scriptingLanguages.errorFetchingToastDescription', {
-        defaultMessage: 'Error getting available scripting languages from OpenSearch',
+        defaultMessage: 'Error getting available scripting languages from Supra',
       })
     );
 

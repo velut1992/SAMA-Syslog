@@ -81,7 +81,7 @@ export class TimeBuckets {
   private _originalInterval: string | null = null;
   private _i?: moment.Duration | 'auto';
 
-  // because other parts of OpenSearch Dashboards arbitrarily add properties
+  // because other parts of Dashboards arbitrarily add properties
   [key: string]: any;
 
   constructor(timeBucketConfig: TimeBucketsConfig) {

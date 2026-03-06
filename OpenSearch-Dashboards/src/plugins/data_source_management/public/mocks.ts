@@ -121,7 +121,7 @@ export const managementMock = {
         getApp: jest.fn(),
         getAppsEnabled: jest.fn(),
         id: 'opensearchDashboards',
-        title: 'OpenSearch Dashboards',
+        title: 'Dashboards',
         order: 0,
         showExperimentalBadge: false,
         enabled: true,
@@ -372,7 +372,7 @@ export const remoteClusterConnections: DataSourceTableItem[] = [
 export const getDataSourcesWithCrossClusterConnections = [
   {
     id: 'test1',
-    type: 'OpenSearch',
+    type: 'Supra',
     title: 'test1',
     connectionType: 'OpenSearchConnection',
     description: 'test datasource1',
@@ -380,7 +380,7 @@ export const getDataSourcesWithCrossClusterConnections = [
   },
   {
     id: 'test2',
-    type: 'OpenSearch',
+    type: 'Supra',
     description: 'test datasource2',
     title: 'test',
     connectionType: 'OpenSearchConnection',
@@ -388,7 +388,7 @@ export const getDataSourcesWithCrossClusterConnections = [
   },
   {
     id: 'alpha-test',
-    type: 'OpenSearch',
+    type: 'Supra',
     description: 'alpha test datasource',
     title: 'alpha-test',
     connectionType: 'OpenSearchConnection',
@@ -424,7 +424,7 @@ export const directQueryConnections: DataSourceTableItem[] = [
 export const getMappedDataSources = [
   {
     id: 'test1',
-    type: 'OpenSearch',
+    type: 'Supra',
     title: 'test1',
     connectionType: 'OpenSearchConnection',
     description: 'test datasource1',
@@ -432,7 +432,7 @@ export const getMappedDataSources = [
   },
   {
     id: 'test2',
-    type: 'OpenSearch',
+    type: 'Supra',
     description: 'test datasource2',
     title: 'test',
     connectionType: 'OpenSearchConnection',
@@ -440,7 +440,7 @@ export const getMappedDataSources = [
   },
   {
     id: 'alpha-test',
-    type: 'OpenSearch',
+    type: 'Supra',
     description: 'alpha test datasource',
     title: 'alpha-test',
     connectionType: 'OpenSearchConnection',
@@ -448,7 +448,7 @@ export const getMappedDataSources = [
   },
   {
     id: 'beta-test',
-    type: 'OpenSearch',
+    type: 'Supra',
     description: 'beta test datasource',
     title: 'beta-test',
     connectionType: 'OpenSearchConnection',
@@ -459,7 +459,7 @@ export const getMappedDataSources = [
 export const getMappedDataSourcesWithEmptyDescription = [
   {
     id: 'test-null',
-    type: 'OpenSearch',
+    type: 'Supra',
     title: 'test-null',
     connectionType: 'OpenSearchConnection',
     description: null,
@@ -467,7 +467,7 @@ export const getMappedDataSourcesWithEmptyDescription = [
   },
   {
     id: 'test-undefined',
-    type: 'OpenSearch',
+    type: 'Supra',
     title: 'test-undefined',
     connectionType: 'OpenSearchConnection',
     description: undefined,
@@ -475,7 +475,7 @@ export const getMappedDataSourcesWithEmptyDescription = [
   },
   {
     id: 'test-no-description',
-    type: 'OpenSearch',
+    type: 'Supra',
     title: 'test-no-description',
     connectionType: 'OpenSearchConnection',
     // no description

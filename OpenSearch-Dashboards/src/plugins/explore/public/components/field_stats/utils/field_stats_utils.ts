@@ -86,7 +86,7 @@ export function getApplicableSections(fieldType: string): DetailSectionConfig[] 
  * @param fieldName The field name
  * @param fieldType The field type
  * @param dataset The dataset to query (must have type property)
- * @param services OpenSearch Dashboards services
+ * @param services Dashboards services
  * @returns Object containing all fetched details keyed by section id
  */
 export async function fetchFieldDetails(
@@ -145,7 +145,7 @@ export async function fetchFieldDetails(
  * @param detailsLoading Set of field names currently loading details
  * @param setDetailsLoading Setter for details loading state
  * @param dataset Current dataset
- * @param services OpenSearch Dashboards services
+ * @param services Dashboards services
  * @returns Handler function for row expansion
  */
 export function createRowExpandHandler(

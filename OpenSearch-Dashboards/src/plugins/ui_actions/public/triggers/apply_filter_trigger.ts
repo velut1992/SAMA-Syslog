@@ -39,6 +39,6 @@ export const applyFilterTrigger: Trigger<'FILTER_TRIGGER'> = {
   }),
   description: i18n.translate('uiActions.triggers.applyFilterDescription', {
     defaultMessage:
-      'When OpenSearch Dashboards filter is applied. Could be a single value or a range filter.',
+      'When Dashboards filter is applied. Could be a single value or a range filter.',
   }),
 };

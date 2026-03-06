@@ -36,7 +36,7 @@ describe('savedObjects/health_check/isConfigVersionUpgradeable', function () {
     opensearchDashboardsVersion: string,
     expected: boolean
   ) {
-    it(`should return ${expected} for config version ${savedVersion} and OpenSearch Dashboards version ${opensearchDashboardsVersion}`, () => {
+    it(`should return ${expected} for config version ${savedVersion} and Dashboards version ${opensearchDashboardsVersion}`, () => {
       expect(isConfigVersionUpgradeable(savedVersion, opensearchDashboardsVersion)).toBe(expected);
     });
   }

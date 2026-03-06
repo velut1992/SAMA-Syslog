@@ -47,7 +47,7 @@ const createConfig = (parts: Partial<OpenSearchClientConfig> = {}): OpenSearchCl
 };
 
 describe('parseClientOptions', () => {
-  it('includes headers designing the HTTP request as originating from OpenSearch Dashboards by default', () => {
+  it('includes headers designing the HTTP request as originating from Dashboards by default', () => {
     const config = createConfig({});
 
     expect(parseClientOptions(config, false)).toEqual(

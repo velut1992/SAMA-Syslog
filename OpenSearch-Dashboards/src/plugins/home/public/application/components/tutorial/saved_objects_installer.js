@@ -48,7 +48,7 @@ import {
 class SavedObjectsInstallerUi extends React.Component {
   DEFAULT_BUTTON_LABEL = this.props.intl.formatMessage({
     id: 'home.tutorial.savedObject.defaultButtonLabel',
-    defaultMessage: 'Load OpenSearch Dashboards objects',
+    defaultMessage: 'Load Dashboards objects',
   });
 
   state = {
@@ -142,7 +142,7 @@ Click 'Confirm overwrite' to import and overwrite existing objects. Any changes 
           {
             id: 'home.tutorial.savedObject.unableToAddErrorMessage',
             defaultMessage:
-              'Unable to add {errorsLength} of {savedObjectsLength} OpenSearch Dashboards objects, Error: {errorMessage}',
+              'Unable to add {errorsLength} of {savedObjectsLength} Dashboards objects, Error: {errorMessage}',
           },
           {
             errorsLength: errors.length,
@@ -218,7 +218,7 @@ Click 'Confirm overwrite' to import and overwrite existing objects. Any changes 
     return {
       title: this.props.intl.formatMessage({
         id: 'home.tutorial.savedObject.loadTitle',
-        defaultMessage: 'Load OpenSearch Dashboards objects',
+        defaultMessage: 'Load Dashboards objects',
       }),
       status: this.state.isInstalled ? 'complete' : 'incomplete',
       children: installStep,

@@ -37,7 +37,7 @@ const HTTP_REQUEST_TRANSACTION_NAME_REGEX = /^(GET|POST|PUT|HEAD|PATCH|DELETE|OP
 
 /**
  * This is the entry point used to boot the frontend when serving a application
- * that lives in the OpenSearch Dashboards Platform.
+ * that lives in the Dashboards Platform.
  */
 
 interface ApmConfig {
@@ -77,7 +77,7 @@ export class ApmSystem {
     if (!this.enabled || !start) return;
     /**
      * Register listeners for navigation changes and capture them as
-     * route-change transactions after OpenSearch Dashboards app is bootstrapped
+     * route-change transactions after Dashboards app is bootstrapped
      */
     start.application.currentAppId$.subscribe((appId) => {
       const apmInstance = (window as any).opensearchApm;

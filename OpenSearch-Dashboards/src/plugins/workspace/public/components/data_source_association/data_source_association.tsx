@@ -162,7 +162,7 @@ export const DataSourceAssociation = ({ excludedDataSourceIds, onComplete, onErr
       onClick={() => showAssociationModal(AssociationDataSourceModalMode.OpenSearchConnections)}
     >
       {i18n.translate('workspace.dataSources.associationButton.opensearch.label', {
-        defaultMessage: 'OpenSearch data sources',
+        defaultMessage: 'data sources',
       })}
     </EuiContextMenuItem>,
     <EuiContextMenuItem

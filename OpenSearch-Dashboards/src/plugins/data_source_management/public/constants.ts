@@ -17,7 +17,7 @@ export const DatasourceTypeToDisplayName: { [key in DirectQueryDatasourceType]: 
 
 export const PROMETHEUS_URL = 'Prometheus';
 export const AMAZON_S3_URL = 'AmazonS3AWSGlue';
-export const OPENSEARCH_URL = 'OpenSearch';
+export const OPENSEARCH_URL = 'Supra';
 
 export const UrlToDatasourceType: { [key: string]: DirectQueryDatasourceType } = {
   [PROMETHEUS_URL]: 'PROMETHEUS',

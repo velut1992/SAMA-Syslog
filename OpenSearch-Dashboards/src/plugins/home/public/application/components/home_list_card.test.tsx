@@ -20,7 +20,7 @@ describe('<HomeListCard />', () => {
           label: 'Quickstart guide',
           href: 'https://opensearch.org/docs/latest/dashboards/quickstart/',
           target: '_blank',
-          description: 'Get started in minutes with OpenSearch Dashboards',
+          description: 'Get started in minutes with Dashboards',
         },
       ],
     };
@@ -37,7 +37,7 @@ it('should render View All button when allLink is provided', () => {
         label: 'Quickstart guide',
         href: 'https://opensearch.org/docs/latest/dashboards/quickstart/',
         target: '_blank',
-        description: 'Get started in minutes with OpenSearch Dashboards',
+        description: 'Get started in minutes with Dashboards',
       },
     ],
     allLink: <EuiLink>View all</EuiLink>,
@@ -55,7 +55,7 @@ it('should not show View All button when allLink is not provided', () => {
         label: 'Quickstart guide',
         href: 'https://opensearch.org/docs/latest/dashboards/quickstart/',
         target: '_blank',
-        description: 'Get started in minutes with OpenSearch Dashboards',
+        description: 'Get started in minutes with Dashboards',
       },
     ],
   };

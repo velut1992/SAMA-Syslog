@@ -164,7 +164,7 @@ describe('helpers.ts', () => {
   });
 
   describe('mapFieldTypeToVegaType', () => {
-    it('should map OpenSearch field types to Vega data types', () => {
+    it('should map field types to Vega data types', () => {
       expect(mapFieldTypeToVegaType('number')).toBe('quantitative');
       expect(mapFieldTypeToVegaType('date')).toBe('temporal');
       expect(mapFieldTypeToVegaType('time')).toBe('temporal');

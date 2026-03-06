@@ -66,7 +66,7 @@ describe('Remote Connections', () => {
     const mockDataSources = [
       {
         id: 'ds-1',
-        engine: 'OpenSearch',
+        engine: 'Supra',
         datasourceversion: '2.0.0',
         installedplugins: [],
       },

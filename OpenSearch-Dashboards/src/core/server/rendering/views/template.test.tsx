@@ -89,7 +89,7 @@ describe('Loading page ', () => {
       expect(component).toMatchSnapshot();
     });
 
-    it('rendered using the original OpenSearch loading logo spinner', () => {
+    it('rendered using the original loading logo spinner', () => {
       const branding = {
         darkMode: false,
         logo: {},

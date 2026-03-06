@@ -54,7 +54,7 @@ import { create } from './create';
 import { Logger } from '../cli_plugin/lib/logger';
 import * as prompt from './utils/prompt';
 
-describe('OpenSearch Dashboards keystore', () => {
+describe('Dashboards keystore', () => {
   describe('create', () => {
     const sandbox = sinon.createSandbox();
 
@@ -85,7 +85,7 @@ describe('OpenSearch Dashboards keystore', () => {
       sinon.assert.calledOnce(Logger.prototype.log);
       sinon.assert.calledWith(
         Logger.prototype.log,
-        `Created OpenSearch Dashboards keystore in ${path}`
+        `Created Dashboards keystore in ${path}`
       );
     });
 
@@ -98,7 +98,7 @@ describe('OpenSearch Dashboards keystore', () => {
       sinon.assert.calledOnce(prompt.confirm);
       const { args } = prompt.confirm.getCall(0);
 
-      expect(args[0]).toEqual('An OpenSearch Dashboards keystore already exists. Overwrite?');
+      expect(args[0]).toEqual('An Dashboards keystore already exists. Overwrite?');
     });
 
     it('aborts if overwrite is denied', async () => {

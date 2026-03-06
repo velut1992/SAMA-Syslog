@@ -63,7 +63,7 @@ describe('kuery functions', () => {
     });
 
     describe('toOpenSearchQuery', () => {
-      test("should wrap subqueries in an OpenSearch bool query's should clause", () => {
+      test("should wrap subqueries in an bool query's should clause", () => {
         const node = nodeTypes.function.buildNode('or', [childNode1, childNode2]);
         const result = or.toOpenSearchQuery(node, indexPattern);
 

@@ -160,9 +160,9 @@ function convertSeriesParams(visState) {
 
 /**
  * This function is responsible for updating old visStates - the actual saved object
- * object - into the format, that will be required by the current OpenSearch Dashboards version.
+ * object - into the format, that will be required by the current Dashboards version.
  * This method will be executed for each saved vis object, that will be loaded.
- * It will return the updated version as OpenSearch Dashboards would expect it. It does not modify
+ * It will return the updated version as Dashboards would expect it. It does not modify
  * the passed state.
  */
 export const updateOldState = (visState) => {

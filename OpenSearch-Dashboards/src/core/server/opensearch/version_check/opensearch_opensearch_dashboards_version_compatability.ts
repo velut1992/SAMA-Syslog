@@ -40,7 +40,7 @@ interface VersionNumbers {
 /**
  * @private
  *
- * List of OpenSearch Dashboards major versions that can connect to legacy version
+ * List of Dashboards major versions that can connect to legacy version
  * 7.10.2.
  *
  * WARNING: OpenSearchDashboards 7.x could cause conflicts.
@@ -50,7 +50,7 @@ const osdLegacyCompatibleMajorVersions = [1, 2, 3];
 /**
  * Checks for the compatibilitiy between OpenSearch and OpenSearchDashboards versions
  * 1. Major version differences will never work together.
- * 2. Older versions of OpenSearch won't work with newer versions of OpenSearch Dashboards.
+ * 2. Older versions of OpenSearch won't work with newer versions of Dashboards.
  */
 export function opensearchVersionCompatibleWithOpenSearchDashboards(
   opensearchVersion: string,
@@ -105,7 +105,7 @@ export function opensearchVersionEqualsOpenSearchDashboards(
 
 /**
  * Verify legacy version of engines is compatible with current version
- * of OpenSearch Dashboards if OpenSearch Dashboards is 1.x.
+ * of Dashboards if Dashboards is 1.x.
  *
  * @private
  * @param legacyVersionNumbers semantic version of legacy engine

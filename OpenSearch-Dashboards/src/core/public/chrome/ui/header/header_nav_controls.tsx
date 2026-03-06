@@ -49,7 +49,7 @@ export function HeaderNavControls({ navControls$, side, className }: Props) {
   }
 
   // It should be performant to use the index as the key since these are unlikely
-  // to change while OpenSearch Dashboards is running.
+  // to change while Dashboards is running.
   return (
     <>
       {navControls.map((navControl: ChromeNavControl, index: number) => (

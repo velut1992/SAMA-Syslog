@@ -44,7 +44,7 @@ export class OptedInNoticeBanner extends React.PureComponent<Props> {
   render() {
     const { onSeenBanner } = this.props;
     const bannerTitle = i18n.translate('telemetry.telemetryOptedInNoticeTitle', {
-      defaultMessage: 'Help us improve the OpenSearch Stack',
+      defaultMessage: 'Help us improve the Stack',
     });
 
     return (

@@ -76,7 +76,7 @@ export const aggStdDeviation = (): FunctionDefinition => ({
     json: {
       types: ['string'],
       help: i18n.translate('data.search.aggs.metrics.std_deviation.json.help', {
-        defaultMessage: 'Advanced json to include when the agg is sent to OpenSearch',
+        defaultMessage: 'Advanced json to include when the agg is sent to Supra',
       }),
     },
     customLabel: {

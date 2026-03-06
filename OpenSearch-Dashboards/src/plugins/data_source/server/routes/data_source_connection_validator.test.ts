@@ -40,7 +40,7 @@ describe('DataSourceManagement: data_source_connection_validator.ts', () => {
       const dataSourceValidator = new DataSourceConnectionValidator(opensearchClient, {});
       const fetchDataSourcesVersionResponse = await dataSourceValidator.fetchDataSourceInfo();
       expect(fetchDataSourcesVersionResponse.dataSourceVersion).toBe('2.11.0');
-      expect(fetchDataSourcesVersionResponse.dataSourceEngineType).toBe('OpenSearch');
+      expect(fetchDataSourcesVersionResponse.dataSourceEngineType).toBe('Supra');
     });
 
     test('fetchInstalledPlugins - Success: opensearch client response code is 200 and response body have installed plugin list', async () => {

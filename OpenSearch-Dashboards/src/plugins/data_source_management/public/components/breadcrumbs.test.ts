@@ -42,12 +42,12 @@ describe('DataSourceManagement: breadcrumbs.ts', () => {
     expect(bc[1].href).toBe('/create');
   });
 
-  test('get create OpenSearch breadcrumb', () => {
+  test('get create breadcrumb', () => {
     // @ts-expect-error TS2554 TODO(ts-error): fixme
     const bc = getCreateOpenSearchDataSourceBreadcrumbs();
     expect(bc.length).toBe(3);
     expect(bc[2].text).toBe('Open Search');
-    expect(bc[2].href).toBe('/configure/OpenSearch');
+    expect(bc[2].href).toBe('/configure/Supra');
   });
 
   test('get create Amazon S3 breadcrumb', () => {

@@ -85,7 +85,7 @@ describe('url overflow detection', () => {
     expect(window.location.assign).not.toHaveBeenCalled();
     expect(toasts.addWarning).toHaveBeenCalledWith(
       expect.objectContaining({
-        title: 'The URL is big and OpenSearch Dashboards might stop working',
+        title: 'The URL is big and Dashboards might stop working',
         text: expect.any(Function),
       })
     );

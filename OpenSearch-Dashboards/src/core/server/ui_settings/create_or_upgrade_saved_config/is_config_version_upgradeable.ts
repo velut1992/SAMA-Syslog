@@ -30,7 +30,7 @@
 
 import semver from 'semver';
 /**
- * List of OpenSearch Dashboards major versions that can pull the
+ * List of Dashboards major versions that can pull the
  * config from a legacy version that is higher in semvar.
  *
  * WARNING: OpenSearchDashboards 7.x could cause conflicts.
@@ -66,7 +66,7 @@ export function isConfigVersionUpgradeable(
     return false;
   }
 
-  // ultimately if the saved config is from a previous OpenSearch Dashboards version
+  // ultimately if the saved config is from a previous Dashboards version
   // or from an earlier rc of the same version, then we can upgrade
   const savedIsLessThanOpenSearchDashboards = semver.lt(
     savedReleaseVersion,

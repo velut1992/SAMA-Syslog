@@ -200,7 +200,7 @@ export const config: ServiceConfigDescriptor<OpenSearchConfigType> = {
  */
 export class OpenSearchConfig {
   /**
-   * The interval between health check requests OpenSearch Dashboards sends to the OpenSearch.
+   * The interval between health check requests Dashboards sends to the OpenSearch.
    */
   public readonly healthCheckDelay: Duration;
 
@@ -233,7 +233,7 @@ export class OpenSearchConfig {
   public readonly hosts: string[];
 
   /**
-   * List of OpenSearch Dashboards client-side headers to send to OpenSearch when request
+   * List of Dashboards client-side headers to send to OpenSearch when request
    * scoped cluster client is used. If this is an empty array then *no* client-side
    * will be sent.
    */
@@ -281,18 +281,18 @@ export class OpenSearchConfig {
 
   /**
    * If OpenSearch is protected with basic authentication, this setting provides
-   * the username that the OpenSearch Dashboards server uses to perform its administrative functions.
+   * the username that the Dashboards server uses to perform its administrative functions.
    */
   public readonly username?: string;
 
   /**
    * If OpenSearch is protected with basic authentication, this setting provides
-   * the password that the OpenSearch Dashboards server uses to perform its administrative functions.
+   * the password that the Dashboards server uses to perform its administrative functions.
    */
   public readonly password?: string;
 
   /**
-   * Set of settings configure SSL connection between OpenSearch Dashboards and OpenSearch that
+   * Set of settings configure SSL connection between Dashboards and OpenSearch that
    * are required when `xpack.ssl.verification_mode` in OpenSearch is set to
    * either `certificate` or `full`.
    */

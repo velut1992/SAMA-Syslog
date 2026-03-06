@@ -30,7 +30,7 @@
 
 import { UI_SETTINGS } from '../../../../../data/common';
 
-jest.mock('./send_request_to_opensearch', () => ({ sendRequestToOpenSearch: jest.fn() }));
+jest.mock('./send_request_to_opensearch', () => ({ sendRequestToSupra: jest.fn() }));
 jest.mock('../../contexts/editor_context/editor_registry', () => ({
   instance: { getInputEditor: jest.fn() },
 }));
@@ -48,7 +48,7 @@ import { instance as editorRegistry } from '../../contexts/editor_context/editor
 import { sendRequestToOpenSearch } from './send_request_to_opensearch';
 import { useSendCurrentRequestToOpenSearch } from './use_send_current_request_to_opensearch';
 
-describe('useSendCurrentRequestToOpenSearch', () => {
+describe('useSendCurrentRequestToSupra', () => {
   let mockContextValue: ContextValue;
   let dispatch: (...args: any[]) => void;
   const contexts = ({ children }: { children?: any }) => (
@@ -65,11 +65,11 @@ describe('useSendCurrentRequestToOpenSearch', () => {
     jest.resetAllMocks();
   });
 
-  it('calls send request to OpenSearch', async () => {
+  it('calls send request to Supra', async () => {
     // Set up mocks
     (mockContextValue.services.settings.toJSON as jest.Mock).mockReturnValue({});
     // This request should succeed
-    (sendRequestToOpenSearch as jest.Mock).mockResolvedValue([]);
+    (sendRequestToas jest.Mock).mockResolvedValue([]);
     (editorRegistry.getInputEditor as jest.Mock).mockImplementation(() => ({
       getRequestsInRange: () => ['test'],
     }));
@@ -77,7 +77,7 @@ describe('useSendCurrentRequestToOpenSearch', () => {
     const { result } = renderHook(() => useSendCurrentRequestToOpenSearch(), { wrapper: contexts });
     await act(() => result.current());
 
-    expect(sendRequestToOpenSearch).toHaveBeenCalledWith({
+    expect(sendRequestToSupra).toHaveBeenCalledWith({
       requests: ['test'],
       http: mockContextValue.services.http,
     });
@@ -87,7 +87,7 @@ describe('useSendCurrentRequestToOpenSearch', () => {
     expect(requestSucceededCall).toEqual({ type: 'requestSuccess', payload: { data: [] } });
   });
 
-  it('calls sendRequestToOpenSearch turning withLongNumeralsSupport on when long-numerals is enabled', async () => {
+  it('calls sendRequestToturning withLongNumeralsSupport on when long-numerals is enabled', async () => {
     // Set up mocks
     (mockContextValue.services.settings.toJSON as jest.Mock).mockReturnValue({});
     (mockContextValue.services.uiSettings.get as jest.Mock).mockImplementation((key: string) =>
@@ -95,14 +95,14 @@ describe('useSendCurrentRequestToOpenSearch', () => {
     );
 
     // This request should succeed
-    (sendRequestToOpenSearch as jest.Mock).mockResolvedValue([]);
+    (sendRequestToas jest.Mock).mockResolvedValue([]);
     (editorRegistry.getInputEditor as jest.Mock).mockImplementation(() => ({
       getRequestsInRange: () => ['test'],
     }));
 
     const { result } = renderHook(() => useSendCurrentRequestToOpenSearch(), { wrapper: contexts });
     await act(() => result.current());
-    expect(sendRequestToOpenSearch).toHaveBeenCalledWith({
+    expect(sendRequestToSupra).toHaveBeenCalledWith({
       requests: ['test'],
       http: mockContextValue.services.http,
       withLongNumeralsSupport: true,
@@ -113,7 +113,7 @@ describe('useSendCurrentRequestToOpenSearch', () => {
     expect(requestSucceededCall).toEqual({ type: 'requestSuccess', payload: { data: [] } });
   });
 
-  it('calls sendRequestToOpenSearch turning withLongNumeralsSupport off when long-numerals is disabled', async () => {
+  it('calls sendRequestToturning withLongNumeralsSupport off when long-numerals is disabled', async () => {
     // Set up mocks
     (mockContextValue.services.settings.toJSON as jest.Mock).mockReturnValue({});
     (mockContextValue.services.uiSettings.get as jest.Mock).mockImplementation((key: string) =>
@@ -121,7 +121,7 @@ describe('useSendCurrentRequestToOpenSearch', () => {
     );
 
     // This request should succeed
-    (sendRequestToOpenSearch as jest.Mock).mockResolvedValue([]);
+    (sendRequestToas jest.Mock).mockResolvedValue([]);
     (editorRegistry.getInputEditor as jest.Mock).mockImplementation(() => ({
       getRequestsInRange: () => ['test'],
     }));
@@ -129,7 +129,7 @@ describe('useSendCurrentRequestToOpenSearch', () => {
     const { result } = renderHook(() => useSendCurrentRequestToOpenSearch(), { wrapper: contexts });
     await act(() => result.current());
 
-    expect(sendRequestToOpenSearch).toHaveBeenCalledWith({
+    expect(sendRequestToSupra).toHaveBeenCalledWith({
       requests: ['test'],
       http: mockContextValue.services.http,
       withLongNumeralsSupport: false,
@@ -142,7 +142,7 @@ describe('useSendCurrentRequestToOpenSearch', () => {
 
   it('handles known errors', async () => {
     // Set up mocks
-    (sendRequestToOpenSearch as jest.Mock).mockRejectedValue({ response: 'nada' });
+    (sendRequestToas jest.Mock).mockRejectedValue({ response: 'nada' });
     (editorRegistry.getInputEditor as jest.Mock).mockImplementation(() => ({
       getRequestsInRange: () => ['test'],
     }));
@@ -158,7 +158,7 @@ describe('useSendCurrentRequestToOpenSearch', () => {
 
   it('handles unknown errors', async () => {
     // Set up mocks
-    (sendRequestToOpenSearch as jest.Mock).mockRejectedValue(NaN /* unexpected error value */);
+    (sendRequestToas jest.Mock).mockRejectedValue(NaN /* unexpected error value */);
     (editorRegistry.getInputEditor as jest.Mock).mockImplementation(() => ({
       getRequestsInRange: () => ['test'],
     }));

@@ -43,14 +43,14 @@ const noop = () => undefined;
 
 /**
  * Represents an OpenSearch cluster API client created by the platform.
- * It allows to call API on behalf of the internal OpenSearch Dashboards user and
+ * It allows to call API on behalf of the internal Dashboards user and
  * the actual user that is derived from the request headers (via `asScoped(...)`).
  *
  * @public
  **/
 export interface IClusterClient {
   /**
-   * A {@link OpenSearchClient | client} to be used to query the OpenSearch cluster on behalf of the OpenSearch Dashboards internal user
+   * A {@link OpenSearchClient | client} to be used to query the OpenSearch cluster on behalf of the Dashboards internal user
    */
   readonly asInternalUser: OpenSearchClient;
   /**

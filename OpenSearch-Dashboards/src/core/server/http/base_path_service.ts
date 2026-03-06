@@ -33,7 +33,7 @@ import { modifyUrl } from '@osd/std';
 import { ensureRawRequest, OpenSearchDashboardsRequest, LegacyRequest } from './router';
 
 /**
- * Access or manipulate the OpenSearch Dashboards base path
+ * Access or manipulate the Dashboards base path
  *
  * @public
  */
@@ -112,7 +112,7 @@ export class BasePath {
 }
 
 /**
- * Access or manipulate the OpenSearch Dashboards base path
+ * Access or manipulate the Dashboards base path
  *
  * {@link BasePath}
  * @public
