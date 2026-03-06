@@ -50,7 +50,14 @@
       "Bash(do:*)",
       "Bash(OPENSEARCH_INITIAL_ADMIN_PASSWORD=\"admin\" yes:*)",
       "Bash(du:*)",
-      "Bash(pip3 install:*)"
+      "Bash(pip3 install:*)",
+      "Bash(git status:*)",
+      "Bash(git check-ignore:*)",
+      "Bash(git add:*)",
+      "Bash(gh auth:*)",
+      "Bash(git remote:*)",
+      "Bash(git push:*)",
+      "Bash(git rm:*)"
     ]
   }
 }
