@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Supra Stack Installation Guide - Windows Server</title>
+    <style>
+        @media print {
+            body { font-size: 11pt; }
+            .page-break { page-break-before: always; }
+            h1, h2, h3 { page-break-after: avoid; }
+            table, pre, blockquote { page-break-inside: avoid; }
+            a { text-decoration: none; color: #1a1a1a; }
+            .toc a { color: #1a1a1a; }
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.7;
+            color: #2c3e50;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 40px 50px;
+            background: #ffffff;
+        }
+
+        /* Cover / Header */
+        .cover {
+            text-align: center;
+            padding: 60px 0 40px 0;
+            border-bottom: 3px solid #2c3e50;
+            margin-bottom: 40px;
+        }
+
+        .cover h1 {
+            font-size: 32px;
+            color: #1a252f;
+            margin-bottom: 10px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+
+        .cover .subtitle {
+            font-size: 18px;
+            color: #5a6a7a;
+            margin-bottom: 30px;
+        }
+
+        .cover .meta {
+            font-size: 14px;
+            color: #7f8c8d;
+            line-height: 2;
+        }
+
+        .cover .meta strong {
+            color: #2c3e50;
+        }
+
+        /* Table of Contents */
+        .toc {
+            background: #f8f9fa;
+            border: 1px solid #e1e4e8;
+            border-radius: 6px;
+            padding: 30px 35px;
+            margin-bottom: 40px;
+        }
+
+        .toc h2 {
+            font-size: 20px;
+            color: #1a252f;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #e1e4e8;
+            padding-bottom: 10px;
+        }
+
+        .toc ol {
+            padding-left: 20px;
+        }
+
+        .toc li {
+            margin-bottom: 6px;
+            font-size: 15px;
+        }
+
+        .toc a {
+            color: #2980b9;
+            text-decoration: none;
+        }
+
+        .toc a:hover {
+            text-decoration: underline;
+        }
+
+        /* Section Headers */
+        h2 {
+            font-size: 24px;
+            color: #1a252f;
+            margin-top: 50px;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #3498db;
+        }
+
+        h3 {
+            font-size: 18px;
+            color: #2c3e50;
+            margin-top: 30px;
+            margin-bottom: 12px;
+        }
+
+        h4 {
+            font-size: 16px;
+            color: #34495e;
+            margin-top: 20px;
+            margin-bottom: 10px;
+        }
+
+        /* Paragraphs */
+        p {
+            margin-bottom: 14px;
+            font-size: 15px;
+        }
+
+        /* Lists */
+        ul, ol {
+            margin-bottom: 16px;
+            padding-left: 28px;
+        }
+
+        li {
+            margin-bottom: 6px;
+            font-size: 15px;
+        }
+
+        /* Code blocks */
+        pre {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 18px 22px;
+            border-radius: 6px;
+            overflow-x: auto;
+            margin-bottom: 20px;
+            font-size: 13.5px;
+            line-height: 1.6;
+            font-family: 'Cascadia Code', 'Consolas', 'Courier New', monospace;
+        }
+
+        pre .comment {
+            color: #6a9955;
+        }
+
+        code {
+            background: #f0f2f5;
+            color: #c7254e;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 13.5px;
+            font-family: 'Cascadia Code', 'Consolas', 'Courier New', monospace;
+        }
+
+        pre code {
+            background: none;
+            color: inherit;
+            padding: 0;
+        }
+
+        /* Tables */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+
+        th {
+            background: #2c3e50;
+            color: #ffffff;
+            padding: 12px 16px;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        td {
+            padding: 10px 16px;
+            border-bottom: 1px solid #e1e4e8;
+        }
+
+        tr:nth-child(even) {
+            background: #f8f9fa;
+        }
+
+        /* Callout boxes */
+        .callout {
+            border-left: 4px solid #3498db;
+            background: #eaf2f8;
+            padding: 16px 20px;
+            margin-bottom: 20px;
+            border-radius: 0 6px 6px 0;
+            font-size: 14px;
+        }
+
+        .callout.warning {
+            border-left-color: #e74c3c;
+            background: #fdf0ef;
+        }
+
+        .callout.important {
+            border-left-color: #f39c12;
+            background: #fef9e7;
+        }
+
+        .callout.note {
+            border-left-color: #27ae60;
+            background: #eafaf1;
+        }
+
+        .callout strong {
+            display: block;
+            margin-bottom: 4px;
+            font-size: 14px;
+        }
+
+        /* Horizontal rule */
+        hr {
+            border: none;
+            border-top: 1px solid #e1e4e8;
+            margin: 40px 0;
+        }
+
+        /* Summary box */
+        .summary-box {
+            background: #2c3e50;
+            color: #ffffff;
+            padding: 25px 30px;
+            border-radius: 8px;
+            margin: 30px 0;
+        }
+
+        .summary-box h3 {
+            color: #ffffff;
+            margin-top: 0;
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+
+        .summary-box ol {
+            padding-left: 20px;
+        }
+
+        .summary-box li {
+            color: #ecf0f1;
+            margin-bottom: 8px;
+        }
+
+        .summary-box .highlight {
+            color: #f39c12;
+            font-weight: 600;
+        }
+
+        /* Ordered list with steps */
+        .steps {
+            counter-reset: step-counter;
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .steps li {
+            counter-increment: step-counter;
+            padding-left: 40px;
+            position: relative;
+            margin-bottom: 12px;
+        }
+
+        .steps li::before {
+            content: counter(step-counter);
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 28px;
+            height: 28px;
+            background: #3498db;
+            color: #fff;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 28px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            margin-top: 60px;
+            padding-top: 20px;
+            border-top: 2px solid #e1e4e8;
+            color: #7f8c8d;
+            font-size: 13px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Cover -->
+    <div class="cover">
+        <h1>Supra Stack Installation Guide</h1>
+        <div class="subtitle">Windows Server Deployment</div>
+        <div class="meta">
+            <strong>Version:</strong> 3.6.0<br>
+            <strong>Platform:</strong> Windows Server 2016 or later (x64)<br>
+            <strong>Package:</strong> supra-installer-3.6.0-windows-x64.zip
+        </div>
+    </div>
+
+    <!-- Table of Contents -->
+    <div class="toc">
+        <h2>Table of Contents</h2>
+        <ol>
+            <li><a href="#prerequisites">Prerequisites</a></li>
+            <li><a href="#extract">Copy and Extract the Installer Package</a></li>
+            <li><a href="#nssm">Download and Place NSSM (Before Installation)</a></li>
+            <li><a href="#install">Run the Installer</a></li>
+            <li><a href="#verify">Verify the Installation</a></li>
+            <li><a href="#services">Managing Services</a></li>
+            <li><a href="#log-collector">Log Collector Setup</a></li>
+            <li><a href="#uninstall">Uninstallation</a></li>
+            <li><a href="#ports">Ports and Firewall</a></li>
+            <li><a href="#troubleshooting">Troubleshooting</a></li>
+        </ol>
+    </div>
+
+    <!-- Section 1: Prerequisites -->
+    <h2 id="prerequisites">1. Prerequisites</h2>
+    <ul>
+        <li>Windows Server 2016 or later (x64)</li>
+        <li>Administrator access</li>
+        <li>PowerShell 5.1 or later</li>
+        <li>Minimum 4 GB RAM (8 GB or more recommended)</li>
+        <li>Minimum 10 GB free disk space</li>
+    </ul>
+
+    <hr>
+
+    <!-- Section 2: Extract -->
+    <h2 id="extract">2. Copy and Extract the Installer Package</h2>
+    <p>Copy <code>supra-installer-3.6.0-windows-x64.zip</code> to the target Windows Server machine.</p>
+    <p>Open PowerShell and run:</p>
+    <pre><code>Expand-Archive -Path supra-installer-3.6.0-windows-x64.zip -DestinationPath .</code></pre>
+    <p>This will create a <code>supra-installer</code> folder containing all the components.</p>
+
+    <hr>
+
+    <!-- Section 3: NSSM -->
+    <h2 id="nssm">3. Download and Place NSSM (Before Installation)</h2>
+
+    <div class="callout warning">
+        <strong>IMPORTANT</strong>
+        This step must be completed <strong>BEFORE</strong> running the installer script. The installer will fail if NSSM is not in place.
+    </div>
+
+    <p>NSSM (Non-Sucking Service Manager) is required to register Supra components as Windows Services.</p>
+
+    <h3>3.1 Download NSSM</h3>
+    <p>Download NSSM from one of the following sources:</p>
+    <ul>
+        <li><strong>Official site:</strong> <code>https://nssm.cc/release/nssm-2.24.zip</code></li>
+        <li><strong>GitHub mirror (if official site is unavailable):</strong> <code>https://github.com/kirillkovalenko/nssm/releases</code></li>
+    </ul>
+
+    <h3>3.2 Extract and Place nssm.exe</h3>
+    <pre><code><span class="comment"># Extract the NSSM archive</span>
+Expand-Archive -Path nssm-2.24.zip -DestinationPath .\nssm-extract
+
+<span class="comment"># Copy the 64-bit nssm.exe into the installer package</span>
+Copy-Item .\nssm-extract\nssm-2.24\win64\nssm.exe -Destination .\supra-installer\nssm\nssm.exe</code></pre>
+
+    <h3>3.3 Verify NSSM is in Place</h3>
+    <pre><code>Test-Path .\supra-installer\nssm\nssm.exe</code></pre>
+    <p>This should return <code>True</code>.</p>
+
+    <h3>3.4 Cleanup</h3>
+    <pre><code>Remove-Item -Recurse .\nssm-extract
+Remove-Item nssm-2.24.zip</code></pre>
+
+    <hr>
+
+    <!-- Section 4: Install -->
+    <h2 id="install">4. Run the Installer</h2>
+    <p>Right-click PowerShell and select <strong>"Run as Administrator"</strong>.</p>
+    <p>Navigate to the directory containing the extracted installer and run:</p>
+
+    <pre><code><span class="comment"># Install to the default location (C:\supra)</span>
+.\supra-installer\install.ps1</code></pre>
+
+    <p>To install to a custom path:</p>
+
+    <pre><code>.\supra-installer\install.ps1 -InstallPath "D:\supra"</code></pre>
+
+    <h3>What the Installer Does</h3>
+    <p>The installer performs the following steps automatically:</p>
+    <ol class="steps">
+        <li>Creates a local service account (<code>SupraService</code>)</li>
+        <li>Extracts and configures Supra Search Engine (OpenSearch)</li>
+        <li>Initializes security demo certificates</li>
+        <li>Sets the admin password to <code>admin</code></li>
+        <li>Configures JVM heap size (50% of available RAM, max 8 GB)</li>
+        <li>Extracts and configures Supra Dashboards</li>
+        <li>Installs extra Dashboards plugins (Security, Alerting, Anomaly Detection, etc.)</li>
+        <li>Applies Supra branding</li>
+        <li>Configures Supra Log Collector</li>
+        <li>Registers all components as Windows Services via NSSM</li>
+        <li>Configures Windows Firewall rules</li>
+        <li>Starts all services and verifies the Search Engine is ready</li>
+        <li>Initializes the security index</li>
+    </ol>
+
+    <hr>
+
+    <!-- Section 5: Verify -->
+    <h2 id="verify">5. Verify the Installation</h2>
+
+    <h3>5.1 Check Services are Running</h3>
+    <pre><code>Get-Service Supra*</code></pre>
+
+    <p>Expected output:</p>
+    <table>
+        <thead>
+            <tr>
+                <th>Status</th>
+                <th>Name</th>
+                <th>DisplayName</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Running</td>
+                <td>SupraSearch</td>
+                <td>Supra Search Engine</td>
+            </tr>
+            <tr>
+                <td>Running</td>
+                <td>SupraDashboards</td>
+                <td>Supra Dashboards</td>
+            </tr>
+            <tr>
+                <td>Running</td>
+                <td>SupraLogCollector</td>
+                <td>Supra Log Collector</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h3>5.2 Test the Search Engine</h3>
+    <pre><code>Invoke-WebRequest -Uri https://localhost:9200 -SkipCertificateCheck -Credential (Get-Credential)</code></pre>
+
+    <p>When prompted, enter:</p>
+    <ul>
+        <li><strong>Username:</strong> <code>admin</code></li>
+        <li><strong>Password:</strong> <code>admin</code></li>
+    </ul>
+    <p>A successful response returns a JSON object with cluster information.</p>
+
+    <h3>5.3 Access the Dashboards</h3>
+    <p>Open a web browser and navigate to:</p>
+    <pre><code>http://localhost:5601</code></pre>
+
+    <p>Login with:</p>
+    <ul>
+        <li><strong>Username:</strong> <code>admin</code></li>
+        <li><strong>Password:</strong> <code>admin</code></li>
+    </ul>
+
+    <hr>
+
+    <!-- Section 6: Managing Services -->
+    <h2 id="services">6. Managing Services</h2>
+
+    <h3>Using Windows Service Commands</h3>
+    <pre><code><span class="comment"># Start a service</span>
+Start-Service SupraSearch
+
+<span class="comment"># Stop a service</span>
+Stop-Service SupraSearch
+
+<span class="comment"># Restart a service</span>
+Restart-Service SupraSearch
+
+<span class="comment"># Check status of all Supra services</span>
+Get-Service Supra*</code></pre>
+
+    <h3>Using NSSM</h3>
+    <pre><code>nssm start SupraSearch
+nssm stop SupraSearch
+nssm restart SupraSearch
+
+nssm start SupraDashboards
+nssm stop SupraDashboards
+nssm restart SupraDashboards
+
+nssm start SupraLogCollector
+nssm stop SupraLogCollector
+nssm restart SupraLogCollector</code></pre>
+
+    <h3>Service Dependencies</h3>
+    <ul>
+        <li><strong>SupraDashboards</strong> depends on <strong>SupraSearch</strong> (will start automatically after Search Engine is ready)</li>
+        <li><strong>SupraLogCollector</strong> depends on <strong>SupraSearch</strong></li>
+    </ul>
+
+    <h3>Service Startup Order</h3>
+    <ol>
+        <li>SupraSearch (Supra Search Engine)</li>
+        <li>SupraLogCollector (Supra Log Collector)</li>
+        <li>SupraDashboards (Supra Dashboards)</li>
+    </ol>
+
+    <hr>
+
+    <!-- Section 7: Log Collector -->
+    <h2 id="log-collector">7. Log Collector Setup</h2>
+    <p>The Supra Log Collector requires a Fluentd runtime (td-agent) to be installed separately on the Windows Server.</p>
+
+    <h3>7.1 Install td-agent</h3>
+    <p>Download and install td-agent for Windows from:</p>
+    <pre><code>https://td-agent-package-browser.herokuapp.com/4/windows</code></pre>
+
+    <h3>7.2 Alternative: Install via RubyInstaller</h3>
+    <ol>
+        <li>Install RubyInstaller from <code>https://rubyinstaller.org/</code></li>
+        <li>Open a command prompt and run:</li>
+    </ol>
+    <pre><code>gem install fluentd fluent-plugin-opensearch</code></pre>
+
+    <h3>7.3 Register the Log Collector Service</h3>
+    <p>After installing td-agent or Fluentd, re-run the installer to register the Log Collector service:</p>
+    <pre><code>.\supra-installer\install.ps1</code></pre>
+    <p>The installer will detect the Fluentd runtime and register the SupraLogCollector service.</p>
+
+    <hr>
+
+    <!-- Section 8: Uninstallation -->
+    <h2 id="uninstall">8. Uninstallation</h2>
+    <p>Right-click PowerShell and select <strong>"Run as Administrator"</strong>, then run:</p>
+
+    <pre><code><span class="comment"># Uninstall from default location (C:\supra)</span>
+.\supra-installer\uninstall.ps1
+
+<span class="comment"># Uninstall from custom location</span>
+.\supra-installer\uninstall.ps1 -InstallPath "D:\supra"</code></pre>
+
+    <p>The uninstaller will:</p>
+    <ol>
+        <li>Stop all Supra services</li>
+        <li>Remove all Supra services from Windows</li>
+        <li>Remove Windows Firewall rules</li>
+        <li>Delete the installation directory</li>
+    </ol>
+
+    <div class="callout note">
+        <strong>Note</strong>
+        The <code>SupraService</code> user account is not removed automatically. To remove it manually:
+        <pre style="margin-top: 10px; margin-bottom: 0;"><code>Remove-LocalUser -Name SupraService</code></pre>
+    </div>
+
+    <hr>
+
+    <!-- Section 9: Ports and Firewall -->
+    <h2 id="ports">9. Ports and Firewall</h2>
+    <p>The installer automatically creates Windows Firewall rules for the following ports:</p>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Service</th>
+                <th>Port</th>
+                <th>Protocol</th>
+                <th>Description</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Supra Search Engine</td>
+                <td>9200</td>
+                <td>TCP</td>
+                <td>Search Engine REST API (HTTPS)</td>
+            </tr>
+            <tr>
+                <td>Supra Dashboards</td>
+                <td>5601</td>
+                <td>TCP</td>
+                <td>Dashboards Web UI (HTTP)</td>
+            </tr>
+            <tr>
+                <td>Supra Log Collector</td>
+                <td>5140</td>
+                <td>UDP</td>
+                <td>Syslog input</td>
+            </tr>
+            <tr>
+                <td>Supra Log Collector</td>
+                <td>24224</td>
+                <td>TCP</td>
+                <td>Forward input</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <hr>
+
+    <!-- Section 10: Troubleshooting -->
+    <div class="page-break"></div>
+    <h2 id="troubleshooting">10. Troubleshooting</h2>
+
+    <h3>Search Engine fails to start</h3>
+    <ul>
+        <li>Check logs at: <code>C:\supra\opensearch\logs\</code></li>
+        <li>Check stdout/stderr logs: <code>C:\supra\opensearch\logs\search-stdout.log</code></li>
+        <li>Verify JVM heap settings: <code>C:\supra\opensearch\config\jvm.options</code></li>
+        <li>Ensure sufficient RAM is available</li>
+    </ul>
+
+    <h3>Dashboards fails to start</h3>
+    <ul>
+        <li>Check logs at: <code>C:\supra\dashboards\logs\</code></li>
+        <li>Check stdout/stderr logs: <code>C:\supra\dashboards\logs\dashboards-stdout.log</code></li>
+        <li>Verify the Search Engine is running and accessible at <code>https://localhost:9200</code></li>
+    </ul>
+
+    <h3>Log Collector fails to start</h3>
+    <ul>
+        <li>Check stdout/stderr logs: <code>C:\supra\log-collector\log-collector-stdout.log</code></li>
+        <li>Verify td-agent or Fluentd is installed and accessible in PATH</li>
+        <li>Verify the Search Engine is running</li>
+    </ul>
+
+    <h3>NSSM-related issues</h3>
+    <ul>
+        <li>Verify <code>nssm.exe</code> is present in the installer's <code>nssm\</code> folder</li>
+        <li>Run <code>nssm edit SupraSearch</code> to view/modify service configuration</li>
+        <li>Run <code>nssm statuscode SupraSearch</code> to check service status</li>
+    </ul>
+
+    <h3>Authentication issues</h3>
+    <ul>
+        <li>Default credentials: <code>admin</code> / <code>admin</code></li>
+        <li>If login fails, the security index may not have initialized properly</li>
+        <li>Re-run the security admin tool manually:</li>
+    </ul>
+    <pre><code>$OPENSEARCH_HOME = "C:\supra\opensearch"
+$env:OPENSEARCH_JAVA_HOME = "$OPENSEARCH_HOME\jdk"
+&amp; "$OPENSEARCH_HOME\plugins\opensearch-security\tools\securityadmin.bat" `
+    -cd "$OPENSEARCH_HOME\config\opensearch-security" `
+    -icl -nhnv `
+    -cacert "$OPENSEARCH_HOME\config\root-ca.pem" `
+    -cert "$OPENSEARCH_HOME\config\kirk.pem" `
+    -key "$OPENSEARCH_HOME\config\kirk-key.pem"</code></pre>
+
+    <hr>
+
+    <!-- Summary -->
+    <div class="summary-box">
+        <h3>Quick Reference: Installation Steps</h3>
+        <ol>
+            <li>Extract the installer zip on the target Windows Server</li>
+            <li>Download NSSM and place <code>nssm.exe</code> in <code>supra-installer\nssm\</code> <span class="highlight">&larr; BEFORE install.ps1</span></li>
+            <li>Run <code>install.ps1</code> as Administrator</li>
+            <li>(Optional) Install td-agent for Log Collector support</li>
+            <li>Verify services and access Dashboards at <code>http://localhost:5601</code></li>
+        </ol>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+        <p>Supra Stack v3.6.0 &mdash; Windows Server x64 Installation Guide</p>
+        <p>Supra Connected Platform Limited</p>
+    </div>
+
+</body>
+</html>

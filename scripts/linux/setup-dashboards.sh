@@ -1,11 +1,10 @@
 #!/bin/bash
 set -e
 
-BASE_DIR="/home/velu/Hitachi"
+BASE_DIR="$(dirname "$(dirname "$(cd "$(dirname "$0")" && pwd)")")"
 DASHBOARDS_DIR="$BASE_DIR/OpenSearch-Dashboards"
 
-echo "=== OpenSearch Dashboards Setup (Build from Source) ==="
-echo "Repository: https://github.com/opensearch-project/OpenSearch-Dashboards"
+echo "=== Supra Dashboards Setup (Build from Source) ==="
 
 # Step 1: Setup Node.js via nvm
 echo "Setting up Node.js..."
@@ -24,16 +23,17 @@ echo "Installing yarn via corepack..."
 npm i -g corepack
 corepack install
 
-# Step 3: Bootstrap OpenSearch Dashboards
-echo "Bootstrapping OpenSearch Dashboards (this may take a while)..."
+# Step 3: Bootstrap
+echo "Bootstrapping Supra Dashboards (this may take a while)..."
 yarn osd bootstrap
 
-# Step 4: Create systemd service file (user must install with sudo)
+# Step 4: Create systemd service file
 NODE_PATH=$(which node)
-cat > "$BASE_DIR/config/systemd/opensearch-dashboards.service" <<EOF
+mkdir -p "$BASE_DIR/config/systemd"
+cat > "$BASE_DIR/config/systemd/supra-dashboards.service" <<EOF
 [Unit]
-Description=OpenSearch Dashboards (built from source)
-After=network.target opensearch.service
+Description=Supra Dashboards
+After=network.target supra-search.service
 
 [Service]
 Type=simple
@@ -49,15 +49,15 @@ WantedBy=multi-user.target
 EOF
 
 echo ""
-echo "OpenSearch Dashboards bootstrapped at: $DASHBOARDS_DIR"
+echo "Supra Dashboards bootstrapped at: $DASHBOARDS_DIR"
 echo ""
 echo "To start in dev mode:"
 echo "  cd $DASHBOARDS_DIR"
 echo "  yarn start"
 echo ""
 echo "To install systemd service (requires sudo):"
-echo "  sudo cp $BASE_DIR/config/systemd/opensearch-dashboards.service /etc/systemd/system/"
+echo "  sudo cp $BASE_DIR/config/systemd/supra-dashboards.service /etc/systemd/system/"
 echo "  sudo systemctl daemon-reload"
-echo "  sudo systemctl enable --now opensearch-dashboards"
+echo "  sudo systemctl enable --now supra-dashboards"
 echo ""
 echo "Access at: http://localhost:5601"

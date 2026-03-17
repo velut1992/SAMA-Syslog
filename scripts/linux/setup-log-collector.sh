@@ -1,24 +1,25 @@
 #!/bin/bash
 set -e
 
-BASE_DIR="/home/velu/Hitachi"
-FLUENTD_BIN="/home/velu/.local/share/gem/ruby/3.0.0/bin/fluentd"
+BASE_DIR="$(dirname "$(dirname "$(cd "$(dirname "$0")" && pwd)")")"
+FLUENTD_BIN="$HOME/.local/share/gem/ruby/3.0.0/bin/fluentd"
 
-echo "=== Fluentd Setup (gem install) ==="
+echo "=== Supra Log Collector Setup ==="
 
-# Step 1: Install Fluentd and plugins via gem (user-level)
-echo "Installing Fluentd..."
+# Step 1: Install runtime and plugins via gem (user-level)
+echo "Installing Supra Log Collector runtime..."
 gem install fluentd --user-install
 gem install fluent-plugin-opensearch fluent-plugin-syslog --user-install
 
 # Step 2: Verify installation
-echo "Verifying Fluentd..."
+echo "Verifying installation..."
 $FLUENTD_BIN --version
 
 # Step 3: Generate systemd service file
-cat > "$BASE_DIR/config/systemd/fluentd.service" <<EOF
+mkdir -p "$BASE_DIR/config/systemd"
+cat > "$BASE_DIR/config/systemd/supra-log-collector.service" <<EOF
 [Unit]
-Description=Fluentd log collector
+Description=Supra Log Collector
 After=network.target
 
 [Service]
@@ -35,7 +36,7 @@ WantedBy=multi-user.target
 EOF
 
 echo ""
-echo "Fluentd installed successfully!"
+echo "Supra Log Collector installed successfully!"
 echo "Binary: $FLUENTD_BIN"
 echo "Config: $BASE_DIR/fluent/fluent.conf"
 echo ""
@@ -43,6 +44,6 @@ echo "To start manually:"
 echo "  $FLUENTD_BIN -c $BASE_DIR/fluent/fluent.conf"
 echo ""
 echo "To install systemd service (requires sudo):"
-echo "  sudo cp $BASE_DIR/config/systemd/fluentd.service /etc/systemd/system/"
+echo "  sudo cp $BASE_DIR/config/systemd/supra-log-collector.service /etc/systemd/system/"
 echo "  sudo systemctl daemon-reload"
-echo "  sudo systemctl enable --now fluentd"
+echo "  sudo systemctl enable --now supra-log-collector"

@@ -2,35 +2,31 @@
 set -e
 
 ################################################################################
-# Supra Installer Package Builder
+# Supra Installer Package Builder (Linux x64)
 #
 # Builds a self-contained installer tarball that can be deployed on another
 # Linux x64 machine. The package includes:
-#   - OpenSearch (full distribution with all plugins)
-#   - OpenSearch Dashboards (full distribution with all plugins)
+#   - Supra Search Engine (full distribution with all plugins)
+#   - Supra Dashboards (full distribution with all plugins)
 #   - Extra Dashboards plugins (SIEM, Index Management, Notifications)
-#   - Fluentd configuration
+#   - Supra Log Collector configuration
 #   - Systemd service files
 #   - Install script
 ################################################################################
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-BASE_DIR="$(dirname "$SCRIPT_DIR")"
+BASE_DIR="$(dirname "$(dirname "$SCRIPT_DIR")")"
 BUILD_DIR="$BASE_DIR/installer-build"
 PACKAGE_NAME="supra-installer"
 VERSION="3.6.0"
 
 # Source paths
-# OpenSearch: full distribution (downloaded from CI)
 OPENSEARCH_TARBALL="$BASE_DIR/opensearch-${VERSION}-linux-x64.tar.gz"
-# Dashboards: local build output (with rebranding applied)
-# Try with -SNAPSHOT suffix first, then without
 if [ -f "$BASE_DIR/OpenSearch-Dashboards/target/opensearch-dashboards-${VERSION}-SNAPSHOT-linux-x64.tar.gz" ]; then
   DASHBOARDS_TARBALL="$BASE_DIR/OpenSearch-Dashboards/target/opensearch-dashboards-${VERSION}-SNAPSHOT-linux-x64.tar.gz"
 else
   DASHBOARDS_TARBALL="$BASE_DIR/OpenSearch-Dashboards/target/opensearch-dashboards-${VERSION}-linux-x64.tar.gz"
 fi
-# Extra plugins (security, alerting, SIEM, etc.) — downloaded separately
 EXTRA_PLUGINS_DIR="$BASE_DIR/dashboards-plugins"
 FLUENTD_CONF="$BASE_DIR/fluent/fluent.conf"
 LICENSE_VALIDATOR_DIR="$BASE_DIR/opensearch-license-validator"
@@ -38,6 +34,7 @@ DASHBOARDS_SRC="$BASE_DIR/OpenSearch-Dashboards"
 
 echo "============================================"
 echo "  Supra Installer Package Builder v${VERSION}"
+echo "  (Linux x64)"
 echo "============================================"
 echo ""
 
@@ -47,13 +44,13 @@ echo ""
 echo "[1/7] Checking prerequisites..."
 
 if [ ! -f "$OPENSEARCH_TARBALL" ]; then
-    echo "ERROR: OpenSearch full distribution tarball not found at $OPENSEARCH_TARBALL"
+    echo "ERROR: Supra Search Engine distribution tarball not found at $OPENSEARCH_TARBALL"
     echo "       Download from: https://ci.opensearch.org/ci/dbc/distribution-build-opensearch/${VERSION}/latest/linux/x64/tar/dist/opensearch/opensearch-${VERSION}-linux-x64.tar.gz"
     exit 1
 fi
 
 if [ ! -f "$DASHBOARDS_TARBALL" ]; then
-    echo "ERROR: Dashboards build tarball not found at $DASHBOARDS_TARBALL"
+    echo "ERROR: Supra Dashboards build tarball not found at $DASHBOARDS_TARBALL"
     echo "       Build it first:"
     echo "         cd $BASE_DIR/OpenSearch-Dashboards"
     echo "         yarn build-platform --linux --skip-os-packages"
@@ -61,15 +58,15 @@ if [ ! -f "$DASHBOARDS_TARBALL" ]; then
 fi
 
 if [ ! -f "$FLUENTD_CONF" ]; then
-    echo "ERROR: Fluentd config not found at $FLUENTD_CONF"
+    echo "ERROR: Log Collector config not found at $FLUENTD_CONF"
     exit 1
 fi
 
-echo "  OpenSearch tarball:  OK"
-echo "  Dashboards tarball:  OK"
-echo "  Fluentd config:      OK"
+echo "  Search engine tarball: OK"
+echo "  Dashboards tarball:    OK"
+echo "  Log Collector config:  OK"
 
-# Download missing Dashboards plugins from OpenSearch CI
+# Download missing Dashboards plugins
 DASHBOARDS_PLUGIN_BASE_URL="https://ci.opensearch.org/ci/dbc/distribution-build-opensearch-dashboards/${VERSION}/latest/linux/x64/tar/builds/opensearch-dashboards/plugins"
 DASHBOARDS_PLUGIN_ARTIFACTS=(
     "securityDashboards|${DASHBOARDS_PLUGIN_BASE_URL}/securityDashboards-${VERSION}.zip"
@@ -101,12 +98,11 @@ for entry in "${DASHBOARDS_PLUGIN_ARTIFACTS[@]}"; do
     fi
 done
 
-# Check extra dashboards plugins
 EXTRA_PLUGINS_FOUND=0
 if [ -d "$EXTRA_PLUGINS_DIR" ]; then
     EXTRA_PLUGINS_FOUND=$(find "$EXTRA_PLUGINS_DIR" -name "*.zip" | wc -l)
 fi
-echo "  Extra plugins:       ${EXTRA_PLUGINS_FOUND} found"
+echo "  Extra plugins:         ${EXTRA_PLUGINS_FOUND} found"
 
 # ---------------------------------------------------------------------------
 # Prepare build directory
@@ -117,16 +113,15 @@ rm -rf "$BUILD_DIR"
 mkdir -p "$BUILD_DIR/$PACKAGE_NAME"
 
 STAGING="$BUILD_DIR/$PACKAGE_NAME"
-mkdir -p "$STAGING"/{opensearch,dashboards,dashboards-plugins,fluentd,systemd,branding,license-validator}
+mkdir -p "$STAGING"/{opensearch,dashboards,dashboards-plugins,log-collector,systemd,branding,license-validator}
 
 # ---------------------------------------------------------------------------
-# Package OpenSearch
+# Package Supra Search Engine
 # ---------------------------------------------------------------------------
 echo ""
-echo "[3/7] Packaging OpenSearch..."
+echo "[3/7] Packaging Supra Search Engine..."
 cp "$OPENSEARCH_TARBALL" "$STAGING/opensearch/"
 
-# Create opensearch.yml with single-node config + security plugin settings
 cat > "$STAGING/opensearch/opensearch.yml" <<'OSCONF'
 cluster.name: supra
 node.name: supra-node-1
@@ -159,15 +154,14 @@ OSCONF
 echo "  Tarball and config staged."
 
 # ---------------------------------------------------------------------------
-# Package OpenSearch Dashboards (full distribution)
+# Package Supra Dashboards (full distribution)
 # ---------------------------------------------------------------------------
 echo ""
-echo "[4/7] Packaging OpenSearch Dashboards..."
+echo "[4/7] Packaging Supra Dashboards..."
 cp "$DASHBOARDS_TARBALL" "$STAGING/dashboards/"
 
 echo "  Dashboards tarball packaged."
 
-# Copy extra dashboards plugins (SIEM, Index Management, Notifications)
 if [ "$EXTRA_PLUGINS_FOUND" -gt 0 ]; then
     echo "  Packaging extra dashboards plugins..."
     cp "$EXTRA_PLUGINS_DIR"/*.zip "$STAGING/dashboards-plugins/"
@@ -184,7 +178,6 @@ else
     echo "  WARNING: Branding assets not found in source tree. Skipping."
 fi
 
-# Create dashboards config with branding + security plugin settings
 cat > "$STAGING/dashboards/opensearch_dashboards.yml" <<'OSDCONF'
 server.port: 5601
 server.host: "0.0.0.0"
@@ -210,12 +203,12 @@ OSDCONF
 echo "  Branding and config staged."
 
 # ---------------------------------------------------------------------------
-# Package Fluentd config
+# Package Supra Log Collector config
 # ---------------------------------------------------------------------------
 echo ""
-echo "[5/7] Packaging Fluentd config..."
-cp "$FLUENTD_CONF" "$STAGING/fluentd/"
-echo "  Fluentd config staged."
+echo "[5/7] Packaging Supra Log Collector config..."
+cp "$FLUENTD_CONF" "$STAGING/log-collector/"
+echo "  Log Collector config staged."
 
 # ---------------------------------------------------------------------------
 # Package license validator
@@ -229,9 +222,9 @@ fi
 # ---------------------------------------------------------------------------
 # Create systemd service files
 # ---------------------------------------------------------------------------
-cat > "$STAGING/systemd/opensearch.service" <<'EOF'
+cat > "$STAGING/systemd/supra-search.service" <<'EOF'
 [Unit]
-Description=Supra OpenSearch
+Description=Supra Search Engine
 After=network.target
 
 [Service]
@@ -250,11 +243,11 @@ Environment=OPENSEARCH_HOME=/opt/supra/opensearch
 WantedBy=multi-user.target
 EOF
 
-cat > "$STAGING/systemd/opensearch-dashboards.service" <<'EOF'
+cat > "$STAGING/systemd/supra-dashboards.service" <<'EOF'
 [Unit]
-Description=Supra OpenSearch Dashboards
-After=network.target opensearch.service
-Requires=opensearch.service
+Description=Supra Dashboards
+After=network.target supra-search.service
+Requires=supra-search.service
 
 [Service]
 Type=simple
@@ -269,16 +262,16 @@ RestartSec=10
 WantedBy=multi-user.target
 EOF
 
-cat > "$STAGING/systemd/fluentd.service" <<'EOF'
+cat > "$STAGING/systemd/supra-log-collector.service" <<'EOF'
 [Unit]
-Description=Supra Fluentd Log Collector
-After=network.target opensearch.service
+Description=Supra Log Collector
+After=network.target supra-search.service
 
 [Service]
 Type=simple
 User=supra
 Group=supra
-ExecStart=/usr/local/bin/fluentd -c /opt/supra/fluentd/fluent.conf
+ExecStart=/usr/local/bin/fluentd -c /opt/supra/log-collector/fluent.conf
 Restart=always
 RestartSec=5
 StandardOutput=journal
@@ -298,8 +291,8 @@ set -e
 ################################################################################
 # Supra Stack Installer
 #
-# Installs OpenSearch, OpenSearch Dashboards, and Fluentd as systemd services.
-# Must be run as root (or with sudo).
+# Installs Supra Search Engine, Supra Dashboards, and Supra Log Collector
+# as systemd services. Must be run as root (or with sudo).
 ################################################################################
 
 INSTALL_DIR="/opt/supra"
@@ -332,7 +325,6 @@ echo ""
 echo "Install directory: $INSTALL_DIR"
 echo ""
 
-# Default admin password
 ADMIN_PASSWORD="admin"
 
 # ---- Create supra user ----
@@ -357,11 +349,11 @@ else
     warn "Sysctl config already exists, skipping."
 fi
 
-# ---- Install OpenSearch ----
-log "Installing OpenSearch..."
+# ---- Install Supra Search Engine ----
+log "Installing Supra Search Engine..."
 OS_TARBALL=$(find "$SCRIPT_DIR/opensearch" -name "opensearch-*.tar.gz" | head -1)
 if [ -z "$OS_TARBALL" ]; then
-    err "OpenSearch tarball not found in $SCRIPT_DIR/opensearch/"
+    err "Search engine tarball not found in $SCRIPT_DIR/opensearch/"
     exit 1
 fi
 
@@ -369,36 +361,32 @@ rm -rf "$INSTALL_DIR/opensearch"
 mkdir -p "$INSTALL_DIR/opensearch"
 tar -xzf "$OS_TARBALL" -C "$INSTALL_DIR/opensearch" --strip-components=1
 
-# Initialize security plugin demo certificates BEFORE applying custom config
-# (demo script checks opensearch.yml and quits if security is already configured)
+# Initialize security plugin demo certificates
 SECURITY_PLUGIN_DIR="$INSTALL_DIR/opensearch/plugins/opensearch-security"
 if [ -d "$SECURITY_PLUGIN_DIR" ]; then
-    log "  Initializing security plugin demo certificates..."
+    log "  Initializing security demo certificates..."
     chmod +x "$SECURITY_PLUGIN_DIR/tools/install_demo_configuration.sh"
     cd "$INSTALL_DIR/opensearch"
-    # Demo config requires a strong password; we use a temp one then reset to default admin hash
     export OPENSEARCH_INITIAL_ADMIN_PASSWORD="MyS3cur!tyP@ss"
     bash "$SECURITY_PLUGIN_DIR/tools/install_demo_configuration.sh" -y -i -s 2>&1 | tail -5
     unset OPENSEARCH_INITIAL_ADMIN_PASSWORD
     cd "$SCRIPT_DIR"
     log "  Security demo certificates installed."
 
-    # Reset admin password hash to default "admin" in internal_users.yml
+    # Reset admin password hash to default "admin"
     INTERNAL_USERS="$INSTALL_DIR/opensearch/config/opensearch-security/internal_users.yml"
     if [ -f "$INTERNAL_USERS" ]; then
         sed -i '/^admin:/,/^[a-zA-Z]/{s|hash: ".*"|hash: "$2a$12$VcCDgh2NDk07JGN0rjGbM.Ad41qVR/YFJcgHp0UGns5JDymv..TOG"|}' "$INTERNAL_USERS"
         log "  Admin password reset to default (admin/admin)."
     fi
 
-    # Apply our custom config AFTER demo config has generated certs and security configs
     cp "$SCRIPT_DIR/opensearch/opensearch.yml" "$INSTALL_DIR/opensearch/config/opensearch.yml"
 else
     warn "Security plugin not found. Authentication will not be available."
-    # Apply config without security demo setup
     cp "$SCRIPT_DIR/opensearch/opensearch.yml" "$INSTALL_DIR/opensearch/config/opensearch.yml"
 fi
 
-# Set JVM heap (default to 50% of RAM, max 8g)
+# Set JVM heap (50% of RAM, max 8g)
 TOTAL_MEM_KB=$(grep MemTotal /proc/meminfo | awk '{print $2}')
 HEAP_MB=$(( TOTAL_MEM_KB / 1024 / 2 ))
 if [ "$HEAP_MB" -gt 8192 ]; then HEAP_MB=8192; fi
@@ -412,10 +400,10 @@ if [ -f "$JVM_OPTIONS" ]; then
 fi
 
 chown -R "$SUPRA_USER:$SUPRA_GROUP" "$INSTALL_DIR/opensearch"
-log "  OpenSearch installed to $INSTALL_DIR/opensearch"
+log "  Supra Search Engine installed to $INSTALL_DIR/opensearch"
 
-# ---- Install OpenSearch Dashboards ----
-log "Installing OpenSearch Dashboards..."
+# ---- Install Supra Dashboards ----
+log "Installing Supra Dashboards..."
 OSD_TARBALL=$(find "$SCRIPT_DIR/dashboards" -name "opensearch-dashboards-*.tar.gz" | head -1)
 if [ -z "$OSD_TARBALL" ]; then
     err "Dashboards tarball not found in $SCRIPT_DIR/dashboards/"
@@ -426,13 +414,12 @@ rm -rf "$INSTALL_DIR/dashboards"
 mkdir -p "$INSTALL_DIR/dashboards"
 tar -xzf "$OSD_TARBALL" -C "$INSTALL_DIR/dashboards" --strip-components=1
 
-# Install extra dashboards plugins (SIEM, Index Management, Notifications)
+# Install extra dashboards plugins
 if [ -d "$SCRIPT_DIR/dashboards-plugins" ]; then
     for plugin_zip in "$SCRIPT_DIR/dashboards-plugins"/*.zip; do
         if [ -f "$plugin_zip" ]; then
             plugin_name=$(basename "$plugin_zip" .zip | sed 's/-[0-9].*//')
             log "  Installing dashboards plugin: $plugin_name..."
-            # Extract directly into plugins dir (zip contains opensearch-dashboards/<pluginName>/)
             unzip -q -o "$plugin_zip" -d /tmp/osd-plugin-tmp 2>/dev/null
             if [ -d "/tmp/osd-plugin-tmp/opensearch-dashboards" ]; then
                 cp -r /tmp/osd-plugin-tmp/opensearch-dashboards/* "$INSTALL_DIR/dashboards/plugins/"
@@ -445,12 +432,11 @@ if [ -d "$SCRIPT_DIR/dashboards-plugins" ]; then
     done
 fi
 
-# Apply config
 cp "$SCRIPT_DIR/dashboards/opensearch_dashboards.yml" "$INSTALL_DIR/dashboards/config/opensearch_dashboards.yml"
 
-# If securityDashboards plugin is installed, add security config keys
+# Add security config if security plugin is present
 if [ -d "$INSTALL_DIR/dashboards/plugins/securityDashboards" ]; then
-    log "  Security Dashboards plugin detected — adding security config..."
+    log "  Security plugin detected — adding security config..."
     cat >> "$INSTALL_DIR/dashboards/config/opensearch_dashboards.yml" <<'SECCONF'
 
 opensearch_security.multitenancy.enabled: true
@@ -469,30 +455,29 @@ if [ -f "$SCRIPT_DIR/branding/scpl.png" ]; then
 fi
 
 chown -R "$SUPRA_USER:$SUPRA_GROUP" "$INSTALL_DIR/dashboards"
-log "  Dashboards installed to $INSTALL_DIR/dashboards"
+log "  Supra Dashboards installed to $INSTALL_DIR/dashboards"
 
-# ---- Install Fluentd ----
-log "Installing Fluentd..."
+# ---- Install Supra Log Collector ----
+log "Installing Supra Log Collector..."
 if ! command -v fluentd &>/dev/null; then
-    warn "Fluentd not found. Installing via gem..."
+    warn "Log Collector runtime not found. Installing via gem..."
     if ! command -v gem &>/dev/null; then
         err "Ruby gem not found. Install Ruby first: sudo apt install ruby-full"
-        err "Then install Fluentd: sudo gem install fluentd fluent-plugin-opensearch"
-        warn "Skipping Fluentd installation. You can install it later and re-run."
+        err "Then install: sudo gem install fluentd fluent-plugin-opensearch"
+        warn "Skipping Log Collector installation. You can install it later and re-run."
     else
         gem install fluentd --no-document
         gem install fluent-plugin-opensearch --no-document
-        log "  Fluentd installed via gem."
+        log "  Log Collector runtime installed via gem."
     fi
 else
-    log "  Fluentd already installed: $(fluentd --version 2>/dev/null | head -1)"
+    log "  Log Collector runtime already installed."
 fi
 
-mkdir -p "$INSTALL_DIR/fluentd"
+mkdir -p "$INSTALL_DIR/log-collector"
 
-# Write fluentd config with the admin password
-cat > "$INSTALL_DIR/fluentd/fluent.conf" <<FLUENTDCONF
-## Fluentd configuration file
+cat > "$INSTALL_DIR/log-collector/fluent.conf" <<FLUENTDCONF
+## Supra Log Collector configuration
 
 # Syslog input
 <source>
@@ -501,13 +486,13 @@ cat > "$INSTALL_DIR/fluentd/fluent.conf" <<FLUENTDCONF
   tag system
 </source>
 
-# Forward input (for other Fluentd agents)
+# Forward input (for other log collection agents)
 <source>
   @type forward
   port 24224
 </source>
 
-# OpenSearch output
+# Supra Search Engine output
 <match **>
   @type opensearch
   host localhost
@@ -522,32 +507,31 @@ cat > "$INSTALL_DIR/fluentd/fluent.conf" <<FLUENTDCONF
 </match>
 FLUENTDCONF
 
-chown -R "$SUPRA_USER:$SUPRA_GROUP" "$INSTALL_DIR/fluentd"
-log "  Fluentd config installed to $INSTALL_DIR/fluentd/"
+chown -R "$SUPRA_USER:$SUPRA_GROUP" "$INSTALL_DIR/log-collector"
+log "  Supra Log Collector config installed to $INSTALL_DIR/log-collector/"
 
 # ---- Install systemd services ----
 log "Installing systemd services..."
-cp "$SCRIPT_DIR/systemd/opensearch.service" /etc/systemd/system/
-cp "$SCRIPT_DIR/systemd/opensearch-dashboards.service" /etc/systemd/system/
-cp "$SCRIPT_DIR/systemd/fluentd.service" /etc/systemd/system/
+cp "$SCRIPT_DIR/systemd/supra-search.service" /etc/systemd/system/
+cp "$SCRIPT_DIR/systemd/supra-dashboards.service" /etc/systemd/system/
+cp "$SCRIPT_DIR/systemd/supra-log-collector.service" /etc/systemd/system/
 
 systemctl daemon-reload
-systemctl enable opensearch.service
-systemctl enable opensearch-dashboards.service
-systemctl enable fluentd.service
+systemctl enable supra-search.service
+systemctl enable supra-dashboards.service
+systemctl enable supra-log-collector.service
 log "  Systemd services installed and enabled."
 
 # ---- Start services ----
 log "Starting services..."
 
-log "  Starting OpenSearch..."
-systemctl start opensearch.service
-# Wait for OpenSearch to be ready
-echo -n "  Waiting for OpenSearch"
+log "  Starting Supra Search Engine..."
+systemctl start supra-search.service
+echo -n "  Waiting for Supra Search Engine"
 for i in $(seq 1 60); do
     if curl -sk -o /dev/null https://localhost:9200 2>/dev/null; then
         echo ""
-        log "  OpenSearch is ready."
+        log "  Supra Search Engine is ready."
         break
     fi
     echo -n "."
@@ -556,10 +540,10 @@ done
 
 if ! curl -sk -o /dev/null https://localhost:9200 2>/dev/null; then
     echo ""
-    warn "OpenSearch did not start within 120s. Check: journalctl -u opensearch"
+    warn "Supra Search Engine did not start within 120s. Check: journalctl -u supra-search"
 fi
 
-# ---- Initialize security index with updated configs ----
+# ---- Initialize security index ----
 if [ -d "$INSTALL_DIR/opensearch/plugins/opensearch-security" ]; then
     log "Initializing security index..."
     SECURITY_PLUGIN_DIR="$INSTALL_DIR/opensearch/plugins/opensearch-security"
@@ -567,10 +551,8 @@ if [ -d "$INSTALL_DIR/opensearch/plugins/opensearch-security" ]; then
     OPENSEARCH_CONF_DIR="$INSTALL_DIR/opensearch/config"
     export OPENSEARCH_JAVA_HOME="$INSTALL_DIR/opensearch/jdk"
 
-    # Wait a bit for security index auto-init to complete
     sleep 5
 
-    # Force-upload all security configs (overwrites auto-initialized defaults)
     sudo -u "$SUPRA_USER" OPENSEARCH_JAVA_HOME="$INSTALL_DIR/opensearch/jdk" bash "$SECURITY_PLUGIN_DIR/tools/securityadmin.sh" \
         -cd "$OPENSEARCH_CONF_DIR/opensearch-security/" \
         -icl -nhnv \
@@ -581,7 +563,7 @@ if [ -d "$INSTALL_DIR/opensearch/plugins/opensearch-security" ]; then
     SECADMIN_EXIT=$?
 
     if [ $SECADMIN_EXIT -ne 0 ]; then
-        warn "securityadmin.sh exited with code $SECADMIN_EXIT. Retrying..."
+        warn "Security admin tool exited with code $SECADMIN_EXIT. Retrying..."
         sleep 5
         sudo -u "$SUPRA_USER" OPENSEARCH_JAVA_HOME="$INSTALL_DIR/opensearch/jdk" bash "$SECURITY_PLUGIN_DIR/tools/securityadmin.sh" \
             -cd "$OPENSEARCH_CONF_DIR/opensearch-security/" \
@@ -593,61 +575,48 @@ if [ -d "$INSTALL_DIR/opensearch/plugins/opensearch-security" ]; then
     fi
     log "  Security index initialized."
 
-    # Verify admin login works
     sleep 2
     HTTP_CODE=$(curl -sk -o /dev/null -w "%{http_code}" -u "admin:admin" https://localhost:9200 2>/dev/null)
     if [ "$HTTP_CODE" = "200" ]; then
         log "  Admin login verified successfully."
     else
-        warn "  Admin login returned HTTP $HTTP_CODE. OpenSearch may still be starting up."
+        warn "  Admin login returned HTTP $HTTP_CODE. Service may still be starting up."
     fi
 fi
 
-log "  Starting Fluentd..."
-systemctl start fluentd.service
+log "  Starting Supra Log Collector..."
+systemctl start supra-log-collector.service
 
-log "  Starting OpenSearch Dashboards..."
-systemctl start opensearch-dashboards.service
+log "  Starting Supra Dashboards..."
+systemctl start supra-dashboards.service
 
-# ---- Verify ----
+# ---- Summary ----
 echo ""
 echo "============================================"
 echo "  Installation Complete!"
 echo "============================================"
 echo ""
 echo "Services:"
-echo "  OpenSearch:            https://localhost:9200"
-echo "  OpenSearch Dashboards: http://localhost:5601"
-echo "  Fluentd syslog input:  localhost:5140"
-echo "  Fluentd forward input: localhost:24224"
+echo "  Supra Search Engine:   https://localhost:9200"
+echo "  Supra Dashboards:      http://localhost:5601"
+echo "  Supra Log Collector:   localhost:5140 (syslog), localhost:24224 (forward)"
 echo ""
 echo "Credentials:"
 echo "  Username: admin"
 echo "  Password: admin"
 echo ""
-echo "Verify OpenSearch:"
+echo "Verify:"
 echo "  curl -sk -u admin:<password> https://localhost:9200"
 echo ""
 echo "Manage services:"
-echo "  sudo systemctl {start|stop|restart|status} opensearch"
-echo "  sudo systemctl {start|stop|restart|status} opensearch-dashboards"
-echo "  sudo systemctl {start|stop|restart|status} fluentd"
-echo ""
-echo "Change admin password later:"
-echo "  sudo /opt/supra/opensearch/plugins/opensearch-security/tools/hash.sh -p NEW_PASSWORD"
-echo "  sudo nano /opt/supra/opensearch/config/opensearch-security/internal_users.yml"
-echo "  # Replace admin hash, then run:"
-echo "  sudo -u supra /opt/supra/opensearch/plugins/opensearch-security/tools/securityadmin.sh \\"
-echo "    -f /opt/supra/opensearch/config/opensearch-security/internal_users.yml \\"
-echo "    -t internalusers -icl -nhnv \\"
-echo "    -cacert /opt/supra/opensearch/config/root-ca.pem \\"
-echo "    -cert /opt/supra/opensearch/config/kirk.pem \\"
-echo "    -key /opt/supra/opensearch/config/kirk-key.pem"
+echo "  sudo systemctl {start|stop|restart|status} supra-search"
+echo "  sudo systemctl {start|stop|restart|status} supra-dashboards"
+echo "  sudo systemctl {start|stop|restart|status} supra-log-collector"
 echo ""
 echo "Logs:"
-echo "  journalctl -u opensearch -f"
-echo "  journalctl -u opensearch-dashboards -f"
-echo "  journalctl -u fluentd -f"
+echo "  journalctl -u supra-search -f"
+echo "  journalctl -u supra-dashboards -f"
+echo "  journalctl -u supra-log-collector -f"
 echo ""
 echo "Install directory: $INSTALL_DIR"
 echo ""
@@ -668,19 +637,19 @@ if [ "$EUID" -ne 0 ]; then
 fi
 
 echo "Stopping services..."
-systemctl stop opensearch-dashboards.service 2>/dev/null || true
-systemctl stop fluentd.service 2>/dev/null || true
-systemctl stop opensearch.service 2>/dev/null || true
+systemctl stop supra-dashboards.service 2>/dev/null || true
+systemctl stop supra-log-collector.service 2>/dev/null || true
+systemctl stop supra-search.service 2>/dev/null || true
 
 echo "Disabling services..."
-systemctl disable opensearch.service 2>/dev/null || true
-systemctl disable opensearch-dashboards.service 2>/dev/null || true
-systemctl disable fluentd.service 2>/dev/null || true
+systemctl disable supra-search.service 2>/dev/null || true
+systemctl disable supra-dashboards.service 2>/dev/null || true
+systemctl disable supra-log-collector.service 2>/dev/null || true
 
 echo "Removing service files..."
-rm -f /etc/systemd/system/opensearch.service
-rm -f /etc/systemd/system/opensearch-dashboards.service
-rm -f /etc/systemd/system/fluentd.service
+rm -f /etc/systemd/system/supra-search.service
+rm -f /etc/systemd/system/supra-dashboards.service
+rm -f /etc/systemd/system/supra-log-collector.service
 systemctl daemon-reload
 
 echo "Removing installation directory..."

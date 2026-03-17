@@ -1,11 +1,10 @@
 #!/bin/bash
 set -e
 
-BASE_DIR="/home/velu/Hitachi"
+BASE_DIR="$(dirname "$(dirname "$(cd "$(dirname "$0")" && pwd)")")"
 OPENSEARCH_DIR="$BASE_DIR/OpenSearch"
 
-echo "=== OpenSearch Setup (Build from Source) ==="
-echo "Repository: https://github.com/opensearch-project/OpenSearch"
+echo "=== Supra Search Engine Setup (Build from Source) ==="
 
 # Step 1: Verify prerequisites
 echo "Checking prerequisites..."
@@ -14,13 +13,15 @@ if ! java -version 2>&1 | grep -q "17\|21\|24"; then
     exit 1
 fi
 
-export SDKMAN_DIR="/home/velu/.sdkman"
-source "$SDKMAN_DIR/bin/sdkman-init.sh"
-export JAVA_HOME=$(sdk home java 21.0.6-tem)
+export SDKMAN_DIR="$HOME/.sdkman"
+if [ -f "$SDKMAN_DIR/bin/sdkman-init.sh" ]; then
+    source "$SDKMAN_DIR/bin/sdkman-init.sh"
+    export JAVA_HOME=$(sdk home java 21.0.6-tem)
+fi
 echo "Using JAVA_HOME=$JAVA_HOME"
 
-# Step 2: Build OpenSearch
-echo "Building OpenSearch (this may take a while)..."
+# Step 2: Build
+echo "Building Supra Search Engine (this may take a while)..."
 cd "$OPENSEARCH_DIR"
 ./gradlew :distribution:archives:linux-tar:assemble -Dbuild.snapshot=false
 
@@ -40,9 +41,10 @@ mkdir -p "$INSTALL_DIR"
 tar -xzf "$DIST_TAR" -C "$INSTALL_DIR" --strip-components=1
 
 # Step 5: Create systemd service file
-cat > "$BASE_DIR/config/systemd/opensearch.service" <<EOF
+mkdir -p "$BASE_DIR/config/systemd"
+cat > "$BASE_DIR/config/systemd/supra-search.service" <<EOF
 [Unit]
-Description=OpenSearch (built from source)
+Description=Supra Search Engine
 After=network.target
 
 [Service]
@@ -61,15 +63,15 @@ WantedBy=multi-user.target
 EOF
 
 echo ""
-echo "OpenSearch built and installed to: $INSTALL_DIR"
+echo "Supra Search Engine built and installed to: $INSTALL_DIR"
 echo ""
 echo "To start:"
 echo "  $INSTALL_DIR/bin/opensearch"
 echo ""
 echo "To install systemd service (requires sudo):"
-echo "  sudo cp $BASE_DIR/config/systemd/opensearch.service /etc/systemd/system/"
+echo "  sudo cp $BASE_DIR/config/systemd/supra-search.service /etc/systemd/system/"
 echo "  sudo systemctl daemon-reload"
-echo "  sudo systemctl enable --now opensearch"
+echo "  sudo systemctl enable --now supra-search"
 echo ""
 echo "Verify with:"
 echo "  curl -k -u admin:admin https://localhost:9200"

@@ -61,7 +61,10 @@
       "Bash(./scripts/rebrand.sh:*)",
       "Bash(yarn build-platform:*)",
       "Bash(ln:*)",
-      "Bash(unzip -l /tmp/test-security-plugin.zip)"
+      "Bash(unzip -l /tmp/test-security-plugin.zip)",
+      "Bash(PATH=\".node_binaries/22.22.0/linux-x64/bin:$PATH\" yarn build-platform:*)",
+      "Bash(BUNDLED_NODE=\".node_binaries/22.22.0/linux-x64/bin\")",
+      "Bash(echo \"exit: $?\")"
     ]
   }
 }
