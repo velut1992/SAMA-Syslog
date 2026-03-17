@@ -1,2 +1,4 @@
 opensearch-3.6.0/
 *.tar.gz
+*.zip
+.claude/settings.local.json
