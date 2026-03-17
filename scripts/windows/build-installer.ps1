@@ -554,8 +554,8 @@ Log "Registering Windows services via NSSM..."
 # -- Supra Search Engine Service --
 $osBat = Join-Path $osInstallDir "bin\opensearch.bat"
 if (Test-Path $osBat) {
-    & $NssmExe stop "SupraSearch" 2>$null
-    & $NssmExe remove "SupraSearch" confirm 2>$null
+    try { & $NssmExe stop "SupraSearch" 2>&1 | Out-Null } catch {}
+    try { & $NssmExe remove "SupraSearch" confirm 2>&1 | Out-Null } catch {}
 
     & $NssmExe install "SupraSearch" $osBat
     & $NssmExe set "SupraSearch" DisplayName "Supra Search Engine"
@@ -574,8 +574,8 @@ if (Test-Path $osBat) {
 # -- Supra Dashboards Service --
 $osdBat = Join-Path $osdInstallDir "bin\opensearch-dashboards.bat"
 if (Test-Path $osdBat) {
-    & $NssmExe stop "SupraDashboards" 2>$null
-    & $NssmExe remove "SupraDashboards" confirm 2>$null
+    try { & $NssmExe stop "SupraDashboards" 2>&1 | Out-Null } catch {}
+    try { & $NssmExe remove "SupraDashboards" confirm 2>&1 | Out-Null } catch {}
 
     & $NssmExe install "SupraDashboards" $osdBat
     & $NssmExe set "SupraDashboards" DisplayName "Supra Dashboards"
@@ -593,8 +593,8 @@ if (Test-Path $osdBat) {
 
 # -- Supra Log Collector Service --
 if ($fluentdExe) {
-    & $NssmExe stop "SupraLogCollector" 2>$null
-    & $NssmExe remove "SupraLogCollector" confirm 2>$null
+    try { & $NssmExe stop "SupraLogCollector" 2>&1 | Out-Null } catch {}
+    try { & $NssmExe remove "SupraLogCollector" confirm 2>&1 | Out-Null } catch {}
 
     & $NssmExe install "SupraLogCollector" $fluentdExe "-c" (Join-Path $logCollectorDir "fluent.conf")
     & $NssmExe set "SupraLogCollector" DisplayName "Supra Log Collector"
@@ -697,7 +697,7 @@ if (Test-Path $secPluginDir) {
 }
 
 Log "  Starting Supra Log Collector..."
-& $NssmExe start "SupraLogCollector" 2>$null
+try { & $NssmExe start "SupraLogCollector" 2>&1 | Out-Null } catch { Warn "  Log Collector service not started (may not be installed)." }
 
 Log "  Starting Supra Dashboards..."
 & $NssmExe start "SupraDashboards"
@@ -768,8 +768,8 @@ foreach ($svc in @("SupraDashboards", "SupraLogCollector", "SupraSearch")) {
         $nssmPath = "nssm.exe"
     }
 
-    try { & $nssmPath stop $svc 2>$null } catch {}
-    try { & $nssmPath remove $svc confirm 2>$null } catch {}
+    try { & $nssmPath stop $svc 2>&1 | Out-Null } catch {}
+    try { & $nssmPath remove $svc confirm 2>&1 | Out-Null } catch {}
     Write-Host "  $svc removed."
 }
 
