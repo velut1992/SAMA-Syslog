@@ -5,17 +5,17 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.supra.plugins</groupId>
-    <artifactId>license-validator</artifactId>
+    <artifactId>supra-license-validator</artifactId>
     <version>1.0.0</version>
     <packaging>jar</packaging>
 
-    <name>OpenSearch License Validator Plugin</name>
-    <description>A plugin that validates OpenSearch licenses based on MAC address</description>
+    <name>Supra License Validator Plugin</name>
+    <description>RSA-signed hardware-locked license validator for OpenSearch</description>
 
     <properties>
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
-        <opensearch.version>2.19.1</opensearch.version>
+        <opensearch.version>3.0.0</opensearch.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
@@ -38,6 +38,27 @@
                     <source>17</source>
                     <target>17</target>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <version>3.6.0</version>
+                <configuration>
+                    <finalName>supra-license-validator-${project.version}</finalName>
+                    <appendAssemblyId>false</appendAssemblyId>
+                    <outputDirectory>${project.build.directory}/releases</outputDirectory>
+                    <descriptors>
+                        <descriptor>src/main/assembly/plugin.xml</descriptor>
+                    </descriptors>
+                </configuration>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>

@@ -2,92 +2,126 @@ package com.supra.plugins;
 
 import org.opensearch.plugins.Plugin;
 
-import javax.crypto.Cipher;
-import javax.crypto.spec.IvParameterSpec;
-import javax.crypto.spec.SecretKeySpec;
-import java.io.IOException;
-import java.net.NetworkInterface;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.security.KeyFactory;
+import java.security.PublicKey;
+import java.security.Signature;
+import java.security.spec.X509EncodedKeySpec;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.Base64;
-import java.util.Collections;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.opensearch.common.settings.Settings;
 
 public class LicenseValidatorPlugin extends Plugin {
 
-    private static final String AES_KEY = "0123456789abcdef"; // Same 16-byte key
-    private static final String AES_IV = "abcdef9876543210";  // Same 16-byte IV
-    private static final Path LICENSE_PATH = Paths.get("/etc/opensearch/license.key");
+    private static final Logger logger = LogManager.getLogger(LicenseValidatorPlugin.class);
 
-    public LicenseValidatorPlugin() {
+    public LicenseValidatorPlugin(Settings settings, Path configPath) {
         try {
-            if (!Files.exists(LICENSE_PATH)) {
-                throw new RuntimeException("License file not found: " + LICENSE_PATH);
+            Path licenseDir = configPath.resolve("supra-license");
+            Path licensePath = licenseDir.resolve("license.key");
+            Path publicKeyPath = licenseDir.resolve("public.key");
+
+            // Compute machine fingerprint first (needed for error messages)
+            String localFingerprint = MachineFingerprint.generate();
+
+            if (!Files.exists(licensePath)) {
+                throw new RuntimeException(
+                        "License file not found at: " + licensePath + "\n"
+                        + "  This machine's fingerprint (MFP): " + localFingerprint + "\n"
+                        + "  Send this MFP to your vendor to obtain a license.");
             }
 
-            String encryptedBase64 = Files.readString(LICENSE_PATH).trim();
-
-            String decryptedMac = decrypt(encryptedBase64);
-
-            boolean isValid = getAllMacAddresses().stream().anyMatch(mac -> mac.equalsIgnoreCase(decryptedMac));
-
-            if (!isValid) {
-                throw new RuntimeException("Invalid MAC address in license!");
+            if (!Files.exists(publicKeyPath)) {
+                throw new RuntimeException(
+                        "Public key not found at: " + publicKeyPath + "\n"
+                        + "  The public.key file must be placed in config/supra-license/");
             }
 
-            System.out.println("License validated for MAC: " + decryptedMac);
+            // Read license file: <base64-payload>.<base64-signature>
+            String licenseContent = Files.readString(licensePath).trim();
+            String[] parts = licenseContent.split("\\.");
+            if (parts.length != 2) {
+                throw new RuntimeException("Invalid license file format.");
+            }
 
+            String encodedPayload = parts[0];
+            String encodedSignature = parts[1];
+
+            byte[] payloadBytes = Base64.getDecoder().decode(encodedPayload);
+            byte[] signatureBytes = Base64.getDecoder().decode(encodedSignature);
+            String payload = new String(payloadBytes, "UTF-8");
+
+            // Load public key
+            String publicKeyPem = Files.readString(publicKeyPath);
+            String publicKeyBase64 = publicKeyPem
+                    .replace("-----BEGIN PUBLIC KEY-----", "")
+                    .replace("-----END PUBLIC KEY-----", "")
+                    .replaceAll("\\s+", "");
+            byte[] publicKeyBytes = Base64.getDecoder().decode(publicKeyBase64);
+            X509EncodedKeySpec keySpec = new X509EncodedKeySpec(publicKeyBytes);
+            KeyFactory keyFactory = KeyFactory.getInstance("RSA");
+            PublicKey publicKey = keyFactory.generatePublic(keySpec);
+
+            // Verify RSA signature
+            Signature sig = Signature.getInstance("SHA256withRSA");
+            sig.initVerify(publicKey);
+            sig.update(payloadBytes);
+            if (!sig.verify(signatureBytes)) {
+                throw new RuntimeException(
+                        "License signature verification failed. The license file may be tampered with.\n"
+                        + "  This machine's fingerprint (MFP): " + localFingerprint);
+            }
+
+            // Parse JSON payload using simple string parsing (avoid external dependencies)
+            String customer = extractJsonString(payload, "customer");
+            String fingerprint = extractJsonString(payload, "fingerprint");
+            String expiresAt = extractJsonString(payload, "expiresAt");
+            String tier = extractJsonString(payload, "tier");
+
+            // Check fingerprint match
+            if (!localFingerprint.equals(fingerprint)) {
+                throw new RuntimeException(
+                        "License fingerprint mismatch!\n"
+                        + "  Licensed for:  " + fingerprint + "\n"
+                        + "  This machine:  " + localFingerprint + "\n"
+                        + "  This license is not valid for this machine.");
+            }
+
+            // Check expiry
+            LocalDate expiry = LocalDate.parse(expiresAt, DateTimeFormatter.ISO_LOCAL_DATE);
+            if (LocalDate.now().isAfter(expiry)) {
+                throw new RuntimeException(
+                        "License has expired!\n"
+                        + "  Expired on: " + expiresAt + "\n"
+                        + "  Contact your vendor to renew. MFP: " + localFingerprint);
+            }
+
+            logger.info("Supra license validated successfully:");
+            logger.info("  Customer:    {}", customer);
+            logger.info("  Tier:        {}", tier);
+            logger.info("  Expires:     {}", expiresAt);
+
+        } catch (RuntimeException e) {
+            logger.error("License validation failed: {}", e.getMessage());
+            throw e;
         } catch (Exception e) {
-            System.err.println("License validation failed: " + e.getMessage());
-            throw new RuntimeException("Plugin startup aborted due to invalid license.");
+            logger.error("License validation failed: {}", e.getMessage());
+            throw new RuntimeException("Plugin startup aborted due to license validation failure.", e);
         }
     }
 
-    private String decrypt(String encryptedBase64) throws Exception {
-        byte[] encrypted = Base64.getDecoder().decode(encryptedBase64);
-        Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
-        SecretKeySpec keySpec = new SecretKeySpec(AES_KEY.getBytes(), "AES");
-        IvParameterSpec ivSpec = new IvParameterSpec(AES_IV.getBytes());
-
-        cipher.init(Cipher.DECRYPT_MODE, keySpec, ivSpec);
-        byte[] decrypted = cipher.doFinal(encrypted);
-        return new String(decrypted).trim();
-    }
-
-    private java.util.List<String> getAllMacAddresses() throws IOException {
-        try {
-            java.util.List<String> macAddresses = new java.util.ArrayList<>();
-            for (NetworkInterface ni : Collections.list(NetworkInterface.getNetworkInterfaces())) {
-                if (!ni.isLoopback() && ni.getHardwareAddress() != null) {
-                    byte[] mac = ni.getHardwareAddress();
-                    StringBuilder sb = new StringBuilder();
-                    for (byte b : mac) {
-                        sb.append(String.format("%02X:", b));
-                    }
-                    macAddresses.add(sb.substring(0, sb.length() - 1));
-                }
-            }
-            return macAddresses;
-        } catch (Exception e) {
-            throw new IOException("Failed to retrieve MAC addresses", e);
-        }
-    }
-
-    private String getMac_Address() throws IOException {
-        try {
-            for (NetworkInterface ni : Collections.list(NetworkInterface.getNetworkInterfaces())) {
-                if (!ni.isLoopback() && ni.getHardwareAddress() != null) {
-                    byte[] mac = ni.getHardwareAddress();
-                    StringBuilder sb = new StringBuilder();
-                    for (byte b : mac) {
-                        sb.append(String.format("%02X:", b));
-                    }
-                    return sb.substring(0, sb.length() - 1);
-                }
-            }
-        } catch (Exception e) {
-            throw new IOException("Failed to retrieve MAC address", e);
-        }
-        return null;
+    private static String extractJsonString(String json, String key) {
+        String searchKey = "\"" + key + "\":\"";
+        int start = json.indexOf(searchKey);
+        if (start == -1) return null;
+        start += searchKey.length();
+        int end = json.indexOf("\"", start);
+        if (end == -1) return null;
+        return json.substring(start, end);
     }
 }

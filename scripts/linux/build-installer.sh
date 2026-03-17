@@ -215,8 +215,21 @@ echo "  Log Collector config staged."
 # ---------------------------------------------------------------------------
 if [ -d "$LICENSE_VALIDATOR_DIR" ]; then
     echo "  Packaging license validator..."
-    cp -r "$LICENSE_VALIDATOR_DIR/license-generator" "$STAGING/license-validator/"
-    cp -r "$LICENSE_VALIDATOR_DIR/license-validator" "$STAGING/license-validator/"
+    PLUGIN_ZIP=$(find "$LICENSE_VALIDATOR_DIR/license-validator/target/releases" -name "supra-license-validator-*.zip" 2>/dev/null | head -1)
+    if [ -n "$PLUGIN_ZIP" ]; then
+        cp "$PLUGIN_ZIP" "$STAGING/license-validator/"
+        echo "    Plugin zip staged: $(basename "$PLUGIN_ZIP")"
+    else
+        echo "    WARNING: Plugin zip not found. Build it first: cd license-validator && mvn clean package"
+    fi
+    if [ -f "$LICENSE_VALIDATOR_DIR/keys/public.key" ]; then
+        cp "$LICENSE_VALIDATOR_DIR/keys/public.key" "$STAGING/license-validator/"
+        echo "    Public key staged."
+    fi
+    if [ -f "$LICENSE_VALIDATOR_DIR/get-fingerprint.sh" ]; then
+        cp "$LICENSE_VALIDATOR_DIR/get-fingerprint.sh" "$STAGING/license-validator/"
+        echo "    Fingerprint script staged."
+    fi
 fi
 
 # ---------------------------------------------------------------------------
@@ -402,6 +415,29 @@ fi
 chown -R "$SUPRA_USER:$SUPRA_GROUP" "$INSTALL_DIR/opensearch"
 log "  Supra Search Engine installed to $INSTALL_DIR/opensearch"
 
+# ---- Install Supra License Validator Plugin ----
+log "Installing Supra License Validator plugin..."
+PLUGIN_ZIP=$(find "$SCRIPT_DIR/license-validator" -name "supra-license-validator-*.zip" 2>/dev/null | head -1)
+if [ -n "$PLUGIN_ZIP" ]; then
+    sudo -u "$SUPRA_USER" "$INSTALL_DIR/opensearch/bin/opensearch-plugin" install --batch "file://$PLUGIN_ZIP"
+    log "  License validator plugin installed."
+else
+    warn "  License validator plugin zip not found. Skipping."
+fi
+
+# Create license config directory
+mkdir -p "$INSTALL_DIR/opensearch/config/supra-license"
+if [ -f "$SCRIPT_DIR/license-validator/public.key" ]; then
+    cp "$SCRIPT_DIR/license-validator/public.key" "$INSTALL_DIR/opensearch/config/supra-license/"
+    log "  Public key installed."
+fi
+if [ -f "$SCRIPT_DIR/license-validator/get-fingerprint.sh" ]; then
+    cp "$SCRIPT_DIR/license-validator/get-fingerprint.sh" "$INSTALL_DIR/opensearch/config/supra-license/"
+    chmod +x "$INSTALL_DIR/opensearch/config/supra-license/get-fingerprint.sh"
+    log "  Fingerprint tool installed."
+fi
+chown -R "$SUPRA_USER:$SUPRA_GROUP" "$INSTALL_DIR/opensearch/config/supra-license"
+
 # ---- Install Supra Dashboards ----
 log "Installing Supra Dashboards..."
 OSD_TARBALL=$(find "$SCRIPT_DIR/dashboards" -name "opensearch-dashboards-*.tar.gz" | head -1)
@@ -522,79 +558,28 @@ systemctl enable supra-dashboards.service
 systemctl enable supra-log-collector.service
 log "  Systemd services installed and enabled."
 
-# ---- Start services ----
-log "Starting services..."
-
-log "  Starting Supra Search Engine..."
-systemctl start supra-search.service
-echo -n "  Waiting for Supra Search Engine"
-for i in $(seq 1 60); do
-    if curl -sk -o /dev/null https://localhost:9200 2>/dev/null; then
-        echo ""
-        log "  Supra Search Engine is ready."
-        break
-    fi
-    echo -n "."
-    sleep 2
-done
-
-if ! curl -sk -o /dev/null https://localhost:9200 2>/dev/null; then
-    echo ""
-    warn "Supra Search Engine did not start within 120s. Check: journalctl -u supra-search"
-fi
-
-# ---- Initialize security index ----
-if [ -d "$INSTALL_DIR/opensearch/plugins/opensearch-security" ]; then
-    log "Initializing security index..."
-    SECURITY_PLUGIN_DIR="$INSTALL_DIR/opensearch/plugins/opensearch-security"
-    chmod +x "$SECURITY_PLUGIN_DIR/tools/securityadmin.sh"
-    OPENSEARCH_CONF_DIR="$INSTALL_DIR/opensearch/config"
-    export OPENSEARCH_JAVA_HOME="$INSTALL_DIR/opensearch/jdk"
-
-    sleep 5
-
-    sudo -u "$SUPRA_USER" OPENSEARCH_JAVA_HOME="$INSTALL_DIR/opensearch/jdk" bash "$SECURITY_PLUGIN_DIR/tools/securityadmin.sh" \
-        -cd "$OPENSEARCH_CONF_DIR/opensearch-security/" \
-        -icl -nhnv \
-        -cacert "$OPENSEARCH_CONF_DIR/root-ca.pem" \
-        -cert "$OPENSEARCH_CONF_DIR/kirk.pem" \
-        -key "$OPENSEARCH_CONF_DIR/kirk-key.pem" \
-        2>&1 | tail -5
-    SECADMIN_EXIT=$?
-
-    if [ $SECADMIN_EXIT -ne 0 ]; then
-        warn "Security admin tool exited with code $SECADMIN_EXIT. Retrying..."
-        sleep 5
-        sudo -u "$SUPRA_USER" OPENSEARCH_JAVA_HOME="$INSTALL_DIR/opensearch/jdk" bash "$SECURITY_PLUGIN_DIR/tools/securityadmin.sh" \
-            -cd "$OPENSEARCH_CONF_DIR/opensearch-security/" \
-            -icl -nhnv \
-            -cacert "$OPENSEARCH_CONF_DIR/root-ca.pem" \
-            -cert "$OPENSEARCH_CONF_DIR/kirk.pem" \
-            -key "$OPENSEARCH_CONF_DIR/kirk-key.pem" \
-            2>&1 | tail -5
-    fi
-    log "  Security index initialized."
-
-    sleep 2
-    HTTP_CODE=$(curl -sk -o /dev/null -w "%{http_code}" -u "admin:admin" https://localhost:9200 2>/dev/null)
-    if [ "$HTTP_CODE" = "200" ]; then
-        log "  Admin login verified successfully."
-    else
-        warn "  Admin login returned HTTP $HTTP_CODE. Service may still be starting up."
-    fi
-fi
-
-log "  Starting Supra Log Collector..."
-systemctl start supra-log-collector.service
-
-log "  Starting Supra Dashboards..."
-systemctl start supra-dashboards.service
-
-# ---- Summary ----
+# ---- Licensing ----
 echo ""
 echo "============================================"
 echo "  Installation Complete!"
 echo "============================================"
+echo ""
+echo "IMPORTANT: License activation required before starting services."
+echo ""
+echo "Step 1: Get this machine's fingerprint:"
+echo "  sudo bash $INSTALL_DIR/opensearch/config/supra-license/get-fingerprint.sh"
+echo ""
+echo "Step 2: Send the fingerprint (MFP) to your Supra vendor to receive a license.key file."
+echo ""
+echo "Step 3: Place the license file:"
+echo "  sudo cp license.key $INSTALL_DIR/opensearch/config/supra-license/"
+echo "  sudo chown $SUPRA_USER:$SUPRA_GROUP $INSTALL_DIR/opensearch/config/supra-license/license.key"
+echo ""
+echo "Step 4: Start services:"
+echo "  sudo systemctl start supra-search"
+echo "  # Wait for Search Engine to be ready, then:"
+echo "  sudo systemctl start supra-dashboards"
+echo "  sudo systemctl start supra-log-collector"
 echo ""
 echo "Services:"
 echo "  Supra Search Engine:   https://localhost:9200"
@@ -604,9 +589,6 @@ echo ""
 echo "Credentials:"
 echo "  Username: admin"
 echo "  Password: admin"
-echo ""
-echo "Verify:"
-echo "  curl -sk -u admin:<password> https://localhost:9200"
 echo ""
 echo "Manage services:"
 echo "  sudo systemctl {start|stop|restart|status} supra-search"

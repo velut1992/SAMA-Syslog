@@ -30,7 +30,6 @@
             background: #ffffff;
         }
 
-        /* Cover / Header */
         .cover {
             text-align: center;
             padding: 60px 0 40px 0;
@@ -62,7 +61,6 @@
             color: #2c3e50;
         }
 
-        /* Table of Contents */
         .toc {
             background: #f8f9fa;
             border: 1px solid #e1e4e8;
@@ -97,7 +95,6 @@
             text-decoration: underline;
         }
 
-        /* Section Headers */
         h2 {
             font-size: 24px;
             color: #1a252f;
@@ -121,13 +118,11 @@
             margin-bottom: 10px;
         }
 
-        /* Paragraphs */
         p {
             margin-bottom: 14px;
             font-size: 15px;
         }
 
-        /* Lists */
         ul, ol {
             margin-bottom: 16px;
             padding-left: 28px;
@@ -138,7 +133,6 @@
             font-size: 15px;
         }
 
-        /* Code blocks */
         pre {
             background: #1e1e1e;
             color: #d4d4d4;
@@ -170,7 +164,6 @@
             padding: 0;
         }
 
-        /* Tables */
         table {
             width: 100%;
             border-collapse: collapse;
@@ -195,7 +188,6 @@
             background: #f8f9fa;
         }
 
-        /* Callout boxes */
         .callout {
             border-left: 4px solid #3498db;
             background: #eaf2f8;
@@ -226,14 +218,12 @@
             font-size: 14px;
         }
 
-        /* Horizontal rule */
         hr {
             border: none;
             border-top: 1px solid #e1e4e8;
             margin: 40px 0;
         }
 
-        /* Summary box */
         .summary-box {
             background: #2c3e50;
             color: #ffffff;
@@ -263,7 +253,6 @@
             font-weight: 600;
         }
 
-        /* Ordered list with steps */
         .steps {
             counter-reset: step-counter;
             list-style: none;
@@ -293,7 +282,6 @@
             font-weight: 600;
         }
 
-        /* Footer */
         .footer {
             text-align: center;
             margin-top: 60px;
@@ -325,7 +313,8 @@
             <li><a href="#extract">Copy and Extract the Installer Package</a></li>
             <li><a href="#nssm">Download and Place NSSM (Before Installation)</a></li>
             <li><a href="#install">Run the Installer</a></li>
-            <li><a href="#verify">Verify the Installation</a></li>
+            <li><a href="#license">Activate the License</a></li>
+            <li><a href="#start-verify">Start Services and Verify</a></li>
             <li><a href="#services">Managing Services</a></li>
             <li><a href="#log-collector">Log Collector Setup</a></li>
             <li><a href="#uninstall">Uninstallation</a></li>
@@ -409,22 +398,91 @@ Remove-Item nssm-2.24.zip</code></pre>
         <li>Initializes security demo certificates</li>
         <li>Sets the admin password to <code>admin</code></li>
         <li>Configures JVM heap size (50% of available RAM, max 8 GB)</li>
+        <li>Installs the Supra License Validator plugin</li>
+        <li>Creates the license configuration directory with public key and fingerprint tool</li>
         <li>Extracts and configures Supra Dashboards</li>
         <li>Installs extra Dashboards plugins (Security, Alerting, Anomaly Detection, etc.)</li>
         <li>Applies Supra branding</li>
         <li>Configures Supra Log Collector</li>
         <li>Registers all components as Windows Services via NSSM</li>
         <li>Configures Windows Firewall rules</li>
-        <li>Starts all services and verifies the Search Engine is ready</li>
-        <li>Initializes the security index</li>
     </ol>
+
+    <div class="callout important">
+        <strong>Note</strong>
+        The installer no longer auto-starts services. You must activate a license first (see next section).
+    </div>
 
     <hr>
 
-    <!-- Section 5: Verify -->
-    <h2 id="verify">5. Verify the Installation</h2>
+    <!-- Section 5: License -->
+    <div class="page-break"></div>
+    <h2 id="license">5. Activate the License</h2>
 
-    <h3>5.1 Check Services are Running</h3>
+    <div class="callout warning">
+        <strong>IMPORTANT</strong>
+        Services will not start without a valid license. Complete this section before proceeding.
+    </div>
+
+    <h3>5.1 Get the Machine Fingerprint</h3>
+    <pre><code>powershell -File C:\supra\opensearch\config\supra-license\get-fingerprint.ps1</code></pre>
+
+    <p>Output:</p>
+    <pre><code>Machine Fingerprint (MFP): a1b2c3d4e5f6...  (64-character hex string)</code></pre>
+
+    <h3>5.2 Request a License</h3>
+    <p>Send the Machine Fingerprint (MFP) to your Supra vendor along with your organization name. The vendor will provide a <code>license.key</code> file.</p>
+
+    <h3>5.3 Install the License</h3>
+    <pre><code>Copy-Item license.key -Destination C:\supra\opensearch\config\supra-license\</code></pre>
+
+    <h3>5.4 Verify License Files</h3>
+    <pre><code>Get-ChildItem C:\supra\opensearch\config\supra-license\</code></pre>
+
+    <p>You should see the following files:</p>
+    <table>
+        <thead>
+            <tr>
+                <th>File</th>
+                <th>Description</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><code>public.key</code></td>
+                <td>RSA public key (installed by default)</td>
+            </tr>
+            <tr>
+                <td><code>license.key</code></td>
+                <td>Your license file</td>
+            </tr>
+            <tr>
+                <td><code>get-fingerprint.ps1</code></td>
+                <td>Fingerprint generation tool</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <p>For detailed licensing information, see the <a href="licensing-guide.html">Licensing Guide</a>.</p>
+
+    <hr>
+
+    <!-- Section 6: Start Services and Verify -->
+    <h2 id="start-verify">6. Start Services and Verify</h2>
+
+    <p>After activating the license, start services manually:</p>
+
+    <pre><code><span class="comment"># Start Search Engine first</span>
+nssm start SupraSearch
+
+<span class="comment"># Wait for it to become ready (try accessing the endpoint)</span>
+Invoke-WebRequest -Uri https://localhost:9200 -SkipCertificateCheck
+
+<span class="comment"># Then start remaining services</span>
+nssm start SupraDashboards
+nssm start SupraLogCollector</code></pre>
+
+    <h3>6.1 Check Services are Running</h3>
     <pre><code>Get-Service Supra*</code></pre>
 
     <p>Expected output:</p>
@@ -455,7 +513,7 @@ Remove-Item nssm-2.24.zip</code></pre>
         </tbody>
     </table>
 
-    <h3>5.2 Test the Search Engine</h3>
+    <h3>6.2 Test the Search Engine</h3>
     <pre><code>Invoke-WebRequest -Uri https://localhost:9200 -SkipCertificateCheck -Credential (Get-Credential)</code></pre>
 
     <p>When prompted, enter:</p>
@@ -465,7 +523,7 @@ Remove-Item nssm-2.24.zip</code></pre>
     </ul>
     <p>A successful response returns a JSON object with cluster information.</p>
 
-    <h3>5.3 Access the Dashboards</h3>
+    <h3>6.3 Access the Dashboards</h3>
     <p>Open a web browser and navigate to:</p>
     <pre><code>http://localhost:5601</code></pre>
 
@@ -477,8 +535,8 @@ Remove-Item nssm-2.24.zip</code></pre>
 
     <hr>
 
-    <!-- Section 6: Managing Services -->
-    <h2 id="services">6. Managing Services</h2>
+    <!-- Section 7: Managing Services -->
+    <h2 id="services">7. Managing Services</h2>
 
     <h3>Using Windows Service Commands</h3>
     <pre><code><span class="comment"># Start a service</span>
@@ -521,30 +579,30 @@ nssm restart SupraLogCollector</code></pre>
 
     <hr>
 
-    <!-- Section 7: Log Collector -->
-    <h2 id="log-collector">7. Log Collector Setup</h2>
+    <!-- Section 8: Log Collector -->
+    <h2 id="log-collector">8. Log Collector Setup</h2>
     <p>The Supra Log Collector requires a Fluentd runtime (td-agent) to be installed separately on the Windows Server.</p>
 
-    <h3>7.1 Install td-agent</h3>
+    <h3>8.1 Install td-agent</h3>
     <p>Download and install td-agent for Windows from:</p>
     <pre><code>https://td-agent-package-browser.herokuapp.com/4/windows</code></pre>
 
-    <h3>7.2 Alternative: Install via RubyInstaller</h3>
+    <h3>8.2 Alternative: Install via RubyInstaller</h3>
     <ol>
         <li>Install RubyInstaller from <code>https://rubyinstaller.org/</code></li>
         <li>Open a command prompt and run:</li>
     </ol>
     <pre><code>gem install fluentd fluent-plugin-opensearch</code></pre>
 
-    <h3>7.3 Register the Log Collector Service</h3>
+    <h3>8.3 Register the Log Collector Service</h3>
     <p>After installing td-agent or Fluentd, re-run the installer to register the Log Collector service:</p>
     <pre><code>.\supra-installer\install.ps1</code></pre>
     <p>The installer will detect the Fluentd runtime and register the SupraLogCollector service.</p>
 
     <hr>
 
-    <!-- Section 8: Uninstallation -->
-    <h2 id="uninstall">8. Uninstallation</h2>
+    <!-- Section 9: Uninstallation -->
+    <h2 id="uninstall">9. Uninstallation</h2>
     <p>Right-click PowerShell and select <strong>"Run as Administrator"</strong>, then run:</p>
 
     <pre><code><span class="comment"># Uninstall from default location (C:\supra)</span>
@@ -569,8 +627,8 @@ nssm restart SupraLogCollector</code></pre>
 
     <hr>
 
-    <!-- Section 9: Ports and Firewall -->
-    <h2 id="ports">9. Ports and Firewall</h2>
+    <!-- Section 10: Ports and Firewall -->
+    <h2 id="ports">10. Ports and Firewall</h2>
     <p>The installer automatically creates Windows Firewall rules for the following ports:</p>
 
     <table>
@@ -612,9 +670,19 @@ nssm restart SupraLogCollector</code></pre>
 
     <hr>
 
-    <!-- Section 10: Troubleshooting -->
+    <!-- Section 11: Troubleshooting -->
     <div class="page-break"></div>
-    <h2 id="troubleshooting">10. Troubleshooting</h2>
+    <h2 id="troubleshooting">11. Troubleshooting</h2>
+
+    <h3>Search Engine fails to start with "License" error</h3>
+    <p>If the Search Engine logs show a license-related error:</p>
+    <ul>
+        <li><strong>"License file not found"</strong>: Place <code>license.key</code> in <code>C:\supra\opensearch\config\supra-license\</code></li>
+        <li><strong>"License fingerprint mismatch"</strong>: The license was generated for a different machine. Re-run the fingerprint tool and request a new license.</li>
+        <li><strong>"License has expired"</strong>: Contact your vendor for a renewed license.</li>
+        <li><strong>"License signature verification failed"</strong>: The license file may be corrupted. Request a fresh copy.</li>
+    </ul>
+    <p>See the <a href="licensing-guide.html">Licensing Guide</a> for detailed troubleshooting.</p>
 
     <h3>Search Engine fails to start</h3>
     <ul>
@@ -669,8 +737,11 @@ $env:OPENSEARCH_JAVA_HOME = "$OPENSEARCH_HOME\jdk"
             <li>Extract the installer zip on the target Windows Server</li>
             <li>Download NSSM and place <code>nssm.exe</code> in <code>supra-installer\nssm\</code> <span class="highlight">&larr; BEFORE install.ps1</span></li>
             <li>Run <code>install.ps1</code> as Administrator</li>
+            <li>Run <code>get-fingerprint.ps1</code> and send MFP to vendor <span class="highlight">&larr; LICENSE REQUIRED</span></li>
+            <li>Place received <code>license.key</code> in <code>config\supra-license\</code></li>
+            <li>Start services: <code>nssm start SupraSearch</code>, then <code>SupraDashboards</code></li>
             <li>(Optional) Install td-agent for Log Collector support</li>
-            <li>Verify services and access Dashboards at <code>http://localhost:5601</code></li>
+            <li>Access Dashboards at <code>http://localhost:5601</code></li>
         </ol>
     </div>
 

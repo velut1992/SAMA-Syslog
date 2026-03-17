@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Supra License Generation Guide (Vendor)</title>
+    <style>
+        @media print {
+            body { font-size: 11pt; }
+            .page-break { page-break-before: always; }
+            h1, h2, h3 { page-break-after: avoid; }
+            table, pre, blockquote { page-break-inside: avoid; }
+            a { text-decoration: none; color: #1a1a1a; }
+            .toc a { color: #1a1a1a; }
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.7;
+            color: #2c3e50;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 40px 50px;
+            background: #ffffff;
+        }
+
+        .cover {
+            text-align: center;
+            padding: 60px 0 40px 0;
+            border-bottom: 3px solid #8e44ad;
+            margin-bottom: 40px;
+        }
+
+        .cover h1 {
+            font-size: 32px;
+            color: #1a252f;
+            margin-bottom: 10px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+
+        .cover .subtitle {
+            font-size: 18px;
+            color: #5a6a7a;
+            margin-bottom: 30px;
+        }
+
+        .cover .meta {
+            font-size: 14px;
+            color: #7f8c8d;
+            line-height: 2;
+        }
+
+        .cover .meta strong {
+            color: #2c3e50;
+        }
+
+        .cover .confidential {
+            display: inline-block;
+            background: #e74c3c;
+            color: #ffffff;
+            padding: 6px 18px;
+            border-radius: 4px;
+            font-size: 13px;
+            font-weight: 600;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            margin-top: 20px;
+        }
+
+        .toc {
+            background: #f8f9fa;
+            border: 1px solid #e1e4e8;
+            border-radius: 6px;
+            padding: 30px 35px;
+            margin-bottom: 40px;
+        }
+
+        .toc h2 {
+            font-size: 20px;
+            color: #1a252f;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #e1e4e8;
+            padding-bottom: 10px;
+        }
+
+        .toc ol { padding-left: 20px; }
+        .toc li { margin-bottom: 6px; font-size: 15px; }
+        .toc a { color: #2980b9; text-decoration: none; }
+        .toc a:hover { text-decoration: underline; }
+
+        h2 {
+            font-size: 24px;
+            color: #1a252f;
+            margin-top: 50px;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #8e44ad;
+        }
+
+        h3 {
+            font-size: 18px;
+            color: #2c3e50;
+            margin-top: 30px;
+            margin-bottom: 12px;
+        }
+
+        h4 {
+            font-size: 16px;
+            color: #34495e;
+            margin-top: 20px;
+            margin-bottom: 10px;
+        }
+
+        p {
+            margin-bottom: 14px;
+            font-size: 15px;
+        }
+
+        ul, ol {
+            margin-bottom: 16px;
+            padding-left: 28px;
+        }
+
+        li {
+            margin-bottom: 6px;
+            font-size: 15px;
+        }
+
+        pre {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 18px 22px;
+            border-radius: 6px;
+            overflow-x: auto;
+            margin-bottom: 20px;
+            font-size: 13.5px;
+            line-height: 1.6;
+            font-family: 'Cascadia Code', 'Consolas', 'Courier New', monospace;
+        }
+
+        pre .comment { color: #6a9955; }
+        pre .string { color: #ce9178; }
+        pre .keyword { color: #569cd6; }
+
+        code {
+            background: #f0f2f5;
+            color: #c7254e;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 13.5px;
+            font-family: 'Cascadia Code', 'Consolas', 'Courier New', monospace;
+        }
+
+        pre code {
+            background: none;
+            color: inherit;
+            padding: 0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+
+        th {
+            background: #2c3e50;
+            color: #ffffff;
+            padding: 12px 16px;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        td {
+            padding: 10px 16px;
+            border-bottom: 1px solid #e1e4e8;
+        }
+
+        tr:nth-child(even) { background: #f8f9fa; }
+
+        .callout {
+            border-left: 4px solid #3498db;
+            background: #eaf2f8;
+            padding: 16px 20px;
+            margin-bottom: 20px;
+            border-radius: 0 6px 6px 0;
+            font-size: 14px;
+        }
+
+        .callout.warning {
+            border-left-color: #e74c3c;
+            background: #fdf0ef;
+        }
+
+        .callout.important {
+            border-left-color: #f39c12;
+            background: #fef9e7;
+        }
+
+        .callout.note {
+            border-left-color: #27ae60;
+            background: #eafaf1;
+        }
+
+        .callout.security {
+            border-left-color: #8e44ad;
+            background: #f4ecf7;
+        }
+
+        .callout strong {
+            display: block;
+            margin-bottom: 4px;
+            font-size: 14px;
+        }
+
+        hr {
+            border: none;
+            border-top: 1px solid #e1e4e8;
+            margin: 40px 0;
+        }
+
+        .summary-box {
+            background: #2c3e50;
+            color: #ffffff;
+            padding: 25px 30px;
+            border-radius: 8px;
+            margin: 30px 0;
+        }
+
+        .summary-box h3 {
+            color: #ffffff;
+            margin-top: 0;
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+
+        .summary-box pre {
+            background: #1a252f;
+            margin-bottom: 0;
+        }
+
+        .json-block {
+            background: #282c34;
+            color: #abb2bf;
+            padding: 18px 22px;
+            border-radius: 6px;
+            overflow-x: auto;
+            margin-bottom: 20px;
+            font-size: 13.5px;
+            line-height: 1.6;
+            font-family: 'Cascadia Code', 'Consolas', 'Courier New', monospace;
+        }
+
+        .json-block .key { color: #e06c75; }
+        .json-block .string { color: #98c379; }
+        .json-block .number { color: #d19a66; }
+
+        .footer {
+            text-align: center;
+            margin-top: 60px;
+            padding-top: 20px;
+            border-top: 2px solid #e1e4e8;
+            color: #7f8c8d;
+            font-size: 13px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Cover -->
+    <div class="cover">
+        <h1>Supra License Generation Guide</h1>
+        <div class="subtitle">Vendor &amp; License Administrator Reference</div>
+        <div class="meta">
+            <strong>Version:</strong> 3.6.0<br>
+            <strong>Audience:</strong> Supra vendors and license administrators
+        </div>
+        <div class="confidential">Internal Use Only &mdash; Do Not Distribute to Customers</div>
+    </div>
+
+    <!-- Table of Contents -->
+    <div class="toc">
+        <h2>Table of Contents</h2>
+        <ol>
+            <li><a href="#overview">Overview</a></li>
+            <li><a href="#prerequisites">Prerequisites</a></li>
+            <li><a href="#keypair">One-Time Setup: Generate RSA Keypair</a></li>
+            <li><a href="#generate">Generating a License</a></li>
+            <li><a href="#format">License File Format</a></li>
+            <li><a href="#parameters">License Parameters Reference</a></li>
+            <li><a href="#distribution">Distributing Licenses</a></li>
+            <li><a href="#key-management">Key Management</a></li>
+            <li><a href="#examples">Examples</a></li>
+            <li><a href="#troubleshooting">Troubleshooting</a></li>
+        </ol>
+    </div>
+
+    <!-- Section 1: Overview -->
+    <h2 id="overview">1. Overview</h2>
+    <p>Supra uses RSA-2048 signed, hardware-locked licenses. As a vendor, you:</p>
+    <ol>
+        <li>Generate an RSA keypair (one-time setup)</li>
+        <li>Ship the <strong>public key</strong> with every Supra installer</li>
+        <li>Receive a Machine Fingerprint (MFP) from each customer</li>
+        <li>Sign a license with the <strong>private key</strong> and send <code>license.key</code> to the customer</li>
+    </ol>
+
+    <div class="callout security">
+        <strong>Security</strong>
+        The private key must never leave your secure environment. The public key is safe to distribute.
+    </div>
+
+    <hr>
+
+    <!-- Section 2: Prerequisites -->
+    <h2 id="prerequisites">2. Prerequisites</h2>
+    <ul>
+        <li><strong>Java 17+</strong> (included with OpenSearch, or install separately)</li>
+        <li><strong>OpenSSL</strong> (for key generation via shell script, optional)</li>
+        <li>Access to the <code>opensearch-license-validator/license-generator/</code> directory</li>
+    </ul>
+
+    <hr>
+
+    <!-- Section 3: Keypair -->
+    <h2 id="keypair">3. One-Time Setup: Generate RSA Keypair</h2>
+    <p>You need to generate an RSA-2048 keypair once. The same keypair is used for all licenses.</p>
+
+    <h3>Option A: Using the shell script</h3>
+    <pre><code>cd opensearch-license-validator
+bash generate-keys.sh</code></pre>
+    <p>This creates:</p>
+    <pre><code>keys/private.key   <span class="comment"># RSA private key (PEM format) — KEEP SECRET</span>
+keys/public.key    <span class="comment"># RSA public key (PEM format) — ship with installers</span></code></pre>
+
+    <h3>Option B: Using the Java tool</h3>
+    <pre><code>cd opensearch-license-validator/license-generator
+javac LicenseGenerator.java
+java LicenseGenerator --generate-keys --output-dir ../keys</code></pre>
+
+    <h3>Option C: Using OpenSSL directly</h3>
+    <pre><code>mkdir -p keys
+openssl genpkey -algorithm RSA -pkeyopt rsa_keygen_bits:2048 -out keys/private.key
+openssl rsa -pubout -in keys/private.key -out keys/public.key</code></pre>
+
+    <p>All three methods produce compatible PEM keys.</p>
+
+    <hr>
+
+    <!-- Section 4: Generating a License -->
+    <h2 id="generate">4. Generating a License</h2>
+
+    <h3>4.1 Compile the License Generator</h3>
+    <pre><code>cd opensearch-license-validator/license-generator
+javac LicenseGenerator.java</code></pre>
+
+    <h3>4.2 Create a License</h3>
+    <p>When a customer sends you their Machine Fingerprint (MFP), run:</p>
+    <pre><code>java LicenseGenerator --create-license \
+    --fingerprint &lt;MFP&gt; \
+    --customer "Customer Name" \
+    --expiry 2027-12-31 \
+    --private-key ../keys/private.key \
+    --output license.key</code></pre>
+
+    <p>This produces a <code>license.key</code> file to send to the customer.</p>
+
+    <h3>4.3 Full Command Reference</h3>
+    <pre><code>java LicenseGenerator --create-license
+    --fingerprint &lt;MFP&gt;          <span class="comment"># Required: 64-char hex machine fingerprint</span>
+    --customer &lt;name&gt;             <span class="comment"># Required: customer/organization name</span>
+    --expiry &lt;YYYY-MM-DD&gt;         <span class="comment"># Required: license expiry date</span>
+    --private-key &lt;path&gt;          <span class="comment"># Required: path to RSA private key (PEM)</span>
+    [--tier &lt;tier&gt;]               <span class="comment"># Optional: license tier (default: standard)</span>
+    [--max-nodes &lt;n&gt;]             <span class="comment"># Optional: max cluster nodes (default: 1)</span>
+    [--output &lt;path&gt;]             <span class="comment"># Optional: output file (default: license.key)</span></code></pre>
+
+    <hr>
+
+    <!-- Section 5: License File Format -->
+    <h2 id="format">5. License File Format</h2>
+    <p>The license file contains a single line in the format:</p>
+    <pre><code>&lt;base64-encoded-JSON-payload&gt;.&lt;base64-encoded-RSA-signature&gt;</code></pre>
+
+    <p>The JSON payload contains:</p>
+    <div class="json-block">{
+    <span class="key">"customer"</span>: <span class="string">"Acme Corp"</span>,
+    <span class="key">"fingerprint"</span>: <span class="string">"a1b2c3d4e5f6..."</span>,
+    <span class="key">"issuedAt"</span>: <span class="string">"2026-03-17"</span>,
+    <span class="key">"expiresAt"</span>: <span class="string">"2027-12-31"</span>,
+    <span class="key">"tier"</span>: <span class="string">"standard"</span>,
+    <span class="key">"maxNodes"</span>: <span class="number">1</span>
+}</div>
+
+    <p>The signature is computed over the raw JSON bytes using <code>SHA256withRSA</code>.</p>
+
+    <p>The Supra plugin validates the license by:</p>
+    <ol>
+        <li>Splitting the file on <code>.</code></li>
+        <li>Verifying the RSA signature against the public key</li>
+        <li>Decoding and parsing the JSON payload</li>
+        <li>Recomputing the machine fingerprint locally</li>
+        <li>Comparing the fingerprint in the license with the local fingerprint</li>
+        <li>Checking that the current date is before <code>expiresAt</code></li>
+    </ol>
+
+    <hr>
+
+    <!-- Section 6: Parameters -->
+    <h2 id="parameters">6. License Parameters Reference</h2>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Parameter</th>
+                <th>Type</th>
+                <th>Required</th>
+                <th>Description</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><code>fingerprint</code></td>
+                <td>String</td>
+                <td>Yes</td>
+                <td>64-character hex SHA-256 of hardware identifiers</td>
+            </tr>
+            <tr>
+                <td><code>customer</code></td>
+                <td>String</td>
+                <td>Yes</td>
+                <td>Customer or organization name</td>
+            </tr>
+            <tr>
+                <td><code>expiry</code></td>
+                <td>Date</td>
+                <td>Yes</td>
+                <td>License expiry date in <code>YYYY-MM-DD</code> format</td>
+            </tr>
+            <tr>
+                <td><code>private-key</code></td>
+                <td>Path</td>
+                <td>Yes</td>
+                <td>Path to the RSA private key file (PEM, PKCS#8)</td>
+            </tr>
+            <tr>
+                <td><code>tier</code></td>
+                <td>String</td>
+                <td>No</td>
+                <td>License tier: <code>standard</code>, <code>enterprise</code>, etc.</td>
+            </tr>
+            <tr>
+                <td><code>max-nodes</code></td>
+                <td>Int</td>
+                <td>No</td>
+                <td>Maximum number of nodes in the cluster (default: 1)</td>
+            </tr>
+            <tr>
+                <td><code>output</code></td>
+                <td>Path</td>
+                <td>No</td>
+                <td>Output file path (default: <code>license.key</code>)</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <hr>
+
+    <!-- Section 7: Distribution -->
+    <h2 id="distribution">7. Distributing Licenses</h2>
+
+    <h3>What to send to customers</h3>
+    <ul>
+        <li><code>license.key</code> &mdash; the signed license file</li>
+    </ul>
+
+    <h3>What to ship with every installer</h3>
+    <ul>
+        <li><code>public.key</code> &mdash; the RSA public key (same for all customers)</li>
+        <li><code>get-fingerprint.sh</code> (Linux) or <code>get-fingerprint.ps1</code> (Windows)</li>
+    </ul>
+
+    <h3>Delivery method</h3>
+    <p>The <code>license.key</code> file contains no secrets &mdash; it can be sent via email, file transfer, or any convenient method. It is cryptographically signed and cannot be tampered with.</p>
+
+    <hr>
+
+    <!-- Section 8: Key Management -->
+    <div class="page-break"></div>
+    <h2 id="key-management">8. Key Management</h2>
+
+    <h3>Private key security</h3>
+    <p>The RSA private key (<code>keys/private.key</code>) is the foundation of the entire licensing system.</p>
+
+    <div class="callout warning">
+        <strong>Critical Security Rules</strong>
+        <ul style="margin-top: 8px; margin-bottom: 0;">
+            <li><strong>Never</strong> distribute the private key</li>
+            <li><strong>Never</strong> commit it to version control</li>
+            <li>Store it in a secure location (encrypted drive, HSM, or secrets manager)</li>
+            <li>Limit access to authorized personnel only</li>
+            <li>Back up the key securely &mdash; if lost, you cannot generate licenses compatible with deployed public keys</li>
+        </ul>
+    </div>
+
+    <h3>Key rotation</h3>
+    <p>If you need to rotate keys:</p>
+    <ol>
+        <li>Generate a new keypair</li>
+        <li>Ship the new <code>public.key</code> with future installers</li>
+        <li>Existing installations must be updated with the new <code>public.key</code> to accept licenses signed with the new private key</li>
+        <li>Old licenses remain valid until their expiry, but only on installations using the old <code>public.key</code></li>
+    </ol>
+
+    <h3>Revoking a license</h3>
+    <p>There is no built-in revocation mechanism. To effectively revoke a license:</p>
+    <ul>
+        <li>Issue a replacement license with an earlier expiry date</li>
+        <li>On the next renewal cycle, decline to issue a new license</li>
+    </ul>
+
+    <hr>
+
+    <!-- Section 9: Examples -->
+    <h2 id="examples">9. Examples</h2>
+
+    <h3>Generate a standard 1-year license</h3>
+    <pre><code>java LicenseGenerator --create-license \
+    --fingerprint e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855 \
+    --customer "Acme Corp" \
+    --expiry 2027-03-17 \
+    --private-key ../keys/private.key</code></pre>
+
+    <h3>Generate an enterprise license for a 3-node cluster</h3>
+    <pre><code>java LicenseGenerator --create-license \
+    --fingerprint e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855 \
+    --customer "Big Enterprise Inc" \
+    --expiry 2028-01-01 \
+    --tier enterprise \
+    --max-nodes 3 \
+    --private-key ../keys/private.key \
+    --output big-enterprise-license.key</code></pre>
+
+    <h3>Batch license generation</h3>
+    <p>For generating multiple licenses, you can script the process:</p>
+    <pre><code><span class="comment">#!/bin/bash</span>
+<span class="comment"># batch-generate.sh</span>
+<span class="comment"># Input: CSV file with format: customer,fingerprint,expiry</span>
+
+while IFS=',' read -r customer fingerprint expiry; do
+    output="${customer// /_}-license.key"
+    java LicenseGenerator --create-license \
+        --fingerprint "$fingerprint" \
+        --customer "$customer" \
+        --expiry "$expiry" \
+        --private-key ../keys/private.key \
+        --output "$output"
+    echo "Generated: $output"
+done &lt; customers.csv</code></pre>
+
+    <hr>
+
+    <!-- Section 10: Troubleshooting -->
+    <div class="page-break"></div>
+    <h2 id="troubleshooting">10. Troubleshooting</h2>
+
+    <h3>"InvalidKeySpecException" when signing</h3>
+    <p>The private key file is not in PKCS#8 format. If you generated the key with older OpenSSL, convert it:</p>
+    <pre><code>openssl pkcs8 -topk8 -inform PEM -outform PEM -nocrypt \
+    -in old-private.key -out keys/private.key</code></pre>
+
+    <h3>Customer reports "fingerprint mismatch"</h3>
+    <p>The customer's hardware may have changed, or they ran the fingerprint tool on a different machine. Ask them to re-run the fingerprint tool on the exact machine where Supra is installed and send the new MFP.</p>
+
+    <h3>Customer reports "signature verification failed"</h3>
+    <p>The <code>public.key</code> on their machine does not match the private key used to sign the license. Ensure the customer has the correct <code>public.key</code> installed. This can happen if:</p>
+    <ul>
+        <li>The keypair was rotated but the customer has an old public key</li>
+        <li>The <code>public.key</code> file was corrupted during transfer</li>
+    </ul>
+
+    <h3>Fingerprint is all zeros or "UNKNOWN"</h3>
+    <p>The fingerprint tool could not read hardware identifiers.</p>
+    <p><strong>On Linux</strong>, this typically means:</p>
+    <ul>
+        <li>The tool was not run with <code>sudo</code> (required to read DMI data)</li>
+        <li>The machine is a virtual machine with no DMI data exposed</li>
+    </ul>
+    <p><strong>On Windows</strong>:</p>
+    <ul>
+        <li>WMI service may be disabled</li>
+        <li>Running in a container environment without hardware access</li>
+    </ul>
+
+    <h3>Verifying a license file manually</h3>
+    <p>To inspect a license without deploying it:</p>
+    <pre><code><span class="comment"># Extract and decode the payload (first part before the dot)</span>
+echo "&lt;license-content&gt;" | cut -d. -f1 | base64 -d</code></pre>
+    <p>This prints the JSON payload so you can verify the customer, fingerprint, and expiry.</p>
+
+    <hr>
+
+    <!-- Quick Reference -->
+    <div class="summary-box">
+        <h3>Quick Reference</h3>
+        <pre><code><span class="comment"># One-time setup</span>
+bash generate-keys.sh
+
+<span class="comment"># Compile (once)</span>
+cd license-generator &amp;&amp; javac LicenseGenerator.java
+
+<span class="comment"># Generate license</span>
+java LicenseGenerator --create-license \
+    --fingerprint &lt;MFP&gt; \
+    --customer "&lt;name&gt;" \
+    --expiry &lt;YYYY-MM-DD&gt; \
+    --private-key ../keys/private.key \
+    --output license.key</code></pre>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+        <p>Supra Stack v3.6.0 &mdash; Vendor License Generation Guide</p>
+        <p>Supra Connected Platform Limited &mdash; Internal Use Only</p>
+    </div>
+
+</body>
+</html>

@@ -1,3 +1,4 @@
+
 #!/bin/bash
 set -e
 
@@ -257,8 +258,21 @@ cp "$FLUENTD_CONF" "$STAGING/log-collector/"
 # -- License validator --
 if [ -d "$LICENSE_VALIDATOR_DIR" ]; then
     echo "  Staging license validator..."
-    cp -r "$LICENSE_VALIDATOR_DIR/license-generator" "$STAGING/license-validator/" 2>/dev/null || true
-    cp -r "$LICENSE_VALIDATOR_DIR/license-validator" "$STAGING/license-validator/" 2>/dev/null || true
+    PLUGIN_ZIP=$(find "$LICENSE_VALIDATOR_DIR/license-validator/target/releases" -name "supra-license-validator-*.zip" 2>/dev/null | head -1)
+    if [ -n "$PLUGIN_ZIP" ]; then
+        cp "$PLUGIN_ZIP" "$STAGING/license-validator/"
+        echo "    Plugin zip staged: $(basename "$PLUGIN_ZIP")"
+    else
+        echo "    WARNING: Plugin zip not found. Build it first: cd license-validator && mvn clean package"
+    fi
+    if [ -f "$LICENSE_VALIDATOR_DIR/keys/public.key" ]; then
+        cp "$LICENSE_VALIDATOR_DIR/keys/public.key" "$STAGING/license-validator/"
+        echo "    Public key staged."
+    fi
+    if [ -f "$LICENSE_VALIDATOR_DIR/get-fingerprint.ps1" ]; then
+        cp "$LICENSE_VALIDATOR_DIR/get-fingerprint.ps1" "$STAGING/license-validator/"
+        echo "    Fingerprint script staged."
+    fi
 fi
 
 # -- NSSM --
@@ -442,6 +456,30 @@ $rule = New-Object System.Security.AccessControl.FileSystemAccessRule($SupraUser
 $acl.SetAccessRule($rule)
 Set-Acl -Path $osInstallDir -AclObject $acl -ErrorAction SilentlyContinue
 Log "  Supra Search Engine installed to $osInstallDir"
+
+# ---- Install Supra License Validator Plugin ----
+Log "Installing Supra License Validator plugin..."
+$licPluginZip = Get-ChildItem -Path (Join-Path $ScriptDir "license-validator") -Filter "supra-license-validator-*.zip" -ErrorAction SilentlyContinue | Select-Object -First 1
+if ($licPluginZip) {
+    & (Join-Path $osInstallDir "bin\opensearch-plugin.bat") install --batch "file:///$($licPluginZip.FullName -replace '\\','/')"
+    Log "  License validator plugin installed."
+} else {
+    Warn "  License validator plugin zip not found. Skipping."
+}
+
+# Create license config directory
+$licenseConfigDir = Join-Path $osInstallDir "config\supra-license"
+if (-not (Test-Path $licenseConfigDir)) { New-Item -ItemType Directory -Path $licenseConfigDir -Force | Out-Null }
+$pubKeySrc = Join-Path $ScriptDir "license-validator\public.key"
+if (Test-Path $pubKeySrc) {
+    Copy-Item $pubKeySrc -Destination $licenseConfigDir
+    Log "  Public key installed."
+}
+$fpScriptSrc = Join-Path $ScriptDir "license-validator\get-fingerprint.ps1"
+if (Test-Path $fpScriptSrc) {
+    Copy-Item $fpScriptSrc -Destination $licenseConfigDir
+    Log "  Fingerprint tool installed."
+}
 
 # ---- Install Supra Dashboards ----
 Log "Installing Supra Dashboards..."
@@ -658,85 +696,27 @@ foreach ($rule in $firewallRules) {
     }
 }
 
-# ---- Start services ----
-Log "Starting services..."
-
-Log "  Starting Supra Search Engine..."
-& $NssmExe start "SupraSearch"
-
-Write-Host -NoNewline "  Waiting for Supra Search Engine"
-$ready = $false
-for ($i = 1; $i -le 60; $i++) {
-    try {
-        [System.Net.ServicePointManager]::ServerCertificateValidationCallback = { $true }
-        $response = Invoke-WebRequest -Uri "https://localhost:9200" -UseBasicParsing -TimeoutSec 3 -ErrorAction SilentlyContinue
-        if ($response.StatusCode -eq 200 -or $response.StatusCode -eq 401) {
-            Write-Host ""
-            Log "  Supra Search Engine is ready."
-            $ready = $true
-            break
-        }
-    } catch {
-        if ($_.Exception.Response.StatusCode.value__ -eq 401) {
-            Write-Host ""
-            Log "  Supra Search Engine is ready."
-            $ready = $true
-            break
-        }
-    }
-    Write-Host -NoNewline "."
-    Start-Sleep -Seconds 2
-}
-
-if (-not $ready) {
-    Write-Host ""
-    Warn "Supra Search Engine did not start within 120s. Check: $InstallDir\opensearch\logs\"
-}
-
-# ---- Initialize security index ----
-$secPluginDir = Join-Path $osInstallDir "plugins\opensearch-security"
-if (Test-Path $secPluginDir) {
-    Log "Initializing security index..."
-    Start-Sleep -Seconds 5
-
-    $secAdminBat = Join-Path $secPluginDir "tools\securityadmin.bat"
-    $osConfDir = Join-Path $osInstallDir "config"
-    $env:OPENSEARCH_JAVA_HOME = Join-Path $osInstallDir "jdk"
-
-    if (Test-Path $secAdminBat) {
-        & cmd.exe /c "`"$secAdminBat`" -cd `"$osConfDir\opensearch-security`" -icl -nhnv -cacert `"$osConfDir\root-ca.pem`" -cert `"$osConfDir\kirk.pem`" -key `"$osConfDir\kirk-key.pem`"" 2>&1 | Select-Object -Last 5
-
-        Log "  Security index initialized."
-
-        Start-Sleep -Seconds 2
-        try {
-            $cred = [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes("admin:admin"))
-            [System.Net.ServicePointManager]::ServerCertificateValidationCallback = { $true }
-            $resp = Invoke-WebRequest -Uri "https://localhost:9200" -Headers @{ Authorization = "Basic $cred" } -UseBasicParsing -TimeoutSec 5
-            if ($resp.StatusCode -eq 200) {
-                Log "  Admin login verified successfully."
-            } else {
-                Warn "  Admin login returned HTTP $($resp.StatusCode)."
-            }
-        } catch {
-            Warn "  Admin login verification failed. Service may still be starting."
-        }
-    } else {
-        Warn "  Security admin tool not found. Security index not initialized."
-    }
-}
-
-Log "  Starting Supra Log Collector..."
-try { & $NssmExe start "SupraLogCollector" 2>&1 | Out-Null } catch { Warn "  Log Collector service not started (may not be installed)." }
-
-Log "  Starting Supra Dashboards..."
-& $NssmExe start "SupraDashboards"
-
-# ---- Summary ----
+# ---- Licensing ----
 Write-Host ""
 Write-Host "============================================"
 Write-Host "  Installation Complete!"
 Write-Host "============================================"
+Write-Host ""
+Write-Host "IMPORTANT: License activation required before starting services." -ForegroundColor Yellow
+Write-Host ""
+Write-Host "Step 1: Get this machine's fingerprint:"
+Write-Host "  powershell -File $osInstallDir\config\supra-license\get-fingerprint.ps1"
+Write-Host ""
+Write-Host "Step 2: Send the fingerprint (MFP) to your Supra vendor to receive a license.key file."
+Write-Host ""
+Write-Host "Step 3: Place the license file:"
+Write-Host "  Copy-Item license.key -Destination $osInstallDir\config\supra-license\"
+Write-Host ""
+Write-Host "Step 4: Start services:"
+Write-Host "  nssm start SupraSearch"
+Write-Host "  # Wait for Search Engine to be ready, then:"
+Write-Host "  nssm start SupraDashboards"
+Write-Host "  nssm start SupraLogCollector"
 Write-Host ""
 Write-Host "Services (Windows Services):"
 Write-Host "  SupraSearch          - Supra Search Engine  (https://localhost:9200)"
@@ -747,16 +727,7 @@ Write-Host "Credentials:"
 Write-Host "  Username: admin"
 Write-Host "  Password: admin"
 Write-Host ""
-Write-Host "Verify:"
-Write-Host "  Invoke-WebRequest -Uri https://localhost:9200 -SkipCertificateCheck -Credential (Get-Credential)"
-Write-Host ""
 Write-Host "Manage services:"
-Write-Host "  Start-Service SupraSearch"
-Write-Host "  Stop-Service SupraSearch"
-Write-Host "  Restart-Service SupraSearch"
-Write-Host "  Get-Service Supra*"
-Write-Host ""
-Write-Host "  Or via NSSM:"
 Write-Host "  nssm start|stop|restart SupraSearch"
 Write-Host "  nssm start|stop|restart SupraDashboards"
 Write-Host "  nssm start|stop|restart SupraLogCollector"
@@ -764,7 +735,6 @@ Write-Host ""
 Write-Host "Logs:"
 Write-Host "  $InstallDir\opensearch\logs\"
 Write-Host "  $InstallDir\dashboards\logs\"
-Write-Host "  $InstallDir\log-collector\log-collector-stdout.log"
 Write-Host ""
 Write-Host "Install directory: $InstallDir"
 Write-Host ""

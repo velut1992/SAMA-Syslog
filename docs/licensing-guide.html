@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Supra Licensing Guide</title>
+    <style>
+        @media print {
+            body { font-size: 11pt; }
+            .page-break { page-break-before: always; }
+            h1, h2, h3 { page-break-after: avoid; }
+            table, pre, blockquote { page-break-inside: avoid; }
+            a { text-decoration: none; color: #1a1a1a; }
+            .toc a { color: #1a1a1a; }
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.7;
+            color: #2c3e50;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 40px 50px;
+            background: #ffffff;
+        }
+
+        .cover {
+            text-align: center;
+            padding: 60px 0 40px 0;
+            border-bottom: 3px solid #2c3e50;
+            margin-bottom: 40px;
+        }
+
+        .cover h1 {
+            font-size: 32px;
+            color: #1a252f;
+            margin-bottom: 10px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+
+        .cover .subtitle {
+            font-size: 18px;
+            color: #5a6a7a;
+            margin-bottom: 30px;
+        }
+
+        .cover .meta {
+            font-size: 14px;
+            color: #7f8c8d;
+            line-height: 2;
+        }
+
+        .cover .meta strong {
+            color: #2c3e50;
+        }
+
+        .toc {
+            background: #f8f9fa;
+            border: 1px solid #e1e4e8;
+            border-radius: 6px;
+            padding: 30px 35px;
+            margin-bottom: 40px;
+        }
+
+        .toc h2 {
+            font-size: 20px;
+            color: #1a252f;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #e1e4e8;
+            padding-bottom: 10px;
+        }
+
+        .toc ol { padding-left: 20px; }
+        .toc li { margin-bottom: 6px; font-size: 15px; }
+        .toc a { color: #2980b9; text-decoration: none; }
+        .toc a:hover { text-decoration: underline; }
+
+        h2 {
+            font-size: 24px;
+            color: #1a252f;
+            margin-top: 50px;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #3498db;
+        }
+
+        h3 {
+            font-size: 18px;
+            color: #2c3e50;
+            margin-top: 30px;
+            margin-bottom: 12px;
+        }
+
+        p {
+            margin-bottom: 14px;
+            font-size: 15px;
+        }
+
+        ul, ol {
+            margin-bottom: 16px;
+            padding-left: 28px;
+        }
+
+        li {
+            margin-bottom: 6px;
+            font-size: 15px;
+        }
+
+        pre {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 18px 22px;
+            border-radius: 6px;
+            overflow-x: auto;
+            margin-bottom: 20px;
+            font-size: 13.5px;
+            line-height: 1.6;
+            font-family: 'Cascadia Code', 'Consolas', 'Courier New', monospace;
+        }
+
+        pre .comment { color: #6a9955; }
+
+        code {
+            background: #f0f2f5;
+            color: #c7254e;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 13.5px;
+            font-family: 'Cascadia Code', 'Consolas', 'Courier New', monospace;
+        }
+
+        pre code {
+            background: none;
+            color: inherit;
+            padding: 0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+
+        th {
+            background: #2c3e50;
+            color: #ffffff;
+            padding: 12px 16px;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        td {
+            padding: 10px 16px;
+            border-bottom: 1px solid #e1e4e8;
+        }
+
+        tr:nth-child(even) { background: #f8f9fa; }
+
+        .callout {
+            border-left: 4px solid #3498db;
+            background: #eaf2f8;
+            padding: 16px 20px;
+            margin-bottom: 20px;
+            border-radius: 0 6px 6px 0;
+            font-size: 14px;
+        }
+
+        .callout.warning {
+            border-left-color: #e74c3c;
+            background: #fdf0ef;
+        }
+
+        .callout.important {
+            border-left-color: #f39c12;
+            background: #fef9e7;
+        }
+
+        .callout.note {
+            border-left-color: #27ae60;
+            background: #eafaf1;
+        }
+
+        .callout strong {
+            display: block;
+            margin-bottom: 4px;
+            font-size: 14px;
+        }
+
+        hr {
+            border: none;
+            border-top: 1px solid #e1e4e8;
+            margin: 40px 0;
+        }
+
+        .flow-diagram {
+            background: #f8f9fa;
+            border: 1px solid #e1e4e8;
+            border-radius: 6px;
+            padding: 25px 30px;
+            margin-bottom: 20px;
+            font-family: 'Cascadia Code', 'Consolas', 'Courier New', monospace;
+            font-size: 13px;
+            line-height: 1.8;
+            white-space: pre;
+            overflow-x: auto;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 60px;
+            padding-top: 20px;
+            border-top: 2px solid #e1e4e8;
+            color: #7f8c8d;
+            font-size: 13px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Cover -->
+    <div class="cover">
+        <h1>Supra Licensing Guide</h1>
+        <div class="subtitle">License Activation and Management</div>
+        <div class="meta">
+            <strong>Version:</strong> 3.6.0<br>
+            <strong>Applies to:</strong> Linux and Windows Server installations
+        </div>
+    </div>
+
+    <!-- Table of Contents -->
+    <div class="toc">
+        <h2>Table of Contents</h2>
+        <ol>
+            <li><a href="#overview">Overview</a></li>
+            <li><a href="#how-it-works">How Licensing Works</a></li>
+            <li><a href="#linux">Activating a License (Linux)</a></li>
+            <li><a href="#windows">Activating a License (Windows)</a></li>
+            <li><a href="#start-services">Starting Services After Licensing</a></li>
+            <li><a href="#renewal">License Renewal</a></li>
+            <li><a href="#troubleshooting">Troubleshooting</a></li>
+        </ol>
+    </div>
+
+    <!-- Section 1: Overview -->
+    <h2 id="overview">1. Overview</h2>
+    <p>Supra uses a hardware-locked licensing system to ensure each installation is authorized. Every Supra installation requires a valid license file tied to the specific machine it runs on.</p>
+    <p>The license is verified each time the Supra Search Engine starts. Without a valid license, the Search Engine will not start.</p>
+
+    <hr>
+
+    <!-- Section 2: How it works -->
+    <h2 id="how-it-works">2. How Licensing Works</h2>
+    <p>Each machine has a unique <strong>Machine Fingerprint (MFP)</strong> &mdash; a 64-character hex string derived from the machine's hardware identifiers (CPU, motherboard, and disk serial numbers).</p>
+
+    <p>The licensing process works as follows:</p>
+
+    <div class="flow-diagram">1. Install Supra on the target machine
+2. Run the fingerprint tool to obtain the MFP
+3. Send the MFP to your Supra vendor
+4. Vendor generates a signed license file tied to your MFP
+5. Place the license file on the machine
+6. Start Supra services</div>
+
+    <p>The license file is cryptographically signed with RSA-2048. It cannot be forged, modified, or transferred to a different machine.</p>
+
+    <hr>
+
+    <!-- Section 3: Linux -->
+    <h2 id="linux">3. Activating a License (Linux)</h2>
+
+    <h3>3.1 Get the Machine Fingerprint</h3>
+    <p>After running the Supra installer, execute:</p>
+    <pre><code>sudo bash /opt/supra/opensearch/config/supra-license/get-fingerprint.sh</code></pre>
+
+    <p>Output:</p>
+    <pre><code>Machine Fingerprint (MFP): a1b2c3d4e5f6...  (64-character hex string)</code></pre>
+
+    <h3>3.2 Request a License</h3>
+    <p>Send the MFP to your Supra vendor along with:</p>
+    <ul>
+        <li>Your organization name</li>
+        <li>Desired license tier (if applicable)</li>
+        <li>Number of cluster nodes (if applicable)</li>
+    </ul>
+    <p>The vendor will provide a <code>license.key</code> file.</p>
+
+    <h3>3.3 Install the License</h3>
+    <p>Copy the <code>license.key</code> file to the license directory:</p>
+    <pre><code>sudo cp license.key /opt/supra/opensearch/config/supra-license/
+sudo chown supra:supra /opt/supra/opensearch/config/supra-license/license.key</code></pre>
+
+    <h3>3.4 Verify the License Directory</h3>
+    <p>The following files should be present:</p>
+    <pre><code>ls -la /opt/supra/opensearch/config/supra-license/</code></pre>
+
+    <table>
+        <thead>
+            <tr>
+                <th>File</th>
+                <th>Description</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><code>public.key</code></td>
+                <td>RSA public key (installed by default)</td>
+            </tr>
+            <tr>
+                <td><code>license.key</code></td>
+                <td>Your license file</td>
+            </tr>
+            <tr>
+                <td><code>get-fingerprint.sh</code></td>
+                <td>Fingerprint generation tool</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <hr>
+
+    <!-- Section 4: Windows -->
+    <h2 id="windows">4. Activating a License (Windows)</h2>
+
+    <h3>4.1 Get the Machine Fingerprint</h3>
+    <p>After running the Supra installer, open PowerShell as Administrator and execute:</p>
+    <pre><code>powershell -File C:\supra\opensearch\config\supra-license\get-fingerprint.ps1</code></pre>
+
+    <p>Output:</p>
+    <pre><code>Machine Fingerprint (MFP): a1b2c3d4e5f6...  (64-character hex string)</code></pre>
+
+    <h3>4.2 Request a License</h3>
+    <p>Send the MFP to your Supra vendor (same process as Linux &mdash; see section 3.2).</p>
+
+    <h3>4.3 Install the License</h3>
+    <pre><code>Copy-Item license.key -Destination C:\supra\opensearch\config\supra-license\</code></pre>
+
+    <h3>4.4 Verify the License Directory</h3>
+    <pre><code>Get-ChildItem C:\supra\opensearch\config\supra-license\</code></pre>
+
+    <table>
+        <thead>
+            <tr>
+                <th>File</th>
+                <th>Description</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><code>public.key</code></td>
+                <td>RSA public key (installed by default)</td>
+            </tr>
+            <tr>
+                <td><code>license.key</code></td>
+                <td>Your license file</td>
+            </tr>
+            <tr>
+                <td><code>get-fingerprint.ps1</code></td>
+                <td>Fingerprint generation tool</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <hr>
+
+    <!-- Section 5: Starting Services -->
+    <h2 id="start-services">5. Starting Services After Licensing</h2>
+
+    <h3>Linux</h3>
+    <pre><code><span class="comment"># Start Search Engine</span>
+sudo systemctl start supra-search
+
+<span class="comment"># Wait for it to become ready (check logs or poll the endpoint)</span>
+curl -sk https://localhost:9200
+
+<span class="comment"># Start remaining services</span>
+sudo systemctl start supra-dashboards
+sudo systemctl start supra-log-collector</code></pre>
+
+    <h3>Windows</h3>
+    <pre><code><span class="comment"># Start Search Engine</span>
+nssm start SupraSearch
+
+<span class="comment"># Wait for it to become ready</span>
+Invoke-WebRequest -Uri https://localhost:9200 -SkipCertificateCheck
+
+<span class="comment"># Start remaining services</span>
+nssm start SupraDashboards
+nssm start SupraLogCollector</code></pre>
+
+    <div class="callout note">
+        <strong>Note</strong>
+        On first start after licensing, you will also need to initialize the security index. See the relevant installation guide for your platform.
+    </div>
+
+    <hr>
+
+    <!-- Section 6: Renewal -->
+    <h2 id="renewal">6. License Renewal</h2>
+    <p>When your license approaches its expiry date:</p>
+    <ol>
+        <li>Run the fingerprint tool again to confirm the MFP (it should be the same unless hardware has changed)</li>
+        <li>Send the MFP to your vendor to request a renewed license</li>
+        <li>Replace the existing <code>license.key</code> with the new one</li>
+        <li>Restart the Search Engine:</li>
+    </ol>
+
+    <h3>Linux</h3>
+    <pre><code>sudo systemctl restart supra-search</code></pre>
+
+    <h3>Windows</h3>
+    <pre><code>nssm restart SupraSearch</code></pre>
+
+    <hr>
+
+    <!-- Section 7: Troubleshooting -->
+    <div class="page-break"></div>
+    <h2 id="troubleshooting">7. Troubleshooting</h2>
+
+    <h3>"License file not found"</h3>
+    <p>The <code>license.key</code> file is missing from the <code>config/supra-license/</code> directory. Follow sections 3 or 4 to install it.</p>
+    <p>The error message includes the machine's MFP, which you can use to request a license.</p>
+
+    <h3>"License signature verification failed"</h3>
+    <p>The license file has been corrupted or tampered with. Request a fresh license from your vendor.</p>
+
+    <h3>"License fingerprint mismatch"</h3>
+    <p>The license was generated for a different machine. The error message shows both the licensed fingerprint and the current machine's fingerprint.</p>
+    <p>This can happen if:</p>
+    <ul>
+        <li>The license was copied from another machine</li>
+        <li>Hardware components (CPU, motherboard, or primary disk) were replaced</li>
+    </ul>
+    <p>Request a new license using the current machine's MFP.</p>
+
+    <h3>"License has expired"</h3>
+    <p>The license has passed its expiry date. Contact your vendor for renewal. The error message includes the MFP.</p>
+
+    <h3>"Public key not found"</h3>
+    <p>The <code>public.key</code> file is missing from the <code>config/supra-license/</code> directory. This file is normally installed automatically by the installer. Re-run the installer or contact your vendor.</p>
+
+    <h3>MFP changed after hardware replacement</h3>
+    <p>If you replace the CPU, motherboard, or primary disk, the MFP will change and your existing license will become invalid. You will need to request a new license with the new MFP.</p>
+
+    <h3>Getting the MFP from Java (alternative)</h3>
+    <p>If the shell scripts are not available, you can get the MFP directly from the Java class included in the plugin:</p>
+
+    <h4>Linux</h4>
+    <pre><code>cd /opt/supra/opensearch
+./jdk/bin/java -cp "plugins/supra-license-validator/*" com.supra.plugins.MachineFingerprint</code></pre>
+
+    <h4>Windows</h4>
+    <pre><code>cd C:\supra\opensearch
+.\jdk\bin\java -cp "plugins\supra-license-validator\*" com.supra.plugins.MachineFingerprint</code></pre>
+
+    <!-- Footer -->
+    <div class="footer">
+        <p>Supra Stack v3.6.0 &mdash; Licensing Guide</p>
+        <p>Supra Connected Platform Limited</p>
+    </div>
+
+</body>
+</html>

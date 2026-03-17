@@ -12,12 +12,13 @@
 2. [Copy and Extract the Installer Package](#2-copy-and-extract-the-installer-package)
 3. [Download and Place NSSM (Before Installation)](#3-download-and-place-nssm-before-installation)
 4. [Run the Installer](#4-run-the-installer)
-5. [Verify the Installation](#5-verify-the-installation)
-6. [Managing Services](#6-managing-services)
-7. [Log Collector Setup](#7-log-collector-setup)
-8. [Uninstallation](#8-uninstallation)
-9. [Ports and Firewall](#9-ports-and-firewall)
-10. [Troubleshooting](#10-troubleshooting)
+5. [Activate the License](#5-activate-the-license)
+6. [Start Services and Verify](#6-start-services-and-verify)
+7. [Managing Services](#7-managing-services)
+8. [Log Collector Setup](#8-log-collector-setup)
+9. [Uninstallation](#9-uninstallation)
+10. [Ports and Firewall](#10-ports-and-firewall)
+11. [Troubleshooting](#11-troubleshooting)
 
 ---
 
@@ -111,20 +112,74 @@ The installer performs the following steps automatically:
 3. Initializes security demo certificates
 4. Sets the admin password to `admin`
 5. Configures JVM heap size (50% of available RAM, max 8 GB)
-6. Extracts and configures Supra Dashboards
-7. Installs extra Dashboards plugins (Security, Alerting, Anomaly Detection, etc.)
-8. Applies Supra branding
-9. Configures Supra Log Collector
-10. Registers all components as Windows Services via NSSM
-11. Configures Windows Firewall rules
-12. Starts all services and verifies the Search Engine is ready
-13. Initializes the security index
+6. Installs the Supra License Validator plugin
+7. Creates the license configuration directory with public key and fingerprint tool
+8. Extracts and configures Supra Dashboards
+9. Installs extra Dashboards plugins (Security, Alerting, Anomaly Detection, etc.)
+10. Applies Supra branding
+11. Configures Supra Log Collector
+12. Registers all components as Windows Services via NSSM
+13. Configures Windows Firewall rules
+
+> **Note:** The installer no longer auto-starts services. You must activate a license first (see next section).
 
 ---
 
-## 5. Verify the Installation
+## 5. Activate the License
 
-### 5.1 Check Services are Running
+> **IMPORTANT:** Services will not start without a valid license. Complete this section before proceeding.
+
+### 5.1 Get the Machine Fingerprint
+
+```powershell
+powershell -File C:\supra\opensearch\config\supra-license\get-fingerprint.ps1
+```
+
+Output:
+
+```
+Machine Fingerprint (MFP): a1b2c3d4e5f6...  (64-character hex string)
+```
+
+### 5.2 Request a License
+
+Send the Machine Fingerprint (MFP) to your Supra vendor along with your organization name. The vendor will provide a `license.key` file.
+
+### 5.3 Install the License
+
+```powershell
+Copy-Item license.key -Destination C:\supra\opensearch\config\supra-license\
+```
+
+### 5.4 Verify License Files
+
+```powershell
+Get-ChildItem C:\supra\opensearch\config\supra-license\
+```
+
+You should see: `public.key`, `license.key`, and `get-fingerprint.ps1`.
+
+For detailed licensing information, see [Licensing Guide](licensing-guide.md).
+
+---
+
+## 6. Start Services and Verify
+
+After activating the license, start services manually:
+
+```powershell
+# Start Search Engine first
+nssm start SupraSearch
+
+# Wait for it to become ready (try accessing the endpoint)
+Invoke-WebRequest -Uri https://localhost:9200 -SkipCertificateCheck
+
+# Then start remaining services
+nssm start SupraDashboards
+nssm start SupraLogCollector
+```
+
+### 6.1 Check Services are Running
 
 ```powershell
 Get-Service Supra*
@@ -138,7 +193,7 @@ Expected output:
 | Running | SupraDashboards   | Supra Dashboards      |
 | Running | SupraLogCollector | Supra Log Collector   |
 
-### 5.2 Test the Search Engine
+### 6.2 Test the Search Engine
 
 ```powershell
 Invoke-WebRequest -Uri https://localhost:9200 -SkipCertificateCheck -Credential (Get-Credential)
@@ -151,7 +206,7 @@ When prompted, enter:
 
 A successful response returns a JSON object with cluster information.
 
-### 5.3 Access the Dashboards
+### 6.3 Access the Dashboards
 
 Open a web browser and navigate to:
 
@@ -166,7 +221,7 @@ Login with:
 
 ---
 
-## 6. Managing Services
+## 7. Managing Services
 
 ### Using Windows Service Commands
 
@@ -213,17 +268,17 @@ nssm restart SupraLogCollector
 
 ---
 
-## 7. Log Collector Setup
+## 8. Log Collector Setup
 
 The Supra Log Collector requires a Fluentd runtime (td-agent) to be installed separately on the Windows Server.
 
-### 7.1 Install td-agent
+### 8.1 Install td-agent
 
 Download and install td-agent for Windows from:
 
 - https://td-agent-package-browser.herokuapp.com/4/windows
 
-### 7.2 Alternative: Install via RubyInstaller
+### 8.2 Alternative: Install via RubyInstaller
 
 1. Install RubyInstaller from https://rubyinstaller.org/
 2. Open a command prompt and run:
@@ -232,7 +287,7 @@ Download and install td-agent for Windows from:
 gem install fluentd fluent-plugin-opensearch
 ```
 
-### 7.3 Register the Log Collector Service
+### 8.3 Register the Log Collector Service
 
 After installing td-agent or Fluentd, re-run the installer to register the Log Collector service:
 
@@ -244,7 +299,7 @@ The installer will detect the Fluentd runtime and register the SupraLogCollector
 
 ---
 
-## 8. Uninstallation
+## 9. Uninstallation
 
 Right-click PowerShell and select **"Run as Administrator"**, then run:
 
@@ -270,7 +325,7 @@ The uninstaller will:
 
 ---
 
-## 9. Ports and Firewall
+## 10. Ports and Firewall
 
 The installer automatically creates Windows Firewall rules for the following ports:
 
@@ -283,7 +338,18 @@ The installer automatically creates Windows Firewall rules for the following por
 
 ---
 
-## 10. Troubleshooting
+## 11. Troubleshooting
+
+### Search Engine fails to start with "License" error
+
+If the Search Engine logs show a license-related error:
+
+- **"License file not found"**: Place `license.key` in `C:\supra\opensearch\config\supra-license\`
+- **"License fingerprint mismatch"**: The license was generated for a different machine. Re-run the fingerprint tool and request a new license.
+- **"License has expired"**: Contact your vendor for a renewed license.
+- **"License signature verification failed"**: The license file may be corrupted. Request a fresh copy.
+
+See [Licensing Guide](licensing-guide.md) for detailed troubleshooting.
 
 ### Search Engine fails to start
 
@@ -335,8 +401,11 @@ $env:OPENSEARCH_JAVA_HOME = "$OPENSEARCH_HOME\jdk"
 1. Extract installer zip
 2. Download NSSM and place nssm.exe in supra-installer\nssm\    <-- BEFORE install.ps1
 3. Run install.ps1 as Administrator
-4. (Optional) Install td-agent for Log Collector support
-5. Verify services and access Dashboards at http://localhost:5601
+4. Run get-fingerprint.ps1 and send MFP to vendor
+5. Place received license.key in config\supra-license\
+6. Start services: nssm start SupraSearch, then SupraDashboards
+7. (Optional) Install td-agent for Log Collector support
+8. Access Dashboards at http://localhost:5601
 ```
 
 ---

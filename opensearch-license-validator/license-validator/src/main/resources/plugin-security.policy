@@ -1,0 +1,14 @@
+grant {
+    // Allow executing system commands for hardware fingerprint
+    permission java.io.FilePermission "<<ALL FILES>>", "execute";
+
+    // Allow reading Linux DMI/hardware info files
+    permission java.io.FilePermission "/sys/class/dmi/id/product_uuid", "read";
+    permission java.io.FilePermission "/sys/class/dmi/id/board_serial", "read";
+
+    // Allow reading license and public key from config directory
+    permission java.io.FilePermission "${opensearch.path.conf}${/}supra-license${/}-", "read";
+
+    // Allow runtime exec for fingerprint generation
+    permission java.lang.RuntimePermission "createClassLoader";
+};
