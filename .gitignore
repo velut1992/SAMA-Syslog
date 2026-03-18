@@ -2,3 +2,10 @@ opensearch-3.6.0/
 *.tar.gz
 *.zip
 .claude/settings.local.json
+
+# Java build artifacts
+*.class
+**/target/
+
+# Private keys
+opensearch-license-validator/keys/private.key
