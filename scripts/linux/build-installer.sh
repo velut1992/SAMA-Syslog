@@ -44,9 +44,18 @@ echo ""
 echo "[1/7] Checking prerequisites..."
 
 if [ ! -f "$OPENSEARCH_TARBALL" ]; then
-    echo "ERROR: Supra Search Engine distribution tarball not found at $OPENSEARCH_TARBALL"
-    echo "       Download from: https://ci.opensearch.org/ci/dbc/distribution-build-opensearch/${VERSION}/latest/linux/x64/tar/dist/opensearch/opensearch-${VERSION}-linux-x64.tar.gz"
-    exit 1
+    OPENSEARCH_URL="https://ci.opensearch.org/ci/dbc/distribution-build-opensearch/${VERSION}/latest/linux/x64/tar/dist/opensearch/opensearch-${VERSION}-linux-x64.tar.gz"
+    echo "  Search engine tarball not found. Downloading..."
+    echo "    URL: $OPENSEARCH_URL"
+    if curl -fSL -o "$OPENSEARCH_TARBALL" "$OPENSEARCH_URL" 2>&1; then
+        echo "    Downloaded: $(du -sh "$OPENSEARCH_TARBALL" | cut -f1)"
+    else
+        echo "ERROR: Failed to download Supra Search Engine." >&2
+        echo "       URL: $OPENSEARCH_URL" >&2
+        echo "       Please download manually and place at: $OPENSEARCH_TARBALL" >&2
+        rm -f "$OPENSEARCH_TARBALL"
+        exit 1
+    fi
 fi
 
 if [ ! -f "$DASHBOARDS_TARBALL" ]; then
@@ -211,16 +220,41 @@ cp "$FLUENTD_CONF" "$STAGING/log-collector/"
 echo "  Log Collector config staged."
 
 # ---------------------------------------------------------------------------
-# Package license validator
+# Package license validator (auto-build with Maven if zip is missing)
 # ---------------------------------------------------------------------------
 if [ -d "$LICENSE_VALIDATOR_DIR" ]; then
     echo "  Packaging license validator..."
     PLUGIN_ZIP=$(find "$LICENSE_VALIDATOR_DIR/license-validator/target/releases" -name "supra-license-validator-*.zip" 2>/dev/null | head -1)
+    if [ -z "$PLUGIN_ZIP" ]; then
+        echo "    Plugin zip not found — building with Maven..."
+        if ! command -v mvn &>/dev/null; then
+            echo "    ERROR: Maven (mvn) is not installed or not in PATH."
+            echo "           Install it with: sudo apt install maven  (or equivalent)"
+            echo "           Skipping license validator plugin."
+        else
+            # Use bundled OpenSearch JDK if JAVA_HOME is not set
+            if [ -z "$JAVA_HOME" ]; then
+                BUNDLED_JDK="$BASE_DIR/opensearch-${VERSION}-linux-x64/jdk"
+                if [ -d "$BUNDLED_JDK" ]; then
+                    export JAVA_HOME="$BUNDLED_JDK"
+                    echo "    Using bundled OpenSearch JDK: $BUNDLED_JDK"
+                fi
+            fi
+            POM_FILE="$LICENSE_VALIDATOR_DIR/license-validator/pom.xml"
+            echo "    Running: mvn clean package -f $POM_FILE"
+            if mvn clean package -f "$POM_FILE" -q; then
+                echo "    Maven build succeeded."
+            else
+                echo "    ERROR: Maven build failed. Ensure Java 17+ and Maven are installed."
+            fi
+            PLUGIN_ZIP=$(find "$LICENSE_VALIDATOR_DIR/license-validator/target/releases" -name "supra-license-validator-*.zip" 2>/dev/null | head -1)
+        fi
+    fi
     if [ -n "$PLUGIN_ZIP" ]; then
         cp "$PLUGIN_ZIP" "$STAGING/license-validator/"
         echo "    Plugin zip staged: $(basename "$PLUGIN_ZIP")"
     else
-        echo "    WARNING: Plugin zip not found. Build it first: cd license-validator && mvn clean package"
+        echo "    WARNING: License validator plugin zip not available. Skipping."
     fi
     if [ -f "$LICENSE_VALIDATOR_DIR/keys/public.key" ]; then
         cp "$LICENSE_VALIDATOR_DIR/keys/public.key" "$STAGING/license-validator/"

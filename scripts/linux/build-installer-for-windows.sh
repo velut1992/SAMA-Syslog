@@ -255,15 +255,40 @@ fi
 echo "  Staging Supra Log Collector config..."
 cp "$FLUENTD_CONF" "$STAGING/log-collector/"
 
-# -- License validator --
+# -- License validator (auto-build with Maven if zip is missing) --
 if [ -d "$LICENSE_VALIDATOR_DIR" ]; then
     echo "  Staging license validator..."
     PLUGIN_ZIP=$(find "$LICENSE_VALIDATOR_DIR/license-validator/target/releases" -name "supra-license-validator-*.zip" 2>/dev/null | head -1)
+    if [ -z "$PLUGIN_ZIP" ]; then
+        echo "    Plugin zip not found — building with Maven..."
+        if ! command -v mvn &>/dev/null; then
+            echo "    ERROR: Maven (mvn) is not installed or not in PATH."
+            echo "           Install it with: sudo apt install maven  (or equivalent)"
+            echo "           Skipping license validator plugin."
+        else
+            # Use bundled OpenSearch JDK if JAVA_HOME is not set
+            if [ -z "$JAVA_HOME" ]; then
+                BUNDLED_JDK="$BASE_DIR/opensearch-${VERSION}-linux-x64/jdk"
+                if [ -d "$BUNDLED_JDK" ]; then
+                    export JAVA_HOME="$BUNDLED_JDK"
+                    echo "    Using bundled OpenSearch JDK: $BUNDLED_JDK"
+                fi
+            fi
+            POM_FILE="$LICENSE_VALIDATOR_DIR/license-validator/pom.xml"
+            echo "    Running: mvn clean package -f $POM_FILE"
+            if mvn clean package -f "$POM_FILE" -q; then
+                echo "    Maven build succeeded."
+            else
+                echo "    ERROR: Maven build failed. Ensure Java 17+ and Maven are installed."
+            fi
+            PLUGIN_ZIP=$(find "$LICENSE_VALIDATOR_DIR/license-validator/target/releases" -name "supra-license-validator-*.zip" 2>/dev/null | head -1)
+        fi
+    fi
     if [ -n "$PLUGIN_ZIP" ]; then
         cp "$PLUGIN_ZIP" "$STAGING/license-validator/"
         echo "    Plugin zip staged: $(basename "$PLUGIN_ZIP")"
     else
-        echo "    WARNING: Plugin zip not found. Build it first: cd license-validator && mvn clean package"
+        echo "    WARNING: License validator plugin zip not available. Skipping."
     fi
     if [ -f "$LICENSE_VALIDATOR_DIR/keys/public.key" ]; then
         cp "$LICENSE_VALIDATOR_DIR/keys/public.key" "$STAGING/license-validator/"

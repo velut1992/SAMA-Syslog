@@ -1,4 +1,4 @@
-################################################################################
+﻿################################################################################
 # Supra Installer Package Builder (Windows Server x64)
 #
 # Builds a self-contained installer zip that can be deployed on a Windows Server
@@ -49,18 +49,71 @@ Write-Host ""
 Write-Host "[1/8] Checking prerequisites..."
 
 if (-not (Test-Path $OpenSearchZip)) {
-    Write-Host "ERROR: Supra Search Engine distribution not found at $OpenSearchZip" -ForegroundColor Red
-    Write-Host "       Download from: https://ci.opensearch.org/ci/dbc/distribution-build-opensearch/${Version}/latest/windows/x64/zip/dist/opensearch/opensearch-${Version}-windows-x64.zip"
-    exit 1
+    $OpenSearchUrl = "https://ci.opensearch.org/ci/dbc/distribution-build-opensearch/${Version}/latest/windows/x64/zip/dist/opensearch/opensearch-${Version}-windows-x64.zip"
+    Write-Host "  Search engine zip not found. Downloading..."
+    Write-Host "    URL: $OpenSearchUrl"
+    try {
+        Invoke-WebRequest -Uri $OpenSearchUrl -OutFile $OpenSearchZip -UseBasicParsing
+        $sizeMB = [math]::Round((Get-Item $OpenSearchZip).Length / 1MB, 1)
+        Write-Host "    Downloaded: ${sizeMB} MB"
+    } catch {
+        Write-Host "ERROR: Failed to download Supra Search Engine." -ForegroundColor Red
+        Write-Host "       URL: $OpenSearchUrl" -ForegroundColor Red
+        Write-Host "       Please download manually and place at: $OpenSearchZip" -ForegroundColor Red
+        Remove-Item -Path $OpenSearchZip -ErrorAction SilentlyContinue
+        exit 1
+    }
+} else {
+    $sizeMB = [math]::Round((Get-Item $OpenSearchZip).Length / 1MB, 1)
+    Write-Host "  Search engine zip:   OK (${sizeMB} MB)"
 }
-Write-Host "  Search engine zip:   OK"
 
 if (-not (Test-Path $DashboardsZip)) {
-    Write-Host "ERROR: Supra Dashboards build zip not found at $DashboardsZip" -ForegroundColor Red
-    Write-Host "       Build it first:"
-    Write-Host "         cd $BaseDir\OpenSearch-Dashboards"
-    Write-Host "         yarn build-platform --windows --skip-os-packages"
-    exit 1
+    Write-Host "  Dashboards zip not found. Attempting to build automatically..." -ForegroundColor Yellow
+    if (-not (Test-Path $DashboardsSrc)) {
+        Write-Host "ERROR: OpenSearch-Dashboards source not found at $DashboardsSrc" -ForegroundColor Red
+        Write-Host "       Clone it first or place a pre-built zip at:" -ForegroundColor Red
+        Write-Host "         $DashboardsZipRelease" -ForegroundColor Red
+        exit 1
+    }
+    $yarnCmd = Get-Command yarn -ErrorAction SilentlyContinue
+    if (-not $yarnCmd) {
+        Write-Host "ERROR: yarn is not installed or not in PATH." -ForegroundColor Red
+        Write-Host "       Install it with: npm install -g yarn" -ForegroundColor Red
+        Write-Host "       Or build manually:" -ForegroundColor Red
+        Write-Host "         cd $DashboardsSrc" -ForegroundColor Red
+        Write-Host "         yarn build-platform --windows --skip-os-packages" -ForegroundColor Red
+        exit 1
+    }
+    Write-Host "  Bootstrapping Dashboards (yarn osd bootstrap)..."
+    Push-Location $DashboardsSrc
+    try {
+        & yarn osd bootstrap
+        if ($LASTEXITCODE -ne 0) {
+            Write-Host "ERROR: yarn osd bootstrap failed (exit code $LASTEXITCODE)." -ForegroundColor Red
+            exit 1
+        }
+        Write-Host "  Building Supra Dashboards (this may take a while)..."
+        & yarn build-platform --windows --skip-os-packages
+        if ($LASTEXITCODE -ne 0) {
+            Write-Host "ERROR: Dashboards build failed (exit code $LASTEXITCODE)." -ForegroundColor Red
+            exit 1
+        }
+    } finally {
+        Pop-Location
+    }
+    # Re-check for the built zip (could be SNAPSHOT or release)
+    if (Test-Path $DashboardsZipSnapshot) {
+        $DashboardsZip = $DashboardsZipSnapshot
+    } elseif (Test-Path $DashboardsZipRelease) {
+        $DashboardsZip = $DashboardsZipRelease
+    } else {
+        Write-Host "ERROR: Build completed but zip not found at expected location." -ForegroundColor Red
+        Write-Host "       Expected: $DashboardsZipSnapshot" -ForegroundColor Red
+        Write-Host "       Or:       $DashboardsZipRelease" -ForegroundColor Red
+        exit 1
+    }
+    Write-Host "  Dashboards build complete."
 }
 Write-Host "  Dashboards zip:      OK"
 
@@ -221,16 +274,45 @@ Copy-Item $FluentdConf -Destination (Join-Path $Staging "log-collector\")
 Write-Host "  Log Collector config staged."
 
 # ---------------------------------------------------------------------------
-# Package license validator
+# Package license validator (auto-build with Maven if zip is missing)
 # ---------------------------------------------------------------------------
 if (Test-Path $LicenseValidatorDir) {
     Write-Host "  Packaging license validator..."
     $pluginZip = Get-ChildItem -Path (Join-Path $LicenseValidatorDir "license-validator\target\releases") -Filter "supra-license-validator-*.zip" -ErrorAction SilentlyContinue | Select-Object -First 1
+    if (-not $pluginZip) {
+        Write-Host "    Plugin zip not found - building with Maven..."
+        # Locate mvn
+        $mvnCmd = Get-Command mvn -ErrorAction SilentlyContinue
+        if (-not $mvnCmd) {
+            Write-Host "    ERROR: Maven (mvn) is not installed or not in PATH." -ForegroundColor Red
+            Write-Host "           Install it with: winget install Apache.Maven" -ForegroundColor Red
+            Write-Host "           Skipping license validator plugin." -ForegroundColor Yellow
+        } else {
+            # Use bundled OpenSearch JDK if JAVA_HOME is not set
+            if (-not $env:JAVA_HOME) {
+                $bundledJdk = Join-Path $BaseDir "opensearch-${Version}-windows-x64\jdk"
+                if (Test-Path $bundledJdk) {
+                    $env:JAVA_HOME = $bundledJdk
+                    Write-Host "    Using bundled OpenSearch JDK: $bundledJdk"
+                }
+            }
+            $pomFile = Join-Path $LicenseValidatorDir "license-validator\pom.xml"
+            Write-Host "    Running: mvn clean package -f $pomFile"
+            & mvn clean package -f $pomFile -q
+            if ($LASTEXITCODE -eq 0) {
+                Write-Host "    Maven build succeeded."
+            } else {
+                Write-Host "    ERROR: Maven build failed (exit code $LASTEXITCODE)." -ForegroundColor Red
+                Write-Host "           Ensure Java 17+ and Maven are installed." -ForegroundColor Red
+            }
+            $pluginZip = Get-ChildItem -Path (Join-Path $LicenseValidatorDir "license-validator\target\releases") -Filter "supra-license-validator-*.zip" -ErrorAction SilentlyContinue | Select-Object -First 1
+        }
+    }
     if ($pluginZip) {
         Copy-Item $pluginZip.FullName -Destination (Join-Path $Staging "license-validator\")
         Write-Host "    Plugin zip staged: $($pluginZip.Name)"
     } else {
-        Write-Host "    WARNING: Plugin zip not found. Build it first: cd license-validator && mvn clean package" -ForegroundColor Yellow
+        Write-Host "    WARNING: License validator plugin zip not available. Skipping." -ForegroundColor Yellow
     }
     $pubKey = Join-Path $LicenseValidatorDir "keys\public.key"
     if (Test-Path $pubKey) {
