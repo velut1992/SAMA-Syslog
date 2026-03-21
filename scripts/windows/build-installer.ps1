@@ -360,14 +360,27 @@ $installScript = @'
 ################################################################################
 
 #Requires -RunAsAdministrator
-$ErrorActionPreference = "Stop"
 
 # ---- CONFIGURABLE: Change this to install on a different drive/path ----
 param(
     [string]$InstallPath = "C:\supra"
 )
+
+$ErrorActionPreference = "Stop"
+
+# ---- Ensure scripts can run on this machine ----
+$currentPolicy = Get-ExecutionPolicy -Scope LocalMachine
+if ($currentPolicy -eq "Restricted" -or $currentPolicy -eq "AllSigned") {
+    Write-Host "[INFO]  Setting ExecutionPolicy to RemoteSigned for LocalMachine..." -ForegroundColor Green
+    Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope LocalMachine -Force
+}
+
 $InstallDir = $InstallPath
 # ------------------------------------------------------------------------
+
+# ---- Track installation time ----
+$InstallStartTime = Get-Date
+Write-Host "  Started : $($InstallStartTime.ToString('yyyy-MM-dd HH:mm:ss'))" -ForegroundColor Cyan
 
 $SupraUser  = "SupraService"
 
@@ -399,7 +412,6 @@ if ($userExists) {
 }
 
 # Grant Log on as a service right
-$sidObj = (New-Object System.Security.Principal.NTAccount($SupraUser)).Translate([System.Security.Principal.SecurityIdentifier])
 $tempCfg = [System.IO.Path]::GetTempFileName()
 secedit /export /cfg $tempCfg | Out-Null
 $content = Get-Content $tempCfg
@@ -479,8 +491,8 @@ if (Test-Path $securityPluginDir) {
     $internalUsers = Join-Path $osInstallDir "config\opensearch-security\internal_users.yml"
     if (Test-Path $internalUsers) {
         $iuContent = Get-Content $internalUsers -Raw
-        $iuContent = $iuContent -replace '(admin:[\s\S]*?hash:\s*")[^"]*(")', '${1}$2a$12$VcCDgh2NDk07JGN0rjGbM.Ad41qVR/YFJcgHp0UGns5JDymv..TOG${2}'
-        $iuContent | Set-Content $internalUsers -Encoding UTF8
+        $iuContent = $iuContent -replace '(hash:\s*")[^"]*(")', '${"1"}$2a$12$VcCDgh2NDk07JGN0rjGbM.Ad41qVR/YFJcgHp0UGns5JDymv..TOG${"2"}'
+        [System.IO.File]::WriteAllText($internalUsers, $iuContent, [System.Text.UTF8Encoding]::new($false))
         Log "  Admin password reset to default (admin/admin)."
     }
 }
@@ -497,7 +509,7 @@ if (Test-Path $jvmOptions) {
     $jvmContent = Get-Content $jvmOptions
     $jvmContent = $jvmContent -replace '^-Xms.*', "-Xms${heapMB}m"
     $jvmContent = $jvmContent -replace '^-Xmx.*', "-Xmx${heapMB}m"
-    $jvmContent | Set-Content $jvmOptions -Encoding UTF8
+    [System.IO.File]::WriteAllLines($jvmOptions, $jvmContent, [System.Text.UTF8Encoding]::new($false))
     Log "  JVM heap set to ${heapMB}m"
 }
 
@@ -512,8 +524,26 @@ Log "  Supra Search Engine installed to $osInstallDir"
 Log "Installing Supra License Validator plugin..."
 $licPluginZip = Get-ChildItem -Path (Join-Path $ScriptDir "license-validator") -Filter "supra-license-validator-*.zip" -ErrorAction SilentlyContinue | Select-Object -First 1
 if ($licPluginZip) {
-    & (Join-Path $osInstallDir "bin\opensearch-plugin.bat") install --batch "file:///$($licPluginZip.FullName -replace '\\','/')"
-    Log "  License validator plugin installed."
+    # Encode spaces as %20 so Java URI.create() does not throw IllegalArgumentException
+    $pluginUri = "file:///" + ($licPluginZip.FullName -replace '[\\]', '/' -replace ' ', '%20')
+    $prev = $ErrorActionPreference
+    $ErrorActionPreference = "Continue"
+    try {
+        $pluginResult = & (Join-Path $osInstallDir "bin\opensearch-plugin.bat") install --batch $pluginUri 2>&1
+        if ($LASTEXITCODE -eq 0) {
+            Log "  License validator plugin installed."
+        } else {
+            Warn "  License validator plugin install failed (exit $LASTEXITCODE):"
+            $pluginResult | ForEach-Object { Warn "    $_" }
+            Warn "  Plugin zip may be built for a different OpenSearch version."
+            Warn "  Continuing install - place a compatible plugin zip and re-run."
+        }
+    } catch {
+        Warn "  License validator plugin install threw an exception: $_"
+        Warn "  Continuing install - place a compatible plugin zip and re-run."
+    } finally {
+        $ErrorActionPreference = $prev
+    }
 } else {
     Warn "  License validator plugin zip not found. Skipping."
 }
@@ -672,6 +702,11 @@ Log "  Supra Log Collector config installed to $logCollectorDir"
 # ---- Register Windows Services via NSSM ----
 Log "Registering Windows services via NSSM..."
 
+# Pre-create log folders so NSSM AppStdout/AppStderr can write from first start
+New-Item -ItemType Directory -Path (Join-Path $osInstallDir  "logs") -Force | Out-Null
+New-Item -ItemType Directory -Path (Join-Path $osdInstallDir "logs") -Force | Out-Null
+New-Item -ItemType Directory -Path $logCollectorDir -Force | Out-Null
+
 # -- Supra Search Engine Service --
 $osBat = Join-Path $osInstallDir "bin\opensearch.bat"
 if (Test-Path $osBat) {
@@ -791,6 +826,16 @@ Write-Host "  $InstallDir\dashboards\logs\"
 Write-Host ""
 Write-Host "Install directory: $InstallDir"
 Write-Host ""
+$InstallEndTime = Get-Date
+$Duration = $InstallEndTime - $InstallStartTime
+Write-Host "============================================" -ForegroundColor Cyan
+Write-Host "  Timing Summary" -ForegroundColor Cyan
+Write-Host "============================================" -ForegroundColor Cyan
+Write-Host "  Started  : $($InstallStartTime.ToString('yyyy-MM-dd HH:mm:ss'))" -ForegroundColor Cyan
+Write-Host "  Finished : $($InstallEndTime.ToString('yyyy-MM-dd HH:mm:ss'))" -ForegroundColor Cyan
+Write-Host "  Duration : $($Duration.Hours)h $($Duration.Minutes)m $($Duration.Seconds)s" -ForegroundColor Cyan
+Write-Host "============================================" -ForegroundColor Cyan
+Write-Host ""
 '@
 
 $installScript | Out-File -FilePath (Join-Path $Staging "install.ps1") -Encoding UTF8
@@ -805,12 +850,14 @@ $uninstallScript = @'
 ################################################################################
 
 #Requires -RunAsAdministrator
-$ErrorActionPreference = "Stop"
 
 # ---- CONFIGURABLE: Must match the install path used during installation ----
 param(
     [string]$InstallPath = "C:\supra"
 )
+
+$ErrorActionPreference = "Stop"
+
 $InstallDir = $InstallPath
 # ----------------------------------------------------------------------------
 
@@ -831,9 +878,12 @@ foreach ($ruleName in @("Supra Search Engine", "Supra Dashboards", "Supra Log Co
     Remove-NetFirewallRule -DisplayName $ruleName -ErrorAction SilentlyContinue
 }
 
-Write-Host "Removing installation directory..."
+Write-Host "Removing installation directory contents..."
 if (Test-Path $InstallDir) {
-    Remove-Item -Recurse -Force $InstallDir
+    Get-ChildItem -Path $InstallDir -Force | Remove-Item -Recurse -Force
+    Write-Host "  Contents of '$InstallDir' removed (folder kept)."
+} else {
+    Write-Host "  Directory '$InstallDir' not found, skipping."
 }
 
 Write-Host ""
