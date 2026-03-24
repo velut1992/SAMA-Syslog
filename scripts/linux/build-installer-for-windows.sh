@@ -139,6 +139,9 @@ DASHBOARDS_PLUGIN_NAMES=(
     "queryInsightsDashboards"
     "assistantDashboards"
     "customImportMapDashboards"
+    "indexManagementDashboards"
+    "notificationsDashboards"
+    "securityAnalyticsDashboards"
 )
 
 mkdir -p "$EXTRA_PLUGINS_DIR"
@@ -389,7 +392,7 @@ Remove-Item $tempCfg -ErrorAction SilentlyContinue
 # ---- Create install directory ----
 if (-not (Test-Path $InstallDir)) { New-Item -ItemType Directory -Path $InstallDir -Force | Out-Null }
 
-# ---- Locate NSSM ----
+# ---- Locate NSSM and copy to install directory ----
 $NssmExe = Join-Path $ScriptDir "nssm\nssm.exe"
 if (-not (Test-Path $NssmExe)) {
     Err "NSSM not found at $NssmExe. Cannot register Windows services."
@@ -397,6 +400,22 @@ if (-not (Test-Path $NssmExe)) {
     exit 1
 }
 Log "NSSM found: $NssmExe"
+
+# Copy NSSM to install directory and add to system PATH
+$nssmInstallDir = Join-Path $InstallDir "nssm"
+if (-not (Test-Path $nssmInstallDir)) { New-Item -ItemType Directory -Path $nssmInstallDir -Force | Out-Null }
+Copy-Item $NssmExe -Destination (Join-Path $nssmInstallDir "nssm.exe") -Force
+Log "  NSSM copied to $nssmInstallDir"
+
+# Add NSSM to system PATH if not already present
+$currentPath = [Environment]::GetEnvironmentVariable("Path", "Machine")
+if ($currentPath -notlike "*$nssmInstallDir*") {
+    [Environment]::SetEnvironmentVariable("Path", "$currentPath;$nssmInstallDir", "Machine")
+    $env:Path = "$env:Path;$nssmInstallDir"
+    Log "  NSSM added to system PATH."
+} else {
+    Log "  NSSM already in system PATH."
+}
 
 # ---- Install Supra Search Engine ----
 Log "Installing Supra Search Engine..."
@@ -597,10 +616,41 @@ if (Test-Path $tdAgentPath) {
     $fluentdExe = (Get-Command fluentd).Source
     Log "  Log Collector runtime found at $fluentdExe"
 } else {
-    Warn "Log Collector runtime not found on this system."
-    Warn "Download td-agent for Windows from: https://td-agent-package-browser.herokuapp.com/4/windows"
-    Warn "Or install via RubyInstaller + gem install fluentd fluent-plugin-opensearch"
-    Warn "Skipping Log Collector service registration. Re-run installer after installing."
+    Log "  Log Collector runtime not found. Attempting automatic download and install..."
+    $tdAgentMsiUrl = "https://s3.amazonaws.com/packages.treasuredata.com/4/windows/td-agent-4.5.2-x64.msi"
+    $tdAgentMsi = Join-Path $env:TEMP "td-agent-4.5.2-x64.msi"
+
+    try {
+        if (-not (Test-Path $tdAgentMsi)) {
+            Log "  Downloading td-agent installer..."
+            [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+            Invoke-WebRequest -Uri $tdAgentMsiUrl -OutFile $tdAgentMsi -UseBasicParsing
+            Log "  td-agent downloaded."
+        }
+
+        Log "  Installing td-agent (this may take a minute)..."
+        $msiArgs = "/i `"$tdAgentMsi`" /quiet /norestart"
+        $proc = Start-Process -FilePath "msiexec.exe" -ArgumentList $msiArgs -Wait -PassThru
+        if ($proc.ExitCode -eq 0) {
+            Log "  td-agent installed successfully to $tdAgentPath"
+            $fluentdExe = Join-Path $tdAgentPath "bin\fluentd.bat"
+
+            # Install the opensearch output plugin for fluentd
+            $tdAgentGem = Join-Path $tdAgentPath "bin\fluent-gem.bat"
+            if (Test-Path $tdAgentGem) {
+                Log "  Installing fluent-plugin-opensearch gem..."
+                & $tdAgentGem install fluent-plugin-opensearch --no-document 2>&1 | Out-Null
+                Log "  fluent-plugin-opensearch installed."
+            }
+        } else {
+            Warn "  td-agent MSI installer returned exit code $($proc.ExitCode)."
+            Warn "  Please install td-agent manually from: https://td-agent-package-browser.herokuapp.com/4/windows"
+        }
+    } catch {
+        Warn "  Failed to download/install td-agent: $_"
+        Warn "  Please install td-agent manually from: https://td-agent-package-browser.herokuapp.com/4/windows"
+        Warn "  After installing, re-run this installer to register the Log Collector service."
+    }
 }
 
 $logCollectorConf = @"
@@ -737,16 +787,19 @@ Write-Host ""
 Write-Host "Step 3: Place the license file:"
 Write-Host "  Copy-Item license.key -Destination $osInstallDir\config\supra-license\"
 Write-Host ""
-Write-Host "Step 4: Start services:"
+Write-Host "Step 4: Start services (open a NEW terminal so PATH is updated):"
 Write-Host "  nssm start SupraSearch"
 Write-Host "  # Wait for Search Engine to be ready, then:"
 Write-Host "  nssm start SupraDashboards"
 Write-Host "  nssm start SupraLogCollector"
 Write-Host ""
+Write-Host "NOTE: NSSM has been added to system PATH at $InstallDir\nssm" -ForegroundColor Cyan
+Write-Host "      Open a new terminal/PowerShell window for 'nssm' to be recognized." -ForegroundColor Cyan
+Write-Host ""
 Write-Host "Services (Windows Services):"
 Write-Host "  SupraSearch          - Supra Search Engine  (https://localhost:9200)"
 Write-Host "  SupraDashboards      - Supra Dashboards     (http://localhost:5601)"
-Write-Host "  SupraLogCollector    - Supra Log Collector"
+Write-Host "  SupraLogCollector    - Supra Log Collector  (Syslog UDP/5140, Forward TCP/24224)"
 Write-Host ""
 Write-Host "Credentials:"
 Write-Host "  Username: admin"
@@ -760,6 +813,7 @@ Write-Host ""
 Write-Host "Logs:"
 Write-Host "  $InstallDir\opensearch\logs\"
 Write-Host "  $InstallDir\dashboards\logs\"
+Write-Host "  $InstallDir\log-collector\"
 Write-Host ""
 Write-Host "Install directory: $InstallDir"
 Write-Host ""
@@ -799,6 +853,15 @@ foreach ($svc in @("SupraDashboards", "SupraLogCollector", "SupraSearch")) {
 Write-Host "Removing firewall rules..."
 foreach ($ruleName in @("Supra Search Engine", "Supra Dashboards", "Supra Log Collector Syslog", "Supra Log Collector Forward")) {
     Remove-NetFirewallRule -DisplayName $ruleName -ErrorAction SilentlyContinue
+}
+
+Write-Host "Removing NSSM from system PATH..."
+$nssmInstallDir = Join-Path $InstallDir "nssm"
+$currentPath = [Environment]::GetEnvironmentVariable("Path", "Machine")
+if ($currentPath -like "*$nssmInstallDir*") {
+    $newPath = ($currentPath.Split(';') | Where-Object { $_ -ne $nssmInstallDir }) -join ';'
+    [Environment]::SetEnvironmentVariable("Path", $newPath, "Machine")
+    Write-Host "  NSSM removed from system PATH."
 }
 
 Write-Host "Removing installation directory ($InstallDir)..."

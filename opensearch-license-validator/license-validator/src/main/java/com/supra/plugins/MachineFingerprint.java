@@ -20,9 +20,14 @@ public class MachineFingerprint {
                 String diskSerial;
 
                 if (os.contains("win")) {
-                    cpuId = wmicQuery("cpu get ProcessorId");
-                    boardSerial = wmicQuery("baseboard get SerialNumber");
-                    diskSerial = wmicQuery("diskdrive where Index=0 get SerialNumber");
+                    cpuId = powershellCimQuery("Win32_Processor", "ProcessorId", null);
+                    boardSerial = powershellCimQuery("Win32_BaseBoard", "SerialNumber", null);
+                    diskSerial = powershellCimQuery("Win32_DiskDrive", "SerialNumber", "Index=0");
+
+                    // Fallback to wmic if PowerShell CIM queries fail
+                    if ("UNKNOWN".equals(cpuId)) cpuId = wmicQuery("cpu get ProcessorId");
+                    if ("UNKNOWN".equals(boardSerial)) boardSerial = wmicQuery("baseboard get SerialNumber");
+                    if ("UNKNOWN".equals(diskSerial)) diskSerial = wmicQuery("diskdrive where Index=0 get SerialNumber");
                 } else {
                     cpuId = readFileOrCommand("/sys/class/dmi/id/product_uuid", null);
                     boardSerial = readFileOrCommand("/sys/class/dmi/id/board_serial", null);
@@ -35,6 +40,34 @@ public class MachineFingerprint {
                 throw new RuntimeException("Failed to generate machine fingerprint", e);
             }
         });
+    }
+
+    private static String powershellCimQuery(String cimClass, String property, String filter) {
+        try {
+            String psCommand;
+            if (filter != null && !filter.isEmpty()) {
+                psCommand = String.format(
+                    "(Get-CimInstance -ClassName %s -Filter '%s' -ErrorAction Stop | Select-Object -First 1).%s",
+                    cimClass, filter, property);
+            } else {
+                psCommand = String.format(
+                    "(Get-CimInstance -ClassName %s -ErrorAction Stop | Select-Object -First 1).%s",
+                    cimClass, property);
+            }
+            Process process = new ProcessBuilder(
+                "powershell", "-NoProfile", "-NonInteractive", "-Command", psCommand
+            ).redirectErrorStream(true).start();
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
+                String line = reader.readLine();
+                process.waitFor();
+                if (line != null && !line.trim().isEmpty()) {
+                    return line.trim();
+                }
+            }
+        } catch (Exception e) {
+            // fall through to return UNKNOWN
+        }
+        return "UNKNOWN";
     }
 
     private static String wmicQuery(String query) {

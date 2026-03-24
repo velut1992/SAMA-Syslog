@@ -86,6 +86,9 @@ DASHBOARDS_PLUGIN_ARTIFACTS=(
     "queryInsightsDashboards|${DASHBOARDS_PLUGIN_BASE_URL}/queryInsightsDashboards-${VERSION}.zip"
     "assistantDashboards|${DASHBOARDS_PLUGIN_BASE_URL}/assistantDashboards-${VERSION}.zip"
     "customImportMapDashboards|${DASHBOARDS_PLUGIN_BASE_URL}/customImportMapDashboards-${VERSION}.zip"
+    "indexManagementDashboards|${DASHBOARDS_PLUGIN_BASE_URL}/indexManagementDashboards-${VERSION}.zip"
+    "notificationsDashboards|${DASHBOARDS_PLUGIN_BASE_URL}/notificationsDashboards-${VERSION}.zip"
+    "securityAnalyticsDashboards|${DASHBOARDS_PLUGIN_BASE_URL}/securityAnalyticsDashboards-${VERSION}.zip"
 )
 
 mkdir -p "$EXTRA_PLUGINS_DIR"
@@ -546,23 +549,30 @@ fi
 
 mkdir -p "$INSTALL_DIR/log-collector"
 
-cat > "$INSTALL_DIR/log-collector/fluent.conf" <<FLUENTDCONF
-## Supra Log Collector configuration
-
-# Syslog input
+# Use the fluent.conf from the installer package (not hardcoded)
+if [ -f "$SCRIPT_DIR/log-collector/fluent.conf" ]; then
+    cp "$SCRIPT_DIR/log-collector/fluent.conf" "$INSTALL_DIR/log-collector/fluent.conf"
+    log "  Using packaged fluent.conf"
+else
+    warn "  Packaged fluent.conf not found, creating default config"
+    cat > "$INSTALL_DIR/log-collector/fluent.conf" <<'FLUENTDCONF'
+## Supra Log Collector Configuration (Fluentd)
 <source>
   @type syslog
   port 5140
-  tag system
+  bind 0.0.0.0
+  tag syslog
+  <parse>
+    message_format auto
+  </parse>
 </source>
 
-# Forward input (for other log collection agents)
 <source>
   @type forward
   port 24224
+  bind 0.0.0.0
 </source>
 
-# Supra Search Engine output
 <match **>
   @type opensearch
   host localhost
@@ -570,12 +580,24 @@ cat > "$INSTALL_DIR/log-collector/fluent.conf" <<FLUENTDCONF
   scheme https
   ssl_verify false
   user admin
-  password ${ADMIN_PASSWORD}
+  password admin
   logstash_format true
-  logstash_prefix fluentd
-  flush_interval 10s
+  logstash_prefix supra-logs
+  include_tag_key true
+  tag_key fluentd_tag
+  flush_interval 5s
+  <buffer>
+    @type memory
+    flush_mode interval
+    flush_interval 5s
+    retry_max_interval 30s
+    retry_forever true
+    chunk_limit_size 4MB
+    queue_limit_length 64
+  </buffer>
 </match>
 FLUENTDCONF
+fi
 
 chown -R "$SUPRA_USER:$SUPRA_GROUP" "$INSTALL_DIR/log-collector"
 log "  Supra Log Collector config installed to $INSTALL_DIR/log-collector/"
@@ -618,7 +640,7 @@ echo ""
 echo "Services:"
 echo "  Supra Search Engine:   https://localhost:9200"
 echo "  Supra Dashboards:      http://localhost:5601"
-echo "  Supra Log Collector:   localhost:5140 (syslog), localhost:24224 (forward)"
+echo "  Supra Log Collector:   UDP/5140 (syslog), TCP/24224 (forward)"
 echo ""
 echo "Credentials:"
 echo "  Username: admin"
