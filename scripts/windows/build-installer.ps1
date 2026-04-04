@@ -5,7 +5,7 @@
 # x64 machine. The package includes:
 #   - Supra Search Engine (full distribution with all plugins)
 #   - Supra Dashboards (full distribution with all plugins)
-#   - Extra Dashboards plugins (SIEM, Index Management, Notifications)
+#   - Extra Dashboards plugins (SIEM, Index Management, Notifications, Reporting)
 #   - Supra Log Collector configuration
 #   - NSSM (Non-Sucking Service Manager) for Windows Services
 #   - Install / Uninstall PowerShell scripts
@@ -31,6 +31,8 @@ if (Test-Path $DashboardsZipSnapshot) {
 $ExtraPluginsDir = Join-Path $BaseDir "dashboards-plugins"
 $FluentdConf = Join-Path $BaseDir "fluent\fluent.conf"
 $LicenseValidatorDir = Join-Path $BaseDir "opensearch-license-validator"
+$IndexManagementDir = Join-Path $BaseDir "index-management"
+$DashboardsReportingSrc = Join-Path $BaseDir "dashboards-reporting"
 $DashboardsSrc = Join-Path $BaseDir "OpenSearch-Dashboards"
 
 # NSSM download URL
@@ -148,6 +150,7 @@ $DashboardsPluginArtifacts = @(
     @{ Name = "indexManagementDashboards";   Url = "${DashboardsPluginBaseUrl}/indexManagementDashboards-${Version}.zip" }
     @{ Name = "notificationsDashboards";     Url = "${DashboardsPluginBaseUrl}/notificationsDashboards-${Version}.zip" }
     @{ Name = "securityAnalyticsDashboards"; Url = "${DashboardsPluginBaseUrl}/securityAnalyticsDashboards-${Version}.zip" }
+    @{ Name = "reportsDashboards";           Url = "${DashboardsPluginBaseUrl}/reportsDashboards-${Version}.zip" }
 )
 
 if (-not (Test-Path $ExtraPluginsDir)) { New-Item -ItemType Directory -Path $ExtraPluginsDir -Force | Out-Null }
@@ -180,7 +183,7 @@ Write-Host "[2/8] Preparing build directory..."
 if (Test-Path $BuildDir) { Remove-Item -Recurse -Force $BuildDir }
 $Staging = Join-Path $BuildDir $PackageName
 New-Item -ItemType Directory -Path $Staging -Force | Out-Null
-foreach ($sub in @("opensearch", "dashboards", "dashboards-plugins", "log-collector", "nssm", "branding", "license-validator")) {
+foreach ($sub in @("opensearch", "dashboards", "dashboards-plugins", "log-collector", "nssm", "branding", "license-validator", "index-management")) {
     New-Item -ItemType Directory -Path (Join-Path $Staging $sub) -Force | Out-Null
 }
 
@@ -326,6 +329,51 @@ if (Test-Path $LicenseValidatorDir) {
     if (Test-Path $fpScript) {
         Copy-Item $fpScript -Destination (Join-Path $Staging "license-validator\")
         Write-Host "    Fingerprint script staged."
+    }
+}
+
+# ---------------------------------------------------------------------------
+# Package Index Management backend plugin (auto-build with Gradle if zip is missing)
+# ---------------------------------------------------------------------------
+if (Test-Path $IndexManagementDir) {
+    Write-Host "  Packaging Index Management plugin..."
+    $imPluginZip = Get-ChildItem -Path (Join-Path $IndexManagementDir "build\distributions") -Filter "opensearch-index-management-*.zip" -ErrorAction SilentlyContinue | Select-Object -First 1
+    if (-not $imPluginZip) {
+        Write-Host "    Plugin zip not found - building with Gradle..."
+        $gradlewCmd = Join-Path $IndexManagementDir "gradlew.bat"
+        if (-not (Test-Path $gradlewCmd)) {
+            Write-Host "    ERROR: gradlew.bat not found in $IndexManagementDir" -ForegroundColor Red
+            Write-Host "           Skipping Index Management plugin." -ForegroundColor Yellow
+        } else {
+            # Use bundled OpenSearch JDK if JAVA_HOME is not set
+            if (-not $env:JAVA_HOME) {
+                $bundledJdk = Join-Path $BaseDir "opensearch-${Version}-windows-x64\jdk"
+                if (Test-Path $bundledJdk) {
+                    $env:JAVA_HOME = $bundledJdk
+                    Write-Host "    Using bundled OpenSearch JDK: $bundledJdk"
+                }
+            }
+            Write-Host "    Running: gradlew assemble (this may take a while)..."
+            Push-Location $IndexManagementDir
+            try {
+                & $gradlewCmd assemble -x test -q
+                if ($LASTEXITCODE -eq 0) {
+                    Write-Host "    Gradle build succeeded."
+                } else {
+                    Write-Host "    ERROR: Gradle build failed (exit code $LASTEXITCODE)." -ForegroundColor Red
+                    Write-Host "           Ensure Java 17+ is installed." -ForegroundColor Red
+                }
+            } finally {
+                Pop-Location
+            }
+            $imPluginZip = Get-ChildItem -Path (Join-Path $IndexManagementDir "build\distributions") -Filter "opensearch-index-management-*.zip" -ErrorAction SilentlyContinue | Select-Object -First 1
+        }
+    }
+    if ($imPluginZip) {
+        Copy-Item $imPluginZip.FullName -Destination (Join-Path $Staging "index-management\")
+        Write-Host "    Plugin zip staged: $($imPluginZip.Name)"
+    } else {
+        Write-Host "    WARNING: Index Management plugin zip not available. Skipping." -ForegroundColor Yellow
     }
 }
 
@@ -579,6 +627,33 @@ $fpScriptSrc = Join-Path $ScriptDir "license-validator\get-fingerprint.ps1"
 if (Test-Path $fpScriptSrc) {
     Copy-Item $fpScriptSrc -Destination $licenseConfigDir
     Log "  Fingerprint tool installed."
+}
+
+# ---- Install Index Management Plugin ----
+Log "Installing Index Management plugin..."
+$imPluginZip = Get-ChildItem -Path (Join-Path $ScriptDir "index-management") -Filter "opensearch-index-management-*.zip" -ErrorAction SilentlyContinue | Select-Object -First 1
+if ($imPluginZip) {
+    $pluginUri = "file:///" + ($imPluginZip.FullName -replace '[\\]', '/' -replace ' ', '%20')
+    $prev = $ErrorActionPreference
+    $ErrorActionPreference = "Continue"
+    try {
+        $pluginResult = & (Join-Path $osInstallDir "bin\opensearch-plugin.bat") install --batch $pluginUri 2>&1
+        if ($LASTEXITCODE -eq 0) {
+            Log "  Index Management plugin installed."
+        } else {
+            Warn "  Index Management plugin install failed (exit $LASTEXITCODE):"
+            $pluginResult | ForEach-Object { Warn "    $_" }
+            Warn "  Plugin zip may be built for a different OpenSearch version."
+            Warn "  Continuing install - place a compatible plugin zip and re-run."
+        }
+    } catch {
+        Warn "  Index Management plugin install threw an exception: $_"
+        Warn "  Continuing install - place a compatible plugin zip and re-run."
+    } finally {
+        $ErrorActionPreference = $prev
+    }
+} else {
+    Warn "  Index Management plugin zip not found. Skipping."
 }
 
 # ---- Install Supra Dashboards ----

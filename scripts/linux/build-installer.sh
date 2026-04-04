@@ -8,7 +8,7 @@ set -e
 # Linux x64 machine. The package includes:
 #   - Supra Search Engine (full distribution with all plugins)
 #   - Supra Dashboards (full distribution with all plugins)
-#   - Extra Dashboards plugins (SIEM, Index Management, Notifications)
+#   - Extra Dashboards plugins (SIEM, Index Management, Notifications, Reporting)
 #   - Supra Log Collector configuration
 #   - Systemd service files
 #   - Install script
@@ -30,6 +30,7 @@ fi
 EXTRA_PLUGINS_DIR="$BASE_DIR/dashboards-plugins"
 FLUENTD_CONF="$BASE_DIR/fluent/fluent.conf"
 LICENSE_VALIDATOR_DIR="$BASE_DIR/opensearch-license-validator"
+INDEX_MANAGEMENT_DIR="$BASE_DIR/index-management"
 DASHBOARDS_SRC="$BASE_DIR/OpenSearch-Dashboards"
 
 echo "============================================"
@@ -89,6 +90,7 @@ DASHBOARDS_PLUGIN_ARTIFACTS=(
     "indexManagementDashboards|${DASHBOARDS_PLUGIN_BASE_URL}/indexManagementDashboards-${VERSION}.zip"
     "notificationsDashboards|${DASHBOARDS_PLUGIN_BASE_URL}/notificationsDashboards-${VERSION}.zip"
     "securityAnalyticsDashboards|${DASHBOARDS_PLUGIN_BASE_URL}/securityAnalyticsDashboards-${VERSION}.zip"
+    "reportsDashboards|${DASHBOARDS_PLUGIN_BASE_URL}/reportsDashboards-${VERSION}.zip"
 )
 
 mkdir -p "$EXTRA_PLUGINS_DIR"
@@ -125,7 +127,7 @@ rm -rf "$BUILD_DIR"
 mkdir -p "$BUILD_DIR/$PACKAGE_NAME"
 
 STAGING="$BUILD_DIR/$PACKAGE_NAME"
-mkdir -p "$STAGING"/{opensearch,dashboards,dashboards-plugins,log-collector,systemd,branding,license-validator}
+mkdir -p "$STAGING"/{opensearch,dashboards,dashboards-plugins,log-collector,systemd,branding,license-validator,index-management}
 
 # ---------------------------------------------------------------------------
 # Package Supra Search Engine
@@ -266,6 +268,47 @@ if [ -d "$LICENSE_VALIDATOR_DIR" ]; then
     if [ -f "$LICENSE_VALIDATOR_DIR/get-fingerprint.sh" ]; then
         cp "$LICENSE_VALIDATOR_DIR/get-fingerprint.sh" "$STAGING/license-validator/"
         echo "    Fingerprint script staged."
+    fi
+fi
+
+# ---------------------------------------------------------------------------
+# Package Index Management backend plugin (auto-build with Gradle if zip is missing)
+# ---------------------------------------------------------------------------
+if [ -d "$INDEX_MANAGEMENT_DIR" ]; then
+    echo "  Packaging Index Management plugin..."
+    IM_PLUGIN_ZIP=$(find "$INDEX_MANAGEMENT_DIR/build/distributions" -name "opensearch-index-management-*.zip" 2>/dev/null | head -1)
+    if [ -z "$IM_PLUGIN_ZIP" ]; then
+        echo "    Plugin zip not found — building with Gradle..."
+        GRADLEW_CMD="$INDEX_MANAGEMENT_DIR/gradlew"
+        if [ ! -f "$GRADLEW_CMD" ]; then
+            echo "    ERROR: gradlew not found in $INDEX_MANAGEMENT_DIR"
+            echo "           Skipping Index Management plugin."
+        else
+            # Use bundled OpenSearch JDK if JAVA_HOME is not set
+            if [ -z "$JAVA_HOME" ]; then
+                BUNDLED_JDK="$BASE_DIR/opensearch-${VERSION}-linux-x64/jdk"
+                if [ -d "$BUNDLED_JDK" ]; then
+                    export JAVA_HOME="$BUNDLED_JDK"
+                    echo "    Using bundled OpenSearch JDK: $BUNDLED_JDK"
+                fi
+            fi
+            echo "    Running: gradlew assemble (this may take a while)..."
+            cd "$INDEX_MANAGEMENT_DIR"
+            chmod +x "$GRADLEW_CMD"
+            if "$GRADLEW_CMD" assemble -x test -q; then
+                echo "    Gradle build succeeded."
+            else
+                echo "    ERROR: Gradle build failed. Ensure Java 17+ is installed."
+            fi
+            cd "$SCRIPT_DIR"
+            IM_PLUGIN_ZIP=$(find "$INDEX_MANAGEMENT_DIR/build/distributions" -name "opensearch-index-management-*.zip" 2>/dev/null | head -1)
+        fi
+    fi
+    if [ -n "$IM_PLUGIN_ZIP" ]; then
+        cp "$IM_PLUGIN_ZIP" "$STAGING/index-management/"
+        echo "    Plugin zip staged: $(basename "$IM_PLUGIN_ZIP")"
+    else
+        echo "    WARNING: Index Management plugin zip not available. Skipping."
     fi
 fi
 
@@ -474,6 +517,20 @@ if [ -f "$SCRIPT_DIR/license-validator/get-fingerprint.sh" ]; then
     log "  Fingerprint tool installed."
 fi
 chown -R "$SUPRA_USER:$SUPRA_GROUP" "$INSTALL_DIR/opensearch/config/supra-license"
+
+# ---- Install Index Management Plugin ----
+log "Installing Index Management plugin..."
+IM_PLUGIN_ZIP=$(find "$SCRIPT_DIR/index-management" -name "opensearch-index-management-*.zip" 2>/dev/null | head -1)
+if [ -n "$IM_PLUGIN_ZIP" ]; then
+    sudo -u "$SUPRA_USER" "$INSTALL_DIR/opensearch/bin/opensearch-plugin" install --batch "file://$IM_PLUGIN_ZIP" || {
+        warn "  Index Management plugin install failed."
+        warn "  Plugin zip may be built for a different OpenSearch version."
+        warn "  Continuing install - place a compatible plugin zip and re-run."
+    }
+    log "  Index Management plugin installed."
+else
+    warn "  Index Management plugin zip not found. Skipping."
+fi
 
 # ---- Install Supra Dashboards ----
 log "Installing Supra Dashboards..."
