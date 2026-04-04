@@ -1,0 +1,826 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Supra Stack Installation Guide - Linux Server</title>
+    <style>
+        @media print {
+            body { font-size: 11pt; }
+            .page-break { page-break-before: always; }
+            h1, h2, h3 { page-break-after: avoid; }
+            table, pre, blockquote { page-break-inside: avoid; }
+            a { text-decoration: none; color: #1a1a1a; }
+            .toc a { color: #1a1a1a; }
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.7;
+            color: #2c3e50;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 40px 50px;
+            background: #ffffff;
+        }
+
+        .cover {
+            text-align: center;
+            padding: 60px 0 40px 0;
+            border-bottom: 3px solid #2c3e50;
+            margin-bottom: 40px;
+        }
+
+        .cover h1 {
+            font-size: 32px;
+            color: #1a252f;
+            margin-bottom: 10px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+
+        .cover .subtitle {
+            font-size: 18px;
+            color: #5a6a7a;
+            margin-bottom: 30px;
+        }
+
+        .cover .meta {
+            font-size: 14px;
+            color: #7f8c8d;
+            line-height: 2;
+        }
+
+        .cover .meta strong {
+            color: #2c3e50;
+        }
+
+        .toc {
+            background: #f8f9fa;
+            border: 1px solid #e1e4e8;
+            border-radius: 6px;
+            padding: 30px 35px;
+            margin-bottom: 40px;
+        }
+
+        .toc h2 {
+            font-size: 20px;
+            color: #1a252f;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #e1e4e8;
+            padding-bottom: 10px;
+        }
+
+        .toc ol {
+            padding-left: 20px;
+        }
+
+        .toc li {
+            margin-bottom: 6px;
+            font-size: 15px;
+        }
+
+        .toc a {
+            color: #2980b9;
+            text-decoration: none;
+        }
+
+        .toc a:hover {
+            text-decoration: underline;
+        }
+
+        h2 {
+            font-size: 24px;
+            color: #1a252f;
+            margin-top: 50px;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #3498db;
+        }
+
+        h3 {
+            font-size: 18px;
+            color: #2c3e50;
+            margin-top: 30px;
+            margin-bottom: 12px;
+        }
+
+        h4 {
+            font-size: 16px;
+            color: #34495e;
+            margin-top: 20px;
+            margin-bottom: 10px;
+        }
+
+        p {
+            margin-bottom: 14px;
+            font-size: 15px;
+        }
+
+        ul, ol {
+            margin-bottom: 16px;
+            padding-left: 28px;
+        }
+
+        li {
+            margin-bottom: 6px;
+            font-size: 15px;
+        }
+
+        pre {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 18px 22px;
+            border-radius: 6px;
+            overflow-x: auto;
+            margin-bottom: 20px;
+            font-size: 13.5px;
+            line-height: 1.6;
+            font-family: 'Cascadia Code', 'Consolas', 'Courier New', monospace;
+        }
+
+        pre .comment {
+            color: #6a9955;
+        }
+
+        code {
+            background: #f0f2f5;
+            color: #c7254e;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 13.5px;
+            font-family: 'Cascadia Code', 'Consolas', 'Courier New', monospace;
+        }
+
+        pre code {
+            background: none;
+            color: inherit;
+            padding: 0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+
+        th {
+            background: #2c3e50;
+            color: #ffffff;
+            padding: 12px 16px;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        td {
+            padding: 10px 16px;
+            border-bottom: 1px solid #e1e4e8;
+        }
+
+        tr:nth-child(even) {
+            background: #f8f9fa;
+        }
+
+        .callout {
+            border-left: 4px solid #3498db;
+            background: #eaf2f8;
+            padding: 16px 20px;
+            margin-bottom: 20px;
+            border-radius: 0 6px 6px 0;
+            font-size: 14px;
+        }
+
+        .callout.warning {
+            border-left-color: #e74c3c;
+            background: #fdf0ef;
+        }
+
+        .callout.important {
+            border-left-color: #f39c12;
+            background: #fef9e7;
+        }
+
+        .callout.note {
+            border-left-color: #27ae60;
+            background: #eafaf1;
+        }
+
+        .callout strong {
+            display: block;
+            margin-bottom: 4px;
+            font-size: 14px;
+        }
+
+        hr {
+            border: none;
+            border-top: 1px solid #e1e4e8;
+            margin: 40px 0;
+        }
+
+        .summary-box {
+            background: #2c3e50;
+            color: #ffffff;
+            padding: 25px 30px;
+            border-radius: 8px;
+            margin: 30px 0;
+        }
+
+        .summary-box h3 {
+            color: #ffffff;
+            margin-top: 0;
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+
+        .summary-box ol {
+            padding-left: 20px;
+        }
+
+        .summary-box li {
+            color: #ecf0f1;
+            margin-bottom: 8px;
+        }
+
+        .summary-box .highlight {
+            color: #f39c12;
+            font-weight: 600;
+        }
+
+        .steps {
+            counter-reset: step-counter;
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .steps li {
+            counter-increment: step-counter;
+            padding-left: 40px;
+            position: relative;
+            margin-bottom: 12px;
+        }
+
+        .steps li::before {
+            content: counter(step-counter);
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 28px;
+            height: 28px;
+            background: #3498db;
+            color: #fff;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 28px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 60px;
+            padding-top: 20px;
+            border-top: 2px solid #e1e4e8;
+            color: #7f8c8d;
+            font-size: 13px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Cover -->
+    <div class="cover">
+        <h1>Supra Stack Installation Guide</h1>
+        <div class="subtitle">Linux Server Deployment</div>
+        <div class="meta">
+            <strong>Version:</strong> 3.6.0<br>
+            <strong>Platform:</strong> Ubuntu 20.04+ / RHEL 8+ / CentOS 8+ (x64)<br>
+            <strong>Package:</strong> supra-installer-3.6.0-linux-x64.tar.gz
+        </div>
+    </div>
+
+    <!-- Table of Contents -->
+    <div class="toc">
+        <h2>Table of Contents</h2>
+        <ol>
+            <li><a href="#prerequisites">Prerequisites</a></li>
+            <li><a href="#extract">Copy and Extract the Installer Package</a></li>
+            <li><a href="#install">Run the Installer</a></li>
+            <li><a href="#license">Activate the License</a></li>
+            <li><a href="#start-verify">Start Services and Verify</a></li>
+            <li><a href="#services">Managing Services</a></li>
+            <li><a href="#log-collector">Log Collector Setup</a></li>
+            <li><a href="#uninstall">Uninstallation</a></li>
+            <li><a href="#ports">Ports and Firewall</a></li>
+            <li><a href="#troubleshooting">Troubleshooting</a></li>
+        </ol>
+    </div>
+
+    <!-- Section 1: Prerequisites -->
+    <h2 id="prerequisites">1. Prerequisites</h2>
+    <ul>
+        <li>Ubuntu 20.04+, RHEL 8+, CentOS 8+, or equivalent Linux distribution (x64)</li>
+        <li>Root or sudo access</li>
+        <li>Bash shell</li>
+        <li>Minimum 4 GB RAM (8 GB or more recommended)</li>
+        <li>Minimum 10 GB free disk space</li>
+        <li>Ruby (for Fluentd Log Collector &mdash; installed automatically if <code>gem</code> is available)</li>
+    </ul>
+
+    <hr>
+
+    <!-- Section 2: Extract -->
+    <h2 id="extract">2. Copy and Extract the Installer Package</h2>
+    <p>Copy <code>supra-installer-3.6.0-linux-x64.tar.gz</code> to the target Linux server.</p>
+    <p>Extract the package:</p>
+    <pre><code>tar -xzf supra-installer-3.6.0-linux-x64.tar.gz</code></pre>
+    <p>This will create a <code>supra-installer</code> directory containing all the components.</p>
+
+    <hr>
+
+    <!-- Section 3: Install -->
+    <h2 id="install">3. Run the Installer</h2>
+    <p>Run the installer as root:</p>
+
+    <pre><code>sudo bash supra-installer/install.sh</code></pre>
+
+    <h3>What the Installer Does</h3>
+    <p>The installer performs the following steps automatically:</p>
+    <ol class="steps">
+        <li>Creates a system service account (<code>supra</code>)</li>
+        <li>Applies system tuning (<code>vm.max_map_count=262144</code>)</li>
+        <li>Extracts and configures Supra Search Engine (OpenSearch)</li>
+        <li>Initializes security demo certificates</li>
+        <li>Sets the admin password to <code>admin</code></li>
+        <li>Configures JVM heap size (50% of available RAM, max 8 GB)</li>
+        <li>Secures PEM certificate file permissions (chmod 600)</li>
+        <li>Installs the Supra License Validator plugin</li>
+        <li>Creates the license configuration directory with public key and fingerprint tool</li>
+        <li>Installs the Index Management plugin</li>
+        <li>Extracts and configures Supra Dashboards</li>
+        <li>Installs extra Dashboards plugins (Security, Alerting, Anomaly Detection, Index Management, Notifications, Reporting, etc.)</li>
+        <li>Applies Supra branding</li>
+        <li>Configures Supra Log Collector (Fluentd)</li>
+        <li>Installs and enables systemd services</li>
+    </ol>
+
+    <div class="callout important">
+        <strong>Note</strong>
+        The installer does not auto-start services. You must activate a license first (see next section).
+    </div>
+
+    <h3>Installation Directory Structure</h3>
+    <pre><code>/opt/supra/
+  opensearch/          <span class="comment"># Supra Search Engine</span>
+    config/
+      opensearch.yml
+      supra-license/   <span class="comment"># License files</span>
+        public.key
+        get-fingerprint.sh
+  dashboards/          <span class="comment"># Supra Dashboards</span>
+    config/
+      opensearch_dashboards.yml
+  log-collector/       <span class="comment"># Log Collector config</span>
+    fluent.conf</code></pre>
+
+    <hr>
+
+    <!-- Section 4: License -->
+    <div class="page-break"></div>
+    <h2 id="license">4. Activate the License</h2>
+
+    <div class="callout warning">
+        <strong>IMPORTANT</strong>
+        Services will not start without a valid license. Complete this section before proceeding.
+    </div>
+
+    <h3>4.1 Get the Machine Fingerprint</h3>
+    <pre><code>sudo bash /opt/supra/opensearch/config/supra-license/get-fingerprint.sh</code></pre>
+
+    <p>Output:</p>
+    <pre><code>Machine Fingerprint (MFP): a1b2c3d4e5f6...  (64-character hex string)</code></pre>
+
+    <div class="callout important">
+        <strong>Important</strong>
+        The fingerprint must be generated by the same user that runs OpenSearch (the <code>supra</code> system user). If the fingerprint is generated as root, it may differ from what OpenSearch sees at runtime. To get the correct fingerprint, you can also run:
+        <pre style="margin-top: 10px; margin-bottom: 0;"><code>cd /opt/supra/opensearch
+sudo -u supra ./jdk/bin/java -cp "plugins/supra-license-validator/*" com.supra.plugins.MachineFingerprint</code></pre>
+    </div>
+
+    <h3>4.2 Request a License</h3>
+    <p>Send the Machine Fingerprint (MFP) to your Supra vendor along with your organization name. The vendor will provide a <code>license.key</code> file.</p>
+
+    <h3>4.3 Install the License</h3>
+    <pre><code>sudo cp license.key /opt/supra/opensearch/config/supra-license/
+sudo chown supra:supra /opt/supra/opensearch/config/supra-license/license.key
+sudo chmod 600 /opt/supra/opensearch/config/supra-license/license.key</code></pre>
+
+    <h3>4.4 Verify License Files</h3>
+    <pre><code>ls -la /opt/supra/opensearch/config/supra-license/</code></pre>
+
+    <p>You should see the following files, all owned by <code>supra:supra</code>:</p>
+    <table>
+        <thead>
+            <tr>
+                <th>File</th>
+                <th>Permissions</th>
+                <th>Description</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><code>public.key</code></td>
+                <td><code>-rw-------</code> (600)</td>
+                <td>RSA public key (installed by default)</td>
+            </tr>
+            <tr>
+                <td><code>license.key</code></td>
+                <td><code>-rw-------</code> (600)</td>
+                <td>Your license file</td>
+            </tr>
+            <tr>
+                <td><code>get-fingerprint.sh</code></td>
+                <td><code>-rw-------</code> (600)</td>
+                <td>Fingerprint generation tool</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <p>The <code>supra-license</code> directory itself should have <code>drwx------</code> (700) permissions.</p>
+
+    <p>For detailed licensing information, see the <a href="licensing-guide.html">Licensing Guide</a>.</p>
+
+    <hr>
+
+    <!-- Section 5: Start Services and Verify -->
+    <h2 id="start-verify">5. Start Services and Verify</h2>
+
+    <p>After activating the license, start services:</p>
+
+    <pre><code><span class="comment"># Start Search Engine first</span>
+sudo systemctl start supra-search
+
+<span class="comment"># Wait for it to become ready (check the endpoint)</span>
+curl -sk https://localhost:9200
+
+<span class="comment"># Then start remaining services</span>
+sudo systemctl start supra-dashboards
+sudo systemctl start supra-log-collector</code></pre>
+
+    <h3>5.1 Check Services are Running</h3>
+    <pre><code>sudo systemctl status supra-search supra-dashboards supra-log-collector</code></pre>
+
+    <p>Expected status for all services:</p>
+    <table>
+        <thead>
+            <tr>
+                <th>Service</th>
+                <th>Status</th>
+                <th>Description</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><code>supra-search</code></td>
+                <td>active (running)</td>
+                <td>Supra Search Engine</td>
+            </tr>
+            <tr>
+                <td><code>supra-dashboards</code></td>
+                <td>active (running)</td>
+                <td>Supra Dashboards</td>
+            </tr>
+            <tr>
+                <td><code>supra-log-collector</code></td>
+                <td>active (running)</td>
+                <td>Supra Log Collector</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h3>5.2 Test the Search Engine</h3>
+    <pre><code>curl -sk -u admin:admin https://localhost:9200</code></pre>
+
+    <p>A successful response returns a JSON object with cluster information:</p>
+    <pre><code>{
+  "name" : "supra-node-1",
+  "cluster_name" : "supra",
+  "version" : { "number" : "3.6.0", ... },
+  ...
+}</code></pre>
+
+    <h3>5.3 Access the Dashboards</h3>
+    <p>Open a web browser and navigate to:</p>
+    <pre><code>http://&lt;server-ip&gt;:5601</code></pre>
+
+    <p>Login with:</p>
+    <ul>
+        <li><strong>Username:</strong> <code>admin</code></li>
+        <li><strong>Password:</strong> <code>admin</code></li>
+    </ul>
+
+    <hr>
+
+    <!-- Section 6: Managing Services -->
+    <h2 id="services">6. Managing Services</h2>
+
+    <h3>Using systemctl</h3>
+    <pre><code><span class="comment"># Start a service</span>
+sudo systemctl start supra-search
+
+<span class="comment"># Stop a service</span>
+sudo systemctl stop supra-search
+
+<span class="comment"># Restart a service</span>
+sudo systemctl restart supra-search
+
+<span class="comment"># Check status</span>
+sudo systemctl status supra-search
+
+<span class="comment"># Enable/disable auto-start on boot</span>
+sudo systemctl enable supra-search
+sudo systemctl disable supra-search</code></pre>
+
+    <h3>All Services</h3>
+    <pre><code><span class="comment"># Start all</span>
+sudo systemctl start supra-search
+sudo systemctl start supra-dashboards
+sudo systemctl start supra-log-collector
+
+<span class="comment"># Stop all (reverse order)</span>
+sudo systemctl stop supra-log-collector
+sudo systemctl stop supra-dashboards
+sudo systemctl stop supra-search
+
+<span class="comment"># Restart all</span>
+sudo systemctl restart supra-search
+sudo systemctl restart supra-dashboards
+sudo systemctl restart supra-log-collector</code></pre>
+
+    <h3>Service Dependencies</h3>
+    <ul>
+        <li><strong>supra-dashboards</strong> depends on <strong>supra-search</strong> (will start automatically after Search Engine is ready)</li>
+        <li><strong>supra-log-collector</strong> depends on <strong>supra-search</strong></li>
+    </ul>
+
+    <h3>Service Startup Order</h3>
+    <ol>
+        <li>supra-search (Supra Search Engine)</li>
+        <li>supra-log-collector (Supra Log Collector)</li>
+        <li>supra-dashboards (Supra Dashboards)</li>
+    </ol>
+
+    <h3>Viewing Logs</h3>
+    <pre><code><span class="comment"># Follow Search Engine logs</span>
+journalctl -u supra-search -f
+
+<span class="comment"># Follow Dashboards logs</span>
+journalctl -u supra-dashboards -f
+
+<span class="comment"># Follow Log Collector logs</span>
+journalctl -u supra-log-collector -f
+
+<span class="comment"># View last 100 lines of a service log</span>
+journalctl -u supra-search -n 100</code></pre>
+
+    <hr>
+
+    <!-- Section 7: Log Collector -->
+    <h2 id="log-collector">7. Log Collector Setup</h2>
+    <p>The Supra Log Collector uses Fluentd to receive logs from network devices, workstations, and servers.</p>
+
+    <h3>7.1 Fluentd Runtime</h3>
+    <p>The installer automatically installs Fluentd via Ruby gem if <code>gem</code> is available. If it was not installed automatically, install it manually:</p>
+
+    <pre><code><span class="comment"># Install Ruby (if not already installed)</span>
+sudo apt install ruby-full    <span class="comment"># Ubuntu/Debian</span>
+sudo yum install ruby         <span class="comment"># RHEL/CentOS</span>
+
+<span class="comment"># Install Fluentd and the OpenSearch plugin</span>
+sudo gem install fluentd --no-document
+sudo gem install fluent-plugin-opensearch --no-document</code></pre>
+
+    <h3>7.2 Log Sources</h3>
+    <p>The Log Collector is pre-configured to receive logs on two ports:</p>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Port</th>
+                <th>Protocol</th>
+                <th>Source</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>5140</td>
+                <td>UDP</td>
+                <td>Syslog input &mdash; from firewalls, switches, routers, IEDs, NXLog agents</td>
+            </tr>
+            <tr>
+                <td>24224</td>
+                <td>TCP</td>
+                <td>Fluentd forward input &mdash; from other Fluentd agents</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h3>7.3 Sending Logs to Supra</h3>
+    <p>Configure your network devices and workstation agents to send syslog to this server:</p>
+    <pre><code><span class="comment"># Example: configure a device to send syslog to Supra</span>
+Destination IP:   &lt;supra-server-ip&gt;
+Destination Port: 5140
+Protocol:         UDP</code></pre>
+
+    <h3>7.4 Configuration File</h3>
+    <p>The Log Collector configuration is located at:</p>
+    <pre><code>/opt/supra/log-collector/fluent.conf</code></pre>
+    <p>After making changes, restart the Log Collector:</p>
+    <pre><code>sudo systemctl restart supra-log-collector</code></pre>
+
+    <hr>
+
+    <!-- Section 8: Uninstallation -->
+    <h2 id="uninstall">8. Uninstallation</h2>
+    <p>Run the uninstall script as root:</p>
+
+    <pre><code><span class="comment"># Uninstall from the installed location</span>
+sudo bash /opt/supra/uninstall.sh
+
+<span class="comment"># Or from the extracted installer directory</span>
+sudo bash supra-installer/uninstall.sh</code></pre>
+
+    <p>The uninstaller will:</p>
+    <ol>
+        <li>Stop all Supra services</li>
+        <li>Disable all Supra services</li>
+        <li>Remove systemd service files</li>
+        <li>Delete the installation directory (<code>/opt/supra</code>)</li>
+        <li>Remove system tuning configuration</li>
+    </ol>
+
+    <div class="callout note">
+        <strong>Note</strong>
+        The <code>supra</code> system user is not removed automatically. To remove it manually:
+        <pre style="margin-top: 10px; margin-bottom: 0;"><code>sudo userdel -r supra</code></pre>
+    </div>
+
+    <hr>
+
+    <!-- Section 9: Ports and Firewall -->
+    <h2 id="ports">9. Ports and Firewall</h2>
+    <p>Ensure the following ports are open in your firewall:</p>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Service</th>
+                <th>Port</th>
+                <th>Protocol</th>
+                <th>Description</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Supra Search Engine</td>
+                <td>9200</td>
+                <td>TCP</td>
+                <td>Search Engine REST API (HTTPS)</td>
+            </tr>
+            <tr>
+                <td>Supra Dashboards</td>
+                <td>5601</td>
+                <td>TCP</td>
+                <td>Dashboards Web UI (HTTP)</td>
+            </tr>
+            <tr>
+                <td>Supra Log Collector</td>
+                <td>5140</td>
+                <td>UDP</td>
+                <td>Syslog input</td>
+            </tr>
+            <tr>
+                <td>Supra Log Collector</td>
+                <td>24224</td>
+                <td>TCP</td>
+                <td>Forward input</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h3>UFW (Ubuntu/Debian)</h3>
+    <pre><code>sudo ufw allow 9200/tcp
+sudo ufw allow 5601/tcp
+sudo ufw allow 5140/udp
+sudo ufw allow 24224/tcp</code></pre>
+
+    <h3>firewalld (RHEL/CentOS)</h3>
+    <pre><code>sudo firewall-cmd --permanent --add-port=9200/tcp
+sudo firewall-cmd --permanent --add-port=5601/tcp
+sudo firewall-cmd --permanent --add-port=5140/udp
+sudo firewall-cmd --permanent --add-port=24224/tcp
+sudo firewall-cmd --reload</code></pre>
+
+    <hr>
+
+    <!-- Section 10: Troubleshooting -->
+    <div class="page-break"></div>
+    <h2 id="troubleshooting">10. Troubleshooting</h2>
+
+    <h3>Search Engine fails to start with "License" error</h3>
+    <p>If the Search Engine logs show a license-related error:</p>
+    <ul>
+        <li><strong>"License file not found"</strong>: Place <code>license.key</code> in <code>/opt/supra/opensearch/config/supra-license/</code></li>
+        <li><strong>"License fingerprint mismatch"</strong>: The license was generated for a different machine or with a different user. Re-run the fingerprint tool as the <code>supra</code> user and request a new license.</li>
+        <li><strong>"License has expired"</strong>: Contact your vendor for a renewed license.</li>
+        <li><strong>"License signature verification failed"</strong>: The license file may be corrupted. Request a fresh copy.</li>
+        <li><strong>"AccessDeniedException"</strong>: File permissions are incorrect. Ensure all files in <code>supra-license/</code> are owned by <code>supra:supra</code> with <code>chmod 600</code>.</li>
+    </ul>
+    <p>See the <a href="licensing-guide.html">Licensing Guide</a> for detailed troubleshooting.</p>
+
+    <h3>"Insecure file permissions" warnings</h3>
+    <p>OpenSearch Security requires strict file permissions. Fix with:</p>
+    <pre><code><span class="comment"># Fix PEM certificate permissions</span>
+sudo chmod 600 /opt/supra/opensearch/config/*.pem
+
+<span class="comment"># Fix license directory permissions</span>
+sudo chmod 700 /opt/supra/opensearch/config/supra-license/
+sudo chmod 600 /opt/supra/opensearch/config/supra-license/*
+sudo chown -R supra:supra /opt/supra/opensearch/config/supra-license/</code></pre>
+
+    <h3>Search Engine fails to start</h3>
+    <ul>
+        <li>Check logs: <code>journalctl -u supra-search -n 100</code></li>
+        <li>Check OpenSearch logs: <code>/opt/supra/opensearch/logs/</code></li>
+        <li>Verify JVM heap settings: <code>/opt/supra/opensearch/config/jvm.options</code></li>
+        <li>Ensure <code>vm.max_map_count</code> is set: <code>sysctl vm.max_map_count</code> (should be 262144)</li>
+        <li>Ensure sufficient RAM is available</li>
+    </ul>
+
+    <h3>Dashboards fails to start</h3>
+    <ul>
+        <li>Check logs: <code>journalctl -u supra-dashboards -n 100</code></li>
+        <li>Check Dashboards logs: <code>/opt/supra/dashboards/logs/</code></li>
+        <li>Verify the Search Engine is running and accessible: <code>curl -sk https://localhost:9200</code></li>
+    </ul>
+
+    <h3>Log Collector fails to start</h3>
+    <ul>
+        <li>Check logs: <code>journalctl -u supra-log-collector -n 100</code></li>
+        <li>Verify Fluentd is installed: <code>which fluentd</code></li>
+        <li>Verify the Search Engine is running</li>
+        <li>Check config syntax: <code>fluentd --dry-run -c /opt/supra/log-collector/fluent.conf</code></li>
+    </ul>
+
+    <h3>Authentication issues</h3>
+    <ul>
+        <li>Default credentials: <code>admin</code> / <code>admin</code></li>
+        <li>If login fails, the security index may not have initialized properly</li>
+        <li>Re-run the security admin tool manually:</li>
+    </ul>
+    <pre><code>export OPENSEARCH_HOME=/opt/supra/opensearch
+export OPENSEARCH_JAVA_HOME=$OPENSEARCH_HOME/jdk
+sudo -u supra bash $OPENSEARCH_HOME/plugins/opensearch-security/tools/securityadmin.sh \
+    -cd $OPENSEARCH_HOME/config/opensearch-security \
+    -icl -nhnv \
+    -cacert $OPENSEARCH_HOME/config/root-ca.pem \
+    -cert $OPENSEARCH_HOME/config/kirk.pem \
+    -key $OPENSEARCH_HOME/config/kirk-key.pem</code></pre>
+
+    <h3>Port already in use</h3>
+    <p>If a port is already in use by another process:</p>
+    <pre><code><span class="comment"># Find what is using the port</span>
+sudo lsof -i :9200
+sudo lsof -i :5601
+sudo lsof -i :5140</code></pre>
+
+    <hr>
+
+    <!-- Summary -->
+    <div class="summary-box">
+        <h3>Quick Reference: Installation Steps</h3>
+        <ol>
+            <li>Extract the installer tarball on the target Linux server</li>
+            <li>Run <code>sudo bash supra-installer/install.sh</code></li>
+            <li>Run <code>get-fingerprint.sh</code> and send MFP to vendor <span class="highlight">&larr; LICENSE REQUIRED</span></li>
+            <li>Place received <code>license.key</code> in <code>config/supra-license/</code></li>
+            <li>Set permissions: <code>chown supra:supra</code> and <code>chmod 600</code> on <code>license.key</code></li>
+            <li>Start services: <code>sudo systemctl start supra-search</code>, then <code>supra-dashboards</code></li>
+            <li>Access Dashboards at <code>http://&lt;server-ip&gt;:5601</code></li>
+        </ol>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+        <p>Supra Stack v3.6.0 &mdash; Linux Server x64 Installation Guide</p>
+        <p>Supra Controls Private Limited</p>
+    </div>
+
+</body>
+</html>

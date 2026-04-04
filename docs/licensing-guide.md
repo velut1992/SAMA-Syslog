@@ -77,6 +77,7 @@ Copy the `license.key` file to the license directory:
 ```bash
 sudo cp license.key /opt/supra/opensearch/config/supra-license/
 sudo chown supra:supra /opt/supra/opensearch/config/supra-license/license.key
+sudo chmod 600 /opt/supra/opensearch/config/supra-license/license.key
 ```
 
 ### 3.4 Verify the License Directory

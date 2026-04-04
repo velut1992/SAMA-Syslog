@@ -493,6 +493,15 @@ if [ -f "$JVM_OPTIONS" ]; then
 fi
 
 chown -R "$SUPRA_USER:$SUPRA_GROUP" "$INSTALL_DIR/opensearch"
+
+# Secure PEM certificate file permissions (OpenSearch Security requires 0600)
+for pem_file in esnode.pem esnode-key.pem kirk.pem kirk-key.pem root-ca.pem; do
+    if [ -f "$INSTALL_DIR/opensearch/config/$pem_file" ]; then
+        chmod 600 "$INSTALL_DIR/opensearch/config/$pem_file"
+    fi
+done
+log "  PEM certificate permissions secured."
+
 log "  Supra Search Engine installed to $INSTALL_DIR/opensearch"
 
 # ---- Install Supra License Validator Plugin ----
@@ -505,18 +514,20 @@ else
     warn "  License validator plugin zip not found. Skipping."
 fi
 
-# Create license config directory
+# Create license config directory with secure permissions
 mkdir -p "$INSTALL_DIR/opensearch/config/supra-license"
 if [ -f "$SCRIPT_DIR/license-validator/public.key" ]; then
     cp "$SCRIPT_DIR/license-validator/public.key" "$INSTALL_DIR/opensearch/config/supra-license/"
+    chmod 600 "$INSTALL_DIR/opensearch/config/supra-license/public.key"
     log "  Public key installed."
 fi
 if [ -f "$SCRIPT_DIR/license-validator/get-fingerprint.sh" ]; then
     cp "$SCRIPT_DIR/license-validator/get-fingerprint.sh" "$INSTALL_DIR/opensearch/config/supra-license/"
-    chmod +x "$INSTALL_DIR/opensearch/config/supra-license/get-fingerprint.sh"
+    chmod 600 "$INSTALL_DIR/opensearch/config/supra-license/get-fingerprint.sh"
     log "  Fingerprint tool installed."
 fi
 chown -R "$SUPRA_USER:$SUPRA_GROUP" "$INSTALL_DIR/opensearch/config/supra-license"
+chmod 700 "$INSTALL_DIR/opensearch/config/supra-license"
 
 # ---- Install Index Management Plugin ----
 log "Installing Index Management plugin..."
@@ -687,6 +698,7 @@ echo ""
 echo "Step 3: Place the license file:"
 echo "  sudo cp license.key $INSTALL_DIR/opensearch/config/supra-license/"
 echo "  sudo chown $SUPRA_USER:$SUPRA_GROUP $INSTALL_DIR/opensearch/config/supra-license/license.key"
+echo "  sudo chmod 600 $INSTALL_DIR/opensearch/config/supra-license/license.key"
 echo ""
 echo "Step 4: Start services:"
 echo "  sudo systemctl start supra-search"
