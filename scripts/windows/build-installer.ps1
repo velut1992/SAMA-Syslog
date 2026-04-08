@@ -709,10 +709,10 @@ if (Test-Path (Join-Path $osdInstallDir "plugins\securityDashboards")) {
     Log "  Security plugin detected - adding security config..."
     $secConf = @"
 
-opensearch_security.multitenancy.enabled: true
-opensearch_security.multitenancy.tenants.preferred: ["Private", "Global"]
+opensearch_security.multitenancy.enabled: false
 opensearch_security.readonly_mode.roles: ["kibana_read_only"]
 opensearch_security.cookie.secure: false
+opensearch_security.ui.basicauth.login.title: "Log in to Supra Dashboard"
 "@
     Add-Content -Path (Join-Path $osdInstallDir "config\opensearch_dashboards.yml") -Value $secConf
 }
@@ -792,7 +792,7 @@ $logCollectorConf = @"
 # Syslog input
 <source>
   @type syslog
-  port 5140
+  port 514
   tag system
 </source>
 
@@ -895,8 +895,10 @@ Log "Configuring Windows Firewall rules..."
 $firewallRules = @(
     @{ Name = "Supra Search Engine";       Port = 9200;  Protocol = "TCP" }
     @{ Name = "Supra Dashboards";          Port = 5601;  Protocol = "TCP" }
-    @{ Name = "Supra Log Collector Syslog";  Port = 5140; Protocol = "UDP" }
-    @{ Name = "Supra Log Collector Forward"; Port = 24224; Protocol = "TCP" }
+    @{ Name = "Supra Log Collector IED Syslog";     Port = 514;   Protocol = "UDP" }
+    @{ Name = "Supra Log Collector Windows JSON";   Port = 1514;  Protocol = "UDP" }
+    @{ Name = "Supra Log Collector Network Syslog"; Port = 2514;  Protocol = "UDP" }
+    @{ Name = "Supra Log Collector Forward";        Port = 24224; Protocol = "TCP" }
 )
 
 foreach ($rule in $firewallRules) {
@@ -925,9 +927,10 @@ Write-Host ""
 Write-Host "Step 3: Place the license file:"
 Write-Host "  Copy-Item license.key -Destination $osInstallDir\config\supra-license\"
 Write-Host ""
-Write-Host "Step 4: Start services (open a NEW terminal so PATH is updated):"
+Write-Host "Step 4: Start services and initialize security (open a NEW terminal so PATH is updated):"
 Write-Host "  nssm start SupraSearch"
-Write-Host "  # Wait for Search Engine to be ready, then:"
+Write-Host "  # Wait ~30 seconds for Search Engine to be ready, then initialize security:"
+Write-Host "  & '$osInstallDir\plugins\opensearch-security\tools\securityadmin.bat' -cd '$osInstallDir\config\opensearch-security\' -icl -nhnv -cacert '$osInstallDir\config\root-ca.pem' -cert '$osInstallDir\config\kirk.pem' -key '$osInstallDir\config\kirk-key.pem'"
 Write-Host "  nssm start SupraDashboards"
 Write-Host "  nssm start SupraLogCollector"
 Write-Host ""
@@ -937,7 +940,7 @@ Write-Host ""
 Write-Host "Services (Windows Services):"
 Write-Host "  SupraSearch          - Supra Search Engine  (https://localhost:9200)"
 Write-Host "  SupraDashboards      - Supra Dashboards     (http://localhost:5601)"
-Write-Host "  SupraLogCollector    - Supra Log Collector  (Syslog UDP/5140, Forward TCP/24224)"
+Write-Host "  SupraLogCollector    - Supra Log Collector  (IEDs UDP/514, Windows UDP/1514, Network UDP/2514, Forward TCP/24224)"
 Write-Host ""
 Write-Host "Credentials:"
 Write-Host "  Username: admin"

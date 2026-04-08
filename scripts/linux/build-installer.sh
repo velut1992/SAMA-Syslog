@@ -9,7 +9,7 @@ set -e
 #   - Supra Search Engine (full distribution with all plugins)
 #   - Supra Dashboards (full distribution with all plugins)
 #   - Extra Dashboards plugins (SIEM, Index Management, Notifications, Reporting)
-#   - Supra Log Collector configuration
+#   - Supra Log Collector (fluent-package + OpenSearch plugin gems)
 #   - Systemd service files
 #   - Install script
 ################################################################################
@@ -217,12 +217,47 @@ OSDCONF
 echo "  Branding and config staged."
 
 # ---------------------------------------------------------------------------
-# Package Supra Log Collector config
+# Package Supra Log Collector (fluent-package + OpenSearch plugin gems)
 # ---------------------------------------------------------------------------
 echo ""
-echo "[5/7] Packaging Supra Log Collector config..."
+echo "[5/7] Packaging Supra Log Collector..."
 cp "$FLUENTD_CONF" "$STAGING/log-collector/"
 echo "  Log Collector config staged."
+
+# Download fluent-package .deb for offline installation (self-contained, bundles its own Ruby)
+FLUENT_PKG_VERSION="5.0.9"
+FLUENT_PKG_DEB="fluent-package_${FLUENT_PKG_VERSION}-1_amd64.deb"
+FLUENT_PKG_URL="https://s3.amazonaws.com/packages.treasuredata.com/lts/5/ubuntu/focal/pool/contrib/f/fluent-package/${FLUENT_PKG_DEB}"
+FLUENT_PKG_PATH="$STAGING/log-collector/$FLUENT_PKG_DEB"
+
+if [ ! -f "$FLUENT_PKG_PATH" ]; then
+    echo "  Downloading fluent-package ${FLUENT_PKG_VERSION}..."
+    if curl -fSL -o "$FLUENT_PKG_PATH" "$FLUENT_PKG_URL" 2>&1; then
+        echo "  Downloaded: $(du -sh "$FLUENT_PKG_PATH" | cut -f1)"
+    else
+        echo "  WARNING: Failed to download fluent-package."
+        echo "           Download manually from: $FLUENT_PKG_URL"
+        echo "           Place at: $FLUENT_PKG_PATH"
+        rm -f "$FLUENT_PKG_PATH"
+    fi
+else
+    echo "  fluent-package .deb already present."
+fi
+
+# Download OpenSearch plugin gems for offline installation
+echo "  Downloading fluent-plugin-opensearch gems for offline install..."
+GEMS_DIR="$STAGING/log-collector/gems"
+mkdir -p "$GEMS_DIR"
+TMPGEM=$(mktemp -d)
+if gem install fluent-plugin-opensearch --no-document --install-dir "$TMPGEM" 2>/dev/null; then
+    cp "$TMPGEM"/cache/*.gem "$GEMS_DIR/" 2>/dev/null
+    GEMS_COUNT=$(find "$GEMS_DIR" -name "*.gem" 2>/dev/null | wc -l)
+    echo "  $GEMS_COUNT plugin gem files cached for offline install."
+else
+    echo "  WARNING: Failed to download plugin gems."
+    echo "           Target machines will need internet to install fluent-plugin-opensearch."
+fi
+rm -rf "$TMPGEM"
 
 # ---------------------------------------------------------------------------
 # Package license validator (auto-build with Maven if zip is missing)
@@ -364,7 +399,8 @@ After=network.target supra-search.service
 Type=simple
 User=supra
 Group=supra
-ExecStart=/usr/local/bin/fluentd -c /opt/supra/log-collector/fluent.conf
+AmbientCapabilities=CAP_NET_BIND_SERVICE
+ExecStart=/opt/fluent/bin/fluentd -c /opt/supra/log-collector/fluent.conf
 Restart=always
 RestartSec=5
 StandardOutput=journal
@@ -459,6 +495,7 @@ SECURITY_PLUGIN_DIR="$INSTALL_DIR/opensearch/plugins/opensearch-security"
 if [ -d "$SECURITY_PLUGIN_DIR" ]; then
     log "  Initializing security demo certificates..."
     chmod +x "$SECURITY_PLUGIN_DIR/tools/install_demo_configuration.sh"
+    chmod +x "$SECURITY_PLUGIN_DIR/tools/securityadmin.sh"
     cd "$INSTALL_DIR/opensearch"
     export OPENSEARCH_INITIAL_ADMIN_PASSWORD="MyS3cur!tyP@ss"
     bash "$SECURITY_PLUGIN_DIR/tools/install_demo_configuration.sh" -y -i -s 2>&1 | tail -5
@@ -580,10 +617,10 @@ if [ -d "$INSTALL_DIR/dashboards/plugins/securityDashboards" ]; then
     log "  Security plugin detected — adding security config..."
     cat >> "$INSTALL_DIR/dashboards/config/opensearch_dashboards.yml" <<'SECCONF'
 
-opensearch_security.multitenancy.enabled: true
-opensearch_security.multitenancy.tenants.preferred: ["Private", "Global"]
+opensearch_security.multitenancy.enabled: false
 opensearch_security.readonly_mode.roles: ["kibana_read_only"]
 opensearch_security.cookie.secure: false
+opensearch_security.ui.basicauth.login.title: "Log in to Supra Dashboard"
 SECCONF
 fi
 
@@ -600,24 +637,58 @@ log "  Supra Dashboards installed to $INSTALL_DIR/dashboards"
 
 # ---- Install Supra Log Collector ----
 log "Installing Supra Log Collector..."
-if ! command -v fluentd &>/dev/null; then
-    warn "Log Collector runtime not found. Installing via gem..."
-    if ! command -v gem &>/dev/null; then
-        err "Ruby gem not found. Install Ruby first: sudo apt install ruby-full"
-        err "Then install: sudo gem install fluentd fluent-plugin-opensearch"
-        warn "Skipping Log Collector installation. You can install it later and re-run."
-    else
-        gem install fluentd --no-document
-        gem install fluent-plugin-opensearch --no-document
-        log "  Log Collector runtime installed via gem."
-    fi
+
+# Step 1: Install fluent-package (self-contained Fluentd with bundled Ruby)
+FLUENT_GEM="/opt/fluent/bin/fluent-gem"
+if [ -f "$FLUENT_GEM" ]; then
+    log "  fluent-package already installed."
 else
-    log "  Log Collector runtime already installed."
+    FLUENT_DEB=$(find "$SCRIPT_DIR/log-collector" -name "fluent-package_*.deb" 2>/dev/null | head -1)
+    if [ -n "$FLUENT_DEB" ]; then
+        log "  Installing fluent-package from bundled .deb (offline)..."
+        dpkg -i "$FLUENT_DEB" 2>&1 || true
+        apt-get -f install -y --no-download 2>/dev/null || true
+        if [ -f "$FLUENT_GEM" ]; then
+            log "  fluent-package installed successfully."
+        else
+            err "  fluent-package installation failed. Check errors above."
+            warn "Skipping Log Collector installation."
+        fi
+    else
+        err "  fluent-package .deb not found in installer package."
+        warn "Skipping Log Collector installation."
+    fi
 fi
 
+# Step 2: Install fluent-plugin-opensearch
+if [ -f "$FLUENT_GEM" ]; then
+    if $FLUENT_GEM list 2>/dev/null | grep -q fluent-plugin-opensearch; then
+        log "  fluent-plugin-opensearch already installed."
+    else
+        GEMS_DIR="$SCRIPT_DIR/log-collector/gems"
+        if [ -d "$GEMS_DIR" ] && ls "$GEMS_DIR"/*.gem &>/dev/null 2>&1; then
+            log "  Installing fluent-plugin-opensearch from bundled gems (offline)..."
+            $FLUENT_GEM install --no-document --local "$GEMS_DIR"/*.gem 2>&1
+            log "  OpenSearch plugin installed."
+        else
+            log "  No bundled gems found, trying online install..."
+            if $FLUENT_GEM install --no-document fluent-plugin-opensearch 2>&1; then
+                log "  OpenSearch plugin installed (online)."
+            else
+                err "  Failed to install fluent-plugin-opensearch."
+                err "  For offline install, rebuild the installer on a machine with internet."
+            fi
+        fi
+    fi
+
+    # Disable the default fluentd service (we use supra-log-collector instead)
+    systemctl stop fluentd.service 2>/dev/null || true
+    systemctl disable fluentd.service 2>/dev/null || true
+fi
+
+# Step 3: Deploy Supra Log Collector config
 mkdir -p "$INSTALL_DIR/log-collector"
 
-# Use the fluent.conf from the installer package (not hardcoded)
 if [ -f "$SCRIPT_DIR/log-collector/fluent.conf" ]; then
     cp "$SCRIPT_DIR/log-collector/fluent.conf" "$INSTALL_DIR/log-collector/fluent.conf"
     log "  Using packaged fluent.conf"
@@ -625,21 +696,103 @@ else
     warn "  Packaged fluent.conf not found, creating default config"
     cat > "$INSTALL_DIR/log-collector/fluent.conf" <<'FLUENTDCONF'
 ## Supra Log Collector Configuration (Fluentd)
+## Ports: 514 (IEDs/UTC), 1514 (Windows/JSON), 2514 (Network devices/IST), 24224 (Forward)
+
+# IED syslog input (UTC timestamps)
 <source>
   @type syslog
-  port 5140
+  port 514
   bind 0.0.0.0
-  tag syslog
+  tag ied
+  protocol_type udp
   <parse>
     message_format auto
+    timezone +00:00
   </parse>
 </source>
 
+<source>
+  @type syslog
+  port 514
+  bind 0.0.0.0
+  tag ied
+  protocol_type tcp
+  <parse>
+    message_format auto
+    timezone +00:00
+  </parse>
+</source>
+
+# Windows NXLog input (JSON, IST timestamps)
+<source>
+  @type udp
+  port 1514
+  bind 0.0.0.0
+  tag windows
+  <parse>
+    @type json
+    time_key EventTime
+    time_format %Y-%m-%d %H:%M:%S
+    timezone +05:30
+    keep_time_key true
+  </parse>
+</source>
+
+# Network devices input (IST timestamps) — switches, routers, firewalls
+<source>
+  @type syslog
+  port 2514
+  bind 0.0.0.0
+  tag network
+  protocol_type udp
+  <parse>
+    message_format auto
+    timezone +05:30
+  </parse>
+</source>
+
+<source>
+  @type syslog
+  port 2514
+  bind 0.0.0.0
+  tag network
+  protocol_type tcp
+  <parse>
+    message_format auto
+    timezone +05:30
+  </parse>
+</source>
+
+# Fluentd forward input
 <source>
   @type forward
   port 24224
   bind 0.0.0.0
 </source>
+
+<filter ied.**>
+  @type record_transformer
+  <record>
+    log_collector "supra"
+    source_type "ied"
+  </record>
+</filter>
+
+<filter windows>
+  @type record_transformer
+  <record>
+    log_collector "supra"
+    source_type "windows"
+  </record>
+</filter>
+
+<filter network.**>
+  @type record_transformer
+  <record>
+    log_collector "supra"
+    source_type "network"
+  </record>
+</filter>
 
 <match **>
   @type opensearch
@@ -700,16 +853,17 @@ echo "  sudo cp license.key $INSTALL_DIR/opensearch/config/supra-license/"
 echo "  sudo chown $SUPRA_USER:$SUPRA_GROUP $INSTALL_DIR/opensearch/config/supra-license/license.key"
 echo "  sudo chmod 600 $INSTALL_DIR/opensearch/config/supra-license/license.key"
 echo ""
-echo "Step 4: Start services:"
+echo "Step 4: Start services and initialize security:"
 echo "  sudo systemctl start supra-search"
-echo "  # Wait for Search Engine to be ready, then:"
+echo "  # Wait ~30 seconds for Search Engine to be ready, then initialize security:"
+echo "  sudo -u supra env JAVA_HOME=$INSTALL_DIR/opensearch/jdk bash $INSTALL_DIR/opensearch/plugins/opensearch-security/tools/securityadmin.sh -cd $INSTALL_DIR/opensearch/config/opensearch-security/ -icl -nhnv -cacert $INSTALL_DIR/opensearch/config/root-ca.pem -cert $INSTALL_DIR/opensearch/config/kirk.pem -key $INSTALL_DIR/opensearch/config/kirk-key.pem"
 echo "  sudo systemctl start supra-dashboards"
 echo "  sudo systemctl start supra-log-collector"
 echo ""
 echo "Services:"
 echo "  Supra Search Engine:   https://localhost:9200"
 echo "  Supra Dashboards:      http://localhost:5601"
-echo "  Supra Log Collector:   UDP/5140 (syslog), TCP/24224 (forward)"
+echo "  Supra Log Collector:   UDP/514 (IEDs), UDP/1514 (Windows), UDP/2514 (network devices), TCP/24224 (forward)"
 echo ""
 echo "Credentials:"
 echo "  Username: admin"
@@ -758,6 +912,9 @@ rm -f /etc/systemd/system/supra-search.service
 rm -f /etc/systemd/system/supra-dashboards.service
 rm -f /etc/systemd/system/supra-log-collector.service
 systemctl daemon-reload
+
+echo "Removing fluent-package..."
+dpkg -r fluent-package 2>/dev/null || true
 
 echo "Removing installation directory..."
 rm -rf /opt/supra
