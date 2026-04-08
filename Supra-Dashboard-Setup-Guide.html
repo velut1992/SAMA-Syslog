@@ -1,0 +1,738 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Supra SIEM - OpenSearch Dashboard Setup Guide</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #f4f6f9;
+      color: #333;
+      line-height: 1.6;
+    }
+    .header {
+      background: linear-gradient(135deg, #1a1a2e, #16213e, #0f3460);
+      color: #fff;
+      padding: 40px 0;
+      text-align: center;
+    }
+    .header h1 { font-size: 2.2em; margin-bottom: 8px; }
+    .header p { font-size: 1.1em; opacity: 0.85; }
+    .container { max-width: 1100px; margin: 0 auto; padding: 30px 20px; }
+
+    /* Table of Contents */
+    .toc {
+      background: #fff;
+      border-radius: 10px;
+      padding: 30px;
+      margin-bottom: 30px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+    .toc h2 { font-size: 1.4em; margin-bottom: 15px; color: #0f3460; }
+    .toc ul { list-style: none; }
+    .toc ul li { padding: 6px 0; }
+    .toc ul li a {
+      text-decoration: none;
+      color: #0f3460;
+      font-weight: 500;
+      transition: color 0.2s;
+    }
+    .toc ul li a:hover { color: #e94560; }
+    .toc ul ul { padding-left: 25px; }
+    .toc ul ul li { padding: 3px 0; }
+    .toc ul ul li a { font-weight: 400; font-size: 0.95em; }
+
+    /* Sections */
+    .section {
+      background: #fff;
+      border-radius: 10px;
+      padding: 30px;
+      margin-bottom: 25px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+    .section h2 {
+      font-size: 1.6em;
+      margin-bottom: 20px;
+      padding-bottom: 10px;
+      border-bottom: 3px solid #0f3460;
+      color: #0f3460;
+    }
+    .section h3 {
+      font-size: 1.2em;
+      margin: 25px 0 12px 0;
+      color: #16213e;
+      padding-left: 12px;
+      border-left: 4px solid #e94560;
+    }
+    .section h4 {
+      font-size: 1.05em;
+      margin: 15px 0 8px 0;
+      color: #555;
+    }
+
+    /* Steps */
+    ol.steps { padding-left: 22px; margin: 10px 0; }
+    ol.steps li {
+      padding: 6px 0;
+      line-height: 1.7;
+    }
+    ul.fields { padding-left: 22px; margin: 8px 0; }
+    ul.fields li { padding: 3px 0; }
+
+    /* Code / Config */
+    code {
+      background: #eef1f5;
+      padding: 2px 7px;
+      border-radius: 4px;
+      font-family: 'Consolas', 'Courier New', monospace;
+      font-size: 0.92em;
+      color: #c0392b;
+    }
+    pre {
+      background: #1a1a2e;
+      color: #e0e0e0;
+      padding: 18px;
+      border-radius: 8px;
+      overflow-x: auto;
+      font-size: 0.9em;
+      margin: 12px 0;
+      line-height: 1.5;
+    }
+
+    /* Badge / Tag */
+    .badge {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 12px;
+      font-size: 0.8em;
+      font-weight: 600;
+      margin-right: 5px;
+    }
+    .badge-ied { background: #d4edda; color: #155724; }
+    .badge-network { background: #cce5ff; color: #004085; }
+    .badge-windows { background: #fff3cd; color: #856404; }
+    .badge-critical { background: #f8d7da; color: #721c24; }
+    .badge-warning { background: #fff3cd; color: #856404; }
+    .badge-info { background: #d1ecf1; color: #0c5460; }
+
+    /* Tables */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 15px 0;
+      font-size: 0.95em;
+    }
+    table th {
+      background: #0f3460;
+      color: #fff;
+      padding: 12px 15px;
+      text-align: left;
+    }
+    table td {
+      padding: 10px 15px;
+      border-bottom: 1px solid #e0e0e0;
+    }
+    table tr:nth-child(even) { background: #f8f9fa; }
+    table tr:hover { background: #eef1f5; }
+
+    /* Alert boxes */
+    .alert {
+      padding: 15px 20px;
+      border-radius: 8px;
+      margin: 15px 0;
+      font-size: 0.95em;
+    }
+    .alert-info { background: #d1ecf1; border-left: 4px solid #17a2b8; color: #0c5460; }
+    .alert-warning { background: #fff3cd; border-left: 4px solid #ffc107; color: #856404; }
+    .alert-tip { background: #d4edda; border-left: 4px solid #28a745; color: #155724; }
+
+    /* Dashboard layout diagram */
+    .layout-grid {
+      display: grid;
+      gap: 8px;
+      margin: 15px 0;
+    }
+    .layout-grid .panel {
+      background: #eef1f5;
+      border: 2px dashed #0f3460;
+      border-radius: 6px;
+      padding: 12px;
+      text-align: center;
+      font-size: 0.85em;
+      font-weight: 500;
+      color: #0f3460;
+    }
+    .layout-ied { grid-template-columns: 1fr 1fr 1fr; grid-template-rows: auto auto auto auto auto; }
+    .layout-network { grid-template-columns: 1fr 1fr 1fr; grid-template-rows: auto auto auto auto; }
+    .layout-windows { grid-template-columns: 1fr 1fr 1fr; grid-template-rows: auto auto auto auto auto; }
+    .span-full { grid-column: 1 / -1; }
+    .span-half-left { grid-column: 1 / 3; }
+    .span-half-right { grid-column: 2 / 4; }
+    .span-2 { grid-column: span 2; }
+
+    /* Navigation arrow */
+    .nav-arrow {
+      color: #e94560;
+      font-weight: bold;
+    }
+
+    /* Footer */
+    .footer {
+      text-align: center;
+      padding: 30px;
+      color: #888;
+      font-size: 0.9em;
+    }
+
+    /* Print */
+    @media print {
+      .header { background: #1a1a2e !important; -webkit-print-color-adjust: exact; }
+      .section { box-shadow: none; border: 1px solid #ddd; }
+      body { background: #fff; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="header">
+  <h1>Supra SIEM - Dashboard Setup Guide</h1>
+  <p>OpenSearch Dashboards Configuration for IEDs, Network Devices &amp; Windows Workstations</p>
+</div>
+
+<div class="container">
+
+  <!-- Table of Contents -->
+  <div class="toc">
+    <h2>Table of Contents</h2>
+    <ul>
+      <li><a href="#prerequisites">Prerequisites</a>
+        <ul>
+          <li><a href="#index-pattern">Step 0: Create Index Pattern</a></li>
+          <li><a href="#verify-fields">Step 1: Verify Fields</a></li>
+        </ul>
+      </li>
+      <li><a href="#dashboard-ied">Dashboard 1: IED Monitoring (REC670 / REL670)</a></li>
+      <li><a href="#dashboard-network">Dashboard 2: Network Devices (Switches, Routers, Firewalls)</a></li>
+      <li><a href="#dashboard-windows">Dashboard 3: Windows Workstations / Servers</a></li>
+      <li><a href="#summary">Summary</a></li>
+    </ul>
+  </div>
+
+  <!-- Prerequisites -->
+  <div class="section" id="prerequisites">
+    <h2>Prerequisites</h2>
+    <p>Open OpenSearch Dashboards at <code>http://&lt;server-ip&gt;:5601</code> and log in with your credentials (default: <code>admin</code> / <code>admin</code>).</p>
+
+    <h3 id="index-pattern">Step 0: Create Index Pattern</h3>
+    <ol class="steps">
+      <li>Go to <strong>Stack Management</strong> <span class="nav-arrow">&rarr;</span> <strong>Index Patterns</strong></li>
+      <li>Click <strong>Create index pattern</strong></li>
+      <li>Enter: <code>supra-logs-*</code></li>
+      <li>Select <code>@timestamp</code> as the time field</li>
+      <li>Click <strong>Create index pattern</strong></li>
+    </ol>
+
+    <h3 id="verify-fields">Step 1: Verify Fields Are Available</h3>
+    <ol class="steps">
+      <li>Go to <strong>Discover</strong></li>
+      <li>Select <code>supra-logs-*</code> index pattern</li>
+      <li>Test each source type in the search bar:</li>
+    </ol>
+    <table>
+      <tr>
+        <th>Query</th>
+        <th>Expected Result</th>
+      </tr>
+      <tr>
+        <td><code>source_type: "ied"</code></td>
+        <td><span class="badge badge-ied">IED</span> Hitachi Energy REC670/REL670 logs</td>
+      </tr>
+      <tr>
+        <td><code>source_type: "network"</code></td>
+        <td><span class="badge badge-network">Network</span> Switches, routers, firewall logs</td>
+      </tr>
+      <tr>
+        <td><code>source_type: "windows"</code></td>
+        <td><span class="badge badge-windows">Windows</span> Workstation/server event logs</td>
+      </tr>
+    </table>
+
+    <div class="alert alert-info">
+      <strong>Available Fields:</strong> Check the left panel in Discover for fields like <code>event_type</code>, <code>severity</code>, <code>ied_model</code>, <code>device_id</code>, <code>user</code>, <code>event_code</code>, <code>host</code>, etc.
+    </div>
+  </div>
+
+  <!-- ================================================================ -->
+  <!-- Dashboard 1: IED Monitoring -->
+  <!-- ================================================================ -->
+  <div class="section" id="dashboard-ied">
+    <h2><span class="badge badge-ied">IED</span> Dashboard 1: IED Monitoring (REC670 / REL670)</h2>
+
+    <div class="alert alert-info">
+      <strong>Base Filter for all IED visualizations:</strong> <code>source_type</code> &rarr; <code>is</code> &rarr; <code>ied</code>
+    </div>
+
+    <!-- Saved Search -->
+    <h3>Create Saved Search (Base Filter)</h3>
+    <ol class="steps">
+      <li>Go to <strong>Discover</strong></li>
+      <li>Add filter: <code>source_type</code> &rarr; <code>is</code> &rarr; <code>ied</code></li>
+      <li>Click <strong>Save</strong> &rarr; name it <code>IED Logs - Base</code></li>
+    </ol>
+
+    <!-- Viz 1.1 -->
+    <h3>Visualization 1.1: IED Event Count Over Time (Line Chart)</h3>
+    <ol class="steps">
+      <li>Go to <strong>Visualize</strong> <span class="nav-arrow">&rarr;</span> <strong>Create visualization</strong> <span class="nav-arrow">&rarr;</span> <strong>Line</strong></li>
+      <li>Select <code>supra-logs-*</code></li>
+      <li><strong>Metrics:</strong> Y-axis &rarr; Aggregation: <code>Count</code></li>
+      <li><strong>Buckets:</strong>
+        <ul class="fields">
+          <li>X-axis &rarr; Aggregation: <code>Date Histogram</code>, Field: <code>@timestamp</code>, Interval: <code>Auto</code></li>
+          <li>Add sub-bucket &rarr; Split series &rarr; Aggregation: <code>Terms</code>, Field: <code>event_type.keyword</code>, Size: <code>10</code></li>
+        </ul>
+      </li>
+      <li>Add filter: <code>source_type</code> &rarr; <code>is</code> &rarr; <code>ied</code></li>
+      <li>Click <strong>Update</strong> &rarr; <strong>Save</strong> as <code>IED - Event Count Over Time</code></li>
+    </ol>
+
+    <!-- Viz 1.2 -->
+    <h3>Visualization 1.2: Severity Distribution (Pie Chart)</h3>
+    <ol class="steps">
+      <li><strong>Visualize</strong> <span class="nav-arrow">&rarr;</span> <strong>Create visualization</strong> <span class="nav-arrow">&rarr;</span> <strong>Pie</strong></li>
+      <li>Select <code>supra-logs-*</code></li>
+      <li><strong>Metrics:</strong> Slice size &rarr; <code>Count</code></li>
+      <li><strong>Buckets:</strong> Split slices &rarr; <code>Terms</code>, Field: <code>severity.keyword</code>, Size: <code>5</code></li>
+      <li>Filter: <code>source_type</code> &rarr; <code>is</code> &rarr; <code>ied</code></li>
+      <li><strong>Save</strong> as <code>IED - Severity Distribution</code></li>
+    </ol>
+
+    <!-- Viz 1.3 -->
+    <h3>Visualization 1.3: Event Type Breakdown (Horizontal Bar)</h3>
+    <ol class="steps">
+      <li><strong>Visualize</strong> <span class="nav-arrow">&rarr;</span> <strong>Create</strong> <span class="nav-arrow">&rarr;</span> <strong>Horizontal Bar</strong></li>
+      <li><strong>Metrics:</strong> Y-axis &rarr; <code>Count</code></li>
+      <li><strong>Buckets:</strong> X-axis &rarr; <code>Terms</code>, Field: <code>event_type.keyword</code>, Size: <code>10</code></li>
+      <li>Filter: <code>source_type</code> &rarr; <code>is</code> &rarr; <code>ied</code></li>
+      <li><strong>Save</strong> as <code>IED - Event Type Breakdown</code></li>
+    </ol>
+
+    <!-- Viz 1.4 -->
+    <h3>Visualization 1.4: Events Per Device (Data Table)</h3>
+    <ol class="steps">
+      <li><strong>Visualize</strong> <span class="nav-arrow">&rarr;</span> <strong>Create</strong> <span class="nav-arrow">&rarr;</span> <strong>Data Table</strong></li>
+      <li><strong>Metrics:</strong> <code>Count</code></li>
+      <li><strong>Buckets:</strong>
+        <ul class="fields">
+          <li>Split rows &rarr; <code>Terms</code>, Field: <code>device_id.keyword</code>, Size: <code>20</code>, Label: <code>Device ID</code></li>
+          <li>Add sub-bucket &rarr; Split rows &rarr; <code>Terms</code>, Field: <code>ied_model.keyword</code>, Size: <code>5</code>, Label: <code>IED Model</code></li>
+          <li>Add sub-bucket &rarr; Split rows &rarr; <code>Terms</code>, Field: <code>event_type.keyword</code>, Size: <code>10</code>, Label: <code>Event Type</code></li>
+        </ul>
+      </li>
+      <li>Filter: <code>source_type</code> &rarr; <code>is</code> &rarr; <code>ied</code></li>
+      <li><strong>Save</strong> as <code>IED - Events Per Device</code></li>
+    </ol>
+
+    <!-- Viz 1.5 -->
+    <h3>Visualization 1.5: User Activity (Vertical Bar)</h3>
+    <ol class="steps">
+      <li><strong>Visualize</strong> <span class="nav-arrow">&rarr;</span> <strong>Create</strong> <span class="nav-arrow">&rarr;</span> <strong>Vertical Bar</strong></li>
+      <li><strong>Metrics:</strong> Y-axis &rarr; <code>Count</code></li>
+      <li><strong>Buckets:</strong>
+        <ul class="fields">
+          <li>X-axis &rarr; <code>Terms</code>, Field: <code>user.keyword</code>, Size: <code>10</code></li>
+          <li>Split series &rarr; <code>Terms</code>, Field: <code>event_type.keyword</code>, Size: <code>10</code></li>
+        </ul>
+      </li>
+      <li>Filter: <code>source_type</code> &rarr; <code>is</code> &rarr; <code>ied</code></li>
+      <li><strong>Save</strong> as <code>IED - User Activity</code></li>
+    </ol>
+
+    <!-- Viz 1.6 -->
+    <h3>Visualization 1.6: Critical &amp; Warning Alerts (Metric)</h3>
+    <ol class="steps">
+      <li><strong>Visualize</strong> <span class="nav-arrow">&rarr;</span> <strong>Create</strong> <span class="nav-arrow">&rarr;</span> <strong>Metric</strong></li>
+      <li><strong>Metrics:</strong> <code>Count</code></li>
+      <li>Filter: <code>source_type</code> &rarr; <code>is</code> &rarr; <code>ied</code> <strong>AND</strong> <code>severity</code> &rarr; <code>is one of</code> &rarr; <code>critical, warning</code></li>
+      <li><strong>Save</strong> as <code>IED - Critical &amp; Warning Count</code></li>
+    </ol>
+
+    <!-- Viz 1.7 -->
+    <h3>Visualization 1.7: Login/Logout Timeline (Area Chart)</h3>
+    <ol class="steps">
+      <li><strong>Visualize</strong> <span class="nav-arrow">&rarr;</span> <strong>Create</strong> <span class="nav-arrow">&rarr;</span> <strong>Area</strong></li>
+      <li><strong>Metrics:</strong> Y-axis &rarr; <code>Count</code></li>
+      <li><strong>Buckets:</strong>
+        <ul class="fields">
+          <li>X-axis &rarr; <code>Date Histogram</code>, Field: <code>@timestamp</code>, Interval: <code>Auto</code></li>
+          <li>Split series &rarr; <code>Terms</code>, Field: <code>event_type.keyword</code>, Size: <code>5</code></li>
+        </ul>
+      </li>
+      <li>Filter: <code>source_type</code> &rarr; <code>is</code> &rarr; <code>ied</code> <strong>AND</strong> <code>event_type</code> &rarr; <code>is one of</code> &rarr; <code>login, logout</code></li>
+      <li><strong>Save</strong> as <code>IED - Login/Logout Timeline</code></li>
+    </ol>
+
+    <!-- Viz 1.8 -->
+    <h3>Visualization 1.8: Recent IED Events (Saved Search)</h3>
+    <ol class="steps">
+      <li>Go to <strong>Discover</strong></li>
+      <li>Filter: <code>source_type</code> &rarr; <code>is</code> &rarr; <code>ied</code></li>
+      <li>Select columns from left panel (click +): <code>@timestamp</code>, <code>host</code>, <code>device_id</code>, <code>ied_model</code>, <code>event_type</code>, <code>severity</code>, <code>event_description</code>, <code>user</code></li>
+      <li>Sort by <code>@timestamp</code> descending</li>
+      <li><strong>Save</strong> as <code>IED - Recent Events Log</code></li>
+    </ol>
+
+    <!-- Assemble -->
+    <h3>Assemble IED Dashboard</h3>
+    <ol class="steps">
+      <li>Go to <strong>Dashboards</strong> <span class="nav-arrow">&rarr;</span> <strong>Create new</strong></li>
+      <li>Click <strong>Add</strong> and add all saved visualizations listed below</li>
+      <li><strong>Save</strong> dashboard as <code>Supra IED Monitoring - REC670</code></li>
+    </ol>
+
+    <h4>Recommended Layout</h4>
+    <div class="layout-grid layout-ied">
+      <div class="panel">IED - Critical &amp; Warning Count</div>
+      <div class="panel">IED - Severity Distribution</div>
+      <div class="panel">IED - Event Type Breakdown</div>
+      <div class="panel span-full">IED - Event Count Over Time</div>
+      <div class="panel span-2">IED - Events Per Device</div>
+      <div class="panel">IED - User Activity</div>
+      <div class="panel span-full">IED - Login/Logout Timeline</div>
+      <div class="panel span-full">IED - Recent Events Log</div>
+    </div>
+  </div>
+
+  <!-- ================================================================ -->
+  <!-- Dashboard 2: Network Devices -->
+  <!-- ================================================================ -->
+  <div class="section" id="dashboard-network">
+    <h2><span class="badge badge-network">Network</span> Dashboard 2: Network Devices (Switches, Routers, Firewalls)</h2>
+
+    <div class="alert alert-info">
+      <strong>Base Filter for all Network visualizations:</strong> <code>source_type</code> &rarr; <code>is</code> &rarr; <code>network</code>
+    </div>
+
+    <!-- Viz 2.1 -->
+    <h3>Visualization 2.1: Network Events Over Time (Line Chart)</h3>
+    <ol class="steps">
+      <li><strong>Visualize</strong> <span class="nav-arrow">&rarr;</span> <strong>Create</strong> <span class="nav-arrow">&rarr;</span> <strong>Line</strong></li>
+      <li>Select <code>supra-logs-*</code></li>
+      <li><strong>Metrics:</strong> Y-axis &rarr; <code>Count</code></li>
+      <li><strong>Buckets:</strong>
+        <ul class="fields">
+          <li>X-axis &rarr; <code>Date Histogram</code>, Field: <code>@timestamp</code>, Interval: <code>Auto</code></li>
+          <li>Split series &rarr; <code>Terms</code>, Field: <code>event_type.keyword</code>, Size: <code>10</code></li>
+        </ul>
+      </li>
+      <li>Filter: <code>source_type</code> &rarr; <code>is</code> &rarr; <code>network</code></li>
+      <li><strong>Save</strong> as <code>Network - Events Over Time</code></li>
+    </ol>
+
+    <!-- Viz 2.2 -->
+    <h3>Visualization 2.2: Link Up vs Link Down (Pie Chart)</h3>
+    <ol class="steps">
+      <li><strong>Visualize</strong> <span class="nav-arrow">&rarr;</span> <strong>Create</strong> <span class="nav-arrow">&rarr;</span> <strong>Pie</strong></li>
+      <li><strong>Metrics:</strong> Slice size &rarr; <code>Count</code></li>
+      <li><strong>Buckets:</strong> Split slices &rarr; <code>Terms</code>, Field: <code>event_type.keyword</code>, Size: <code>5</code></li>
+      <li>Filter: <code>source_type</code> &rarr; <code>is</code> &rarr; <code>network</code></li>
+      <li><strong>Save</strong> as <code>Network - Link Status Distribution</code></li>
+    </ol>
+
+    <!-- Viz 2.3 -->
+    <h3>Visualization 2.3: Events Per Device Host (Vertical Bar)</h3>
+    <ol class="steps">
+      <li><strong>Visualize</strong> <span class="nav-arrow">&rarr;</span> <strong>Create</strong> <span class="nav-arrow">&rarr;</span> <strong>Vertical Bar</strong></li>
+      <li><strong>Metrics:</strong> Y-axis &rarr; <code>Count</code></li>
+      <li><strong>Buckets:</strong>
+        <ul class="fields">
+          <li>X-axis &rarr; <code>Terms</code>, Field: <code>host.keyword</code>, Size: <code>20</code></li>
+          <li>Split series &rarr; <code>Terms</code>, Field: <code>event_type.keyword</code>, Size: <code>5</code></li>
+        </ul>
+      </li>
+      <li>Filter: <code>source_type</code> &rarr; <code>is</code> &rarr; <code>network</code></li>
+      <li><strong>Save</strong> as <code>Network - Events Per Device</code></li>
+    </ol>
+
+    <!-- Viz 2.4 -->
+    <h3>Visualization 2.4: Critical Alerts Count (Metric)</h3>
+    <ol class="steps">
+      <li><strong>Visualize</strong> <span class="nav-arrow">&rarr;</span> <strong>Create</strong> <span class="nav-arrow">&rarr;</span> <strong>Metric</strong></li>
+      <li><strong>Metrics:</strong> <code>Count</code></li>
+      <li>Filter: <code>source_type</code> &rarr; <code>is</code> &rarr; <code>network</code> <strong>AND</strong> <code>severity</code> &rarr; <code>is</code> &rarr; <code>critical</code></li>
+      <li><strong>Save</strong> as <code>Network - Critical Alert Count</code></li>
+    </ol>
+
+    <!-- Viz 2.5 -->
+    <h3>Visualization 2.5: Severity Over Time (Area Chart)</h3>
+    <ol class="steps">
+      <li><strong>Visualize</strong> <span class="nav-arrow">&rarr;</span> <strong>Create</strong> <span class="nav-arrow">&rarr;</span> <strong>Area</strong></li>
+      <li><strong>Metrics:</strong> Y-axis &rarr; <code>Count</code></li>
+      <li><strong>Buckets:</strong>
+        <ul class="fields">
+          <li>X-axis &rarr; <code>Date Histogram</code>, Field: <code>@timestamp</code>, Interval: <code>Auto</code></li>
+          <li>Split series &rarr; <code>Terms</code>, Field: <code>severity.keyword</code>, Size: <code>5</code></li>
+        </ul>
+      </li>
+      <li>Filter: <code>source_type</code> &rarr; <code>is</code> &rarr; <code>network</code></li>
+      <li><strong>Save</strong> as <code>Network - Severity Over Time</code></li>
+    </ol>
+
+    <!-- Viz 2.6 -->
+    <h3>Visualization 2.6: Top Syslog Sources (Data Table)</h3>
+    <ol class="steps">
+      <li><strong>Visualize</strong> <span class="nav-arrow">&rarr;</span> <strong>Create</strong> <span class="nav-arrow">&rarr;</span> <strong>Data Table</strong></li>
+      <li><strong>Metrics:</strong> <code>Count</code></li>
+      <li><strong>Buckets:</strong>
+        <ul class="fields">
+          <li>Split rows &rarr; <code>Terms</code>, Field: <code>host.keyword</code>, Size: <code>20</code>, Label: <code>Device IP</code></li>
+          <li>Sub-bucket &rarr; <code>Terms</code>, Field: <code>ident.keyword</code>, Size: <code>5</code>, Label: <code>Process/Service</code></li>
+          <li>Sub-bucket &rarr; <code>Terms</code>, Field: <code>severity.keyword</code>, Size: <code>3</code>, Label: <code>Severity</code></li>
+        </ul>
+      </li>
+      <li>Filter: <code>source_type</code> &rarr; <code>is</code> &rarr; <code>network</code></li>
+      <li><strong>Save</strong> as <code>Network - Top Syslog Sources</code></li>
+    </ol>
+
+    <!-- Viz 2.7 -->
+    <h3>Visualization 2.7: Recent Network Events (Saved Search)</h3>
+    <ol class="steps">
+      <li><strong>Discover</strong> &rarr; Filter: <code>source_type</code> &rarr; <code>is</code> &rarr; <code>network</code></li>
+      <li>Select columns: <code>@timestamp</code>, <code>host</code>, <code>ident</code>, <code>event_type</code>, <code>severity</code>, <code>message</code></li>
+      <li>Sort by <code>@timestamp</code> descending</li>
+      <li><strong>Save</strong> as <code>Network - Recent Events Log</code></li>
+    </ol>
+
+    <!-- Assemble -->
+    <h3>Assemble Network Dashboard</h3>
+    <ol class="steps">
+      <li>Go to <strong>Dashboards</strong> <span class="nav-arrow">&rarr;</span> <strong>Create new</strong></li>
+      <li>Click <strong>Add</strong> and add all Network visualizations</li>
+      <li><strong>Save</strong> dashboard as <code>Supra Network Monitoring</code></li>
+    </ol>
+
+    <h4>Recommended Layout</h4>
+    <div class="layout-grid layout-network">
+      <div class="panel">Network - Critical Alert Count</div>
+      <div class="panel">Network - Link Status Distribution</div>
+      <div class="panel">Network - Events Per Device</div>
+      <div class="panel span-full">Network - Events Over Time</div>
+      <div class="panel span-2">Network - Severity Over Time</div>
+      <div class="panel">Network - Top Syslog Sources</div>
+      <div class="panel span-full">Network - Recent Events Log</div>
+    </div>
+  </div>
+
+  <!-- ================================================================ -->
+  <!-- Dashboard 3: Windows -->
+  <!-- ================================================================ -->
+  <div class="section" id="dashboard-windows">
+    <h2><span class="badge badge-windows">Windows</span> Dashboard 3: Windows Workstations / Servers</h2>
+
+    <div class="alert alert-warning">
+      <strong>Note:</strong> Windows fields depend on NXLog JSON output. Common fields: <code>Hostname</code>, <code>SourceName</code>, <code>EventID</code>, <code>EventType</code>, <code>Channel</code>, <code>Message</code>, <code>AccountName</code>, <code>Category</code>.
+    </div>
+
+    <!-- Viz 3.1 -->
+    <h3>Visualization 3.1: Windows Events Over Time (Line Chart)</h3>
+    <ol class="steps">
+      <li><strong>Visualize</strong> <span class="nav-arrow">&rarr;</span> <strong>Create</strong> <span class="nav-arrow">&rarr;</span> <strong>Line</strong></li>
+      <li>Select <code>supra-logs-*</code></li>
+      <li><strong>Metrics:</strong> Y-axis &rarr; <code>Count</code></li>
+      <li><strong>Buckets:</strong>
+        <ul class="fields">
+          <li>X-axis &rarr; <code>Date Histogram</code>, Field: <code>@timestamp</code>, Interval: <code>Auto</code></li>
+          <li>Split series &rarr; <code>Terms</code>, Field: <code>Channel.keyword</code>, Size: <code>10</code></li>
+        </ul>
+      </li>
+      <li>Filter: <code>source_type</code> &rarr; <code>is</code> &rarr; <code>windows</code></li>
+      <li><strong>Save</strong> as <code>Windows - Events Over Time</code></li>
+    </ol>
+
+    <!-- Viz 3.2 -->
+    <h3>Visualization 3.2: Events by Source (Vertical Bar)</h3>
+    <ol class="steps">
+      <li><strong>Visualize</strong> <span class="nav-arrow">&rarr;</span> <strong>Create</strong> <span class="nav-arrow">&rarr;</span> <strong>Vertical Bar</strong></li>
+      <li><strong>Metrics:</strong> Y-axis &rarr; <code>Count</code></li>
+      <li><strong>Buckets:</strong>
+        <ul class="fields">
+          <li>X-axis &rarr; <code>Terms</code>, Field: <code>SourceName.keyword</code>, Size: <code>15</code></li>
+          <li>Split series &rarr; <code>Terms</code>, Field: <code>EventType.keyword</code>, Size: <code>5</code></li>
+        </ul>
+      </li>
+      <li>Filter: <code>source_type</code> &rarr; <code>is</code> &rarr; <code>windows</code></li>
+      <li><strong>Save</strong> as <code>Windows - Events by Source</code></li>
+    </ol>
+
+    <!-- Viz 3.3 -->
+    <h3>Visualization 3.3: Event Type Distribution (Pie Chart)</h3>
+    <ol class="steps">
+      <li><strong>Visualize</strong> <span class="nav-arrow">&rarr;</span> <strong>Create</strong> <span class="nav-arrow">&rarr;</span> <strong>Pie</strong></li>
+      <li><strong>Metrics:</strong> Slice size &rarr; <code>Count</code></li>
+      <li><strong>Buckets:</strong> Split slices &rarr; <code>Terms</code>, Field: <code>EventType.keyword</code>, Size: <code>10</code></li>
+      <li>Filter: <code>source_type</code> &rarr; <code>is</code> &rarr; <code>windows</code></li>
+      <li><strong>Save</strong> as <code>Windows - Event Type Distribution</code></li>
+    </ol>
+
+    <!-- Viz 3.4 -->
+    <h3>Visualization 3.4: Top Event IDs (Data Table)</h3>
+    <ol class="steps">
+      <li><strong>Visualize</strong> <span class="nav-arrow">&rarr;</span> <strong>Create</strong> <span class="nav-arrow">&rarr;</span> <strong>Data Table</strong></li>
+      <li><strong>Metrics:</strong> <code>Count</code></li>
+      <li><strong>Buckets:</strong>
+        <ul class="fields">
+          <li>Split rows &rarr; <code>Terms</code>, Field: <code>EventID.keyword</code>, Size: <code>20</code>, Label: <code>Event ID</code></li>
+          <li>Sub-bucket &rarr; <code>Terms</code>, Field: <code>SourceName.keyword</code>, Size: <code>3</code>, Label: <code>Source</code></li>
+          <li>Sub-bucket &rarr; <code>Terms</code>, Field: <code>Hostname.keyword</code>, Size: <code>5</code>, Label: <code>Host</code></li>
+        </ul>
+      </li>
+      <li>Filter: <code>source_type</code> &rarr; <code>is</code> &rarr; <code>windows</code></li>
+      <li><strong>Save</strong> as <code>Windows - Top Event IDs</code></li>
+    </ol>
+
+    <!-- Viz 3.5 -->
+    <h3>Visualization 3.5: Events Per Workstation (Horizontal Bar)</h3>
+    <ol class="steps">
+      <li><strong>Visualize</strong> <span class="nav-arrow">&rarr;</span> <strong>Create</strong> <span class="nav-arrow">&rarr;</span> <strong>Horizontal Bar</strong></li>
+      <li><strong>Metrics:</strong> Y-axis &rarr; <code>Count</code></li>
+      <li><strong>Buckets:</strong> X-axis &rarr; <code>Terms</code>, Field: <code>Hostname.keyword</code>, Size: <code>20</code></li>
+      <li>Filter: <code>source_type</code> &rarr; <code>is</code> &rarr; <code>windows</code></li>
+      <li><strong>Save</strong> as <code>Windows - Events Per Workstation</code></li>
+    </ol>
+
+    <!-- Viz 3.6 -->
+    <h3>Visualization 3.6: Security Events - Login Failures (Metric)</h3>
+    <ol class="steps">
+      <li><strong>Visualize</strong> <span class="nav-arrow">&rarr;</span> <strong>Create</strong> <span class="nav-arrow">&rarr;</span> <strong>Metric</strong></li>
+      <li><strong>Metrics:</strong> <code>Count</code></li>
+      <li>Filter: <code>source_type</code> &rarr; <code>is</code> &rarr; <code>windows</code> <strong>AND</strong> <code>EventID</code> &rarr; <code>is one of</code> &rarr; <code>4625, 4771</code></li>
+      <li><strong>Save</strong> as <code>Windows - Failed Login Count</code></li>
+    </ol>
+    <div class="alert alert-tip">
+      <strong>Tip:</strong> Windows Event ID <code>4625</code> = Failed logon attempt, <code>4771</code> = Kerberos pre-authentication failed. These are key security indicators.
+    </div>
+
+    <!-- Viz 3.7 -->
+    <h3>Visualization 3.7: Security Events Over Time (Area Chart)</h3>
+    <ol class="steps">
+      <li><strong>Visualize</strong> <span class="nav-arrow">&rarr;</span> <strong>Create</strong> <span class="nav-arrow">&rarr;</span> <strong>Area</strong></li>
+      <li><strong>Metrics:</strong> Y-axis &rarr; <code>Count</code></li>
+      <li><strong>Buckets:</strong>
+        <ul class="fields">
+          <li>X-axis &rarr; <code>Date Histogram</code>, Field: <code>@timestamp</code>, Interval: <code>Auto</code></li>
+          <li>Split series &rarr; <code>Terms</code>, Field: <code>EventID.keyword</code>, Size: <code>10</code></li>
+        </ul>
+      </li>
+      <li>Filter: <code>source_type</code> &rarr; <code>is</code> &rarr; <code>windows</code> <strong>AND</strong> <code>Channel</code> &rarr; <code>is</code> &rarr; <code>Security</code></li>
+      <li><strong>Save</strong> as <code>Windows - Security Events Timeline</code></li>
+    </ol>
+
+    <!-- Viz 3.8 -->
+    <h3>Visualization 3.8: Recent Windows Events (Saved Search)</h3>
+    <ol class="steps">
+      <li><strong>Discover</strong> &rarr; Filter: <code>source_type</code> &rarr; <code>is</code> &rarr; <code>windows</code></li>
+      <li>Select columns: <code>@timestamp</code>, <code>Hostname</code>, <code>Channel</code>, <code>EventID</code>, <code>SourceName</code>, <code>EventType</code>, <code>Message</code></li>
+      <li>Sort by <code>@timestamp</code> descending</li>
+      <li><strong>Save</strong> as <code>Windows - Recent Events Log</code></li>
+    </ol>
+
+    <!-- Assemble -->
+    <h3>Assemble Windows Dashboard</h3>
+    <ol class="steps">
+      <li>Go to <strong>Dashboards</strong> <span class="nav-arrow">&rarr;</span> <strong>Create new</strong></li>
+      <li>Click <strong>Add</strong> and add all Windows visualizations</li>
+      <li><strong>Save</strong> dashboard as <code>Supra Windows Monitoring</code></li>
+    </ol>
+
+    <h4>Recommended Layout</h4>
+    <div class="layout-grid layout-windows">
+      <div class="panel">Windows - Failed Login Count</div>
+      <div class="panel">Windows - Event Type Distribution</div>
+      <div class="panel">Windows - Events Per Workstation</div>
+      <div class="panel span-full">Windows - Events Over Time</div>
+      <div class="panel span-2">Windows - Events by Source</div>
+      <div class="panel">Windows - Top Event IDs</div>
+      <div class="panel span-full">Windows - Security Events Timeline</div>
+      <div class="panel span-full">Windows - Recent Events Log</div>
+    </div>
+  </div>
+
+  <!-- ================================================================ -->
+  <!-- Summary -->
+  <!-- ================================================================ -->
+  <div class="section" id="summary">
+    <h2>Summary</h2>
+    <table>
+      <tr>
+        <th>Dashboard</th>
+        <th>Filter</th>
+        <th>Key Panels</th>
+      </tr>
+      <tr>
+        <td><strong>Supra IED Monitoring - REC670</strong></td>
+        <td><code>source_type: ied</code></td>
+        <td>Event timeline, severity pie, device table, user activity, login/logout, critical alerts</td>
+      </tr>
+      <tr>
+        <td><strong>Supra Network Monitoring</strong></td>
+        <td><code>source_type: network</code></td>
+        <td>Link up/down, events per device IP, critical count, syslog source table</td>
+      </tr>
+      <tr>
+        <td><strong>Supra Windows Monitoring</strong></td>
+        <td><code>source_type: windows</code></td>
+        <td>Events by source/channel, failed logins, security timeline, event ID table</td>
+      </tr>
+    </table>
+
+    <div class="alert alert-tip">
+      <strong>Tip:</strong> All three dashboards use the same index pattern (<code>supra-logs-*</code>) but are filtered by <code>source_type</code>. Use the time picker at the top of each dashboard to narrow down to specific time ranges.
+    </div>
+
+    <h3>Port Reference</h3>
+    <table>
+      <tr>
+        <th>Port</th>
+        <th>Protocol</th>
+        <th>Source</th>
+        <th>Format</th>
+      </tr>
+      <tr>
+        <td><code>514</code></td>
+        <td>UDP + TCP</td>
+        <td>IEDs (REC670, REL670)</td>
+        <td>Syslog (UTC)</td>
+      </tr>
+      <tr>
+        <td><code>1514</code></td>
+        <td>UDP</td>
+        <td>Windows NXLog agents</td>
+        <td>JSON (IST)</td>
+      </tr>
+      <tr>
+        <td><code>2514</code></td>
+        <td>UDP + TCP</td>
+        <td>Switches, Routers, Firewalls</td>
+        <td>Syslog (IST)</td>
+      </tr>
+      <tr>
+        <td><code>24224</code></td>
+        <td>TCP</td>
+        <td>Fluentd agents</td>
+        <td>Forward protocol</td>
+      </tr>
+    </table>
+  </div>
+
+</div>
+
+<!-- Footer -->
+<div class="footer">
+  <p>Supra SIEM - Dashboard Setup Guide | Hitachi Energy</p>
+</div>
+
+</body>
+</html>

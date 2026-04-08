@@ -1,0 +1,197 @@
+## Supra Log Collector Configuration (Fluentd)
+##
+## Collects logs from: IEDs, Switches, Routers, Firewalls,
+##                     Windows Workstations/Servers, Linux Servers
+##
+## Ports:
+##    514/UDP+TCP  - IED syslog (timestamps in UTC)
+##   1514/UDP      - Windows NXLog agents (JSON format, IST)
+##   2514/UDP+TCP  - Network devices: switches, routers, firewalls (timestamps in IST)
+##  24224/TCP      - Fluentd forward input (from Fluentd agents)
+##
+## Port Assignment Guide:
+##   IEDs (ABB REC670, REL670, etc.)     → configure syslog to port 514
+##   Siemens Ruggedcom switches           → configure syslog to port 2514
+##   Routers / Firewalls                  → configure syslog to port 2514
+##   Windows servers (NXLog)              → configure NXLog to port 1514
+##   Linux servers (rsyslog)              → configure rsyslog to port 514
+
+## ============================================================
+## SYSTEM
+## ============================================================
+<system>
+  log_level info
+</system>
+
+## ============================================================
+## INPUT SOURCES
+## ============================================================
+
+# IED (Port 514 - UTC)
+<source>
+  @type syslog
+  port 514
+  bind 0.0.0.0
+  tag ied
+  protocol_type udp
+  <parse>
+    message_format auto
+    timezone +00:00
+  </parse>
+</source>
+
+<source>
+  @type syslog
+  port 514
+  bind 0.0.0.0
+  tag ied
+  protocol_type tcp
+  <parse>
+    message_format auto
+    timezone +00:00
+  </parse>
+</source>
+
+# Windows (Port 1514 - JSON - IST)
+<source>
+  @type udp
+  port 1514
+  bind 0.0.0.0
+  tag windows
+  <parse>
+    @type json
+    time_key EventTime
+    time_format %Y-%m-%d %H:%M:%S
+    timezone +05:30
+    keep_time_key true
+  </parse>
+</source>
+
+# Network Devices (Switches/Routers - Port 2514 - IST)
+<source>
+  @type syslog
+  port 2514
+  bind 0.0.0.0
+  tag network
+  protocol_type udp
+  <parse>
+    message_format auto
+    timezone +05:30
+  </parse>
+</source>
+
+<source>
+  @type syslog
+  port 2514
+  bind 0.0.0.0
+  tag network
+  protocol_type tcp
+  <parse>
+    message_format auto
+    timezone +05:30
+  </parse>
+</source>
+
+# Fluent Forward
+<source>
+  @type forward
+  port 24224
+  bind 0.0.0.0
+</source>
+
+## ============================================================
+## IED PROCESSING (Hitachi Energy REC670 / REL670)
+## ============================================================
+##
+## REC670 syslog message format (pipe-delimited):
+##   01:Log-out (user logged out)||1210|01137|AA1D1Q19KF1|REC670|Administrator
+##   01:Configuration transferred to the device successfully||13200|01136|AA1D1Q19KF1|REC670|Administrator
+##   01:Log-in successful|Accesspoint:1|1110|01135|AA1D1Q19KF1|REC670|Administrator
+##
+## Fields: priority:description|detail|event_code|sequence|device_id|ied_model|user
+
+# Parse REC670 pipe-delimited message format
+<filter ied.**>
+  @type parser
+  key_name message
+  reserve_data true
+  emit_invalid_record_to_error false
+  <parse>
+    @type regexp
+    expression /^(?<ied_priority>\d+):(?<event_description>[^|]*)\|(?<event_detail>[^|]*)\|(?<event_code>\d+)\|(?<sequence>\d+)\|(?<device_id>[^|]*)\|(?<ied_model>[^|]*)\|(?<user>[^\x00]*)$/
+  </parse>
+</filter>
+
+# Event Type and Severity Classification
+<filter ied.**>
+  @type record_transformer
+  enable_ruby true
+  <record>
+    event_type ${msg = (record["event_description"] || record["message"]).to_s.downcase; msg.include?("trip") ? "trip" : msg.include?("fault") ? "fault" : msg.include?("alarm") ? "alarm" : msg.include?("log-in") ? "login" : msg.include?("log-out") ? "logout" : msg.include?("configuration") ? "config_change" : "info"}
+    severity ${msg = (record["event_description"] || record["message"]).to_s.downcase; (msg.include?("trip") || msg.include?("fault")) ? "critical" : msg.include?("alarm") ? "warning" : "info"}
+    ied_model ${record["ied_model"] || "unknown"}
+    device_id ${record["device_id"] || record["host"] || "unknown"}
+    user ${record["user"] || "unknown"}
+    log_collector "supra"
+    source_type "ied"
+  </record>
+</filter>
+
+## ============================================================
+## NETWORK (SWITCH) PROCESSING
+## ============================================================
+
+<filter network.**>
+  @type record_transformer
+  enable_ruby true
+  <record>
+    event_type ${msg = record["message"].to_s.downcase; msg.include?("link down") ? "link_down" : msg.include?("link up") ? "link_up" : "info"}
+    severity ${record["message"].to_s.downcase.include?("down") ? "critical" : "info"}
+    source_type "network"
+    log_collector "supra"
+  </record>
+</filter>
+
+## ============================================================
+## WINDOWS PROCESSING
+## ============================================================
+
+<filter windows>
+  @type record_transformer
+  <record>
+    source_type "windows"
+    log_collector "supra"
+  </record>
+</filter>
+
+## ============================================================
+## OUTPUT (OPENSEARCH)
+## ============================================================
+
+<match **>
+  @type opensearch
+  host localhost
+  port 9200
+  scheme https
+  ssl_verify false
+  user admin
+  password admin
+
+  logstash_format true
+  logstash_prefix supra-logs
+
+  include_tag_key true
+  tag_key fluentd_tag
+
+  flush_interval 5s
+
+  <buffer>
+    @type memory
+    flush_mode interval
+    flush_interval 5s
+    retry_max_interval 30s
+    retry_forever true
+    chunk_limit_size 4MB
+    queue_limit_length 64
+  </buffer>
+</match>
