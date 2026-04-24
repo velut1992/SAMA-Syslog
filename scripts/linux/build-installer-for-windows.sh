@@ -472,7 +472,13 @@ if (Test-Path $securityPluginDir) {
     $internalUsers = Join-Path $osInstallDir "config\opensearch-security\internal_users.yml"
     if (Test-Path $internalUsers) {
         $iuContent = Get-Content $internalUsers -Raw
-        $iuContent = $iuContent -replace '(admin:[\s\S]*?hash:\s*")[^"]*(")', '${1}$2a$12$VcCDgh2NDk07JGN0rjGbM.Ad41qVR/YFJcgHp0UGns5JDymv..TOG${2}'
+        $adminHash = '$2a$12$VcCDgh2NDk07JGN0rjGbM.Ad41qVR/YFJcgHp0UGns5JDymv..TOG'
+        $iuContent = [regex]::Replace(
+            $iuContent,
+            '(?s)(^admin:\s*\n(?:[ \t]+[^\n]*\n)*?[ \t]+hash:\s*")[^"]*(")',
+            { param($m) $m.Groups[1].Value + $adminHash + $m.Groups[2].Value },
+            [System.Text.RegularExpressions.RegexOptions]::Multiline
+        )
         $iuContent | Set-Content $internalUsers -Encoding UTF8
         Log "  Admin password reset to default (admin/admin)."
     }
@@ -578,8 +584,7 @@ if (Test-Path (Join-Path $osdInstallDir "plugins\securityDashboards")) {
     Log "  Security plugin detected - adding security config..."
     $secConf = @"
 
-opensearch_security.multitenancy.enabled: true
-opensearch_security.multitenancy.tenants.preferred: ["Private", "Global"]
+opensearch_security.multitenancy.enabled: false
 opensearch_security.readonly_mode.roles: ["kibana_read_only"]
 opensearch_security.cookie.secure: false
 "@
@@ -609,8 +614,16 @@ if (-not (Test-Path $logCollectorDir)) { New-Item -ItemType Directory -Path $log
 $tdAgentPath = "C:\opt\td-agent"
 $fluentdExe = $null
 
-if (Test-Path $tdAgentPath) {
-    $fluentdExe = Join-Path $tdAgentPath "bin\fluentd.bat"
+$fluentdCandidate = Join-Path $tdAgentPath "bin\fluentd.bat"
+
+# Clean up stale td-agent folder left behind by a previous uninstall
+if ((Test-Path $tdAgentPath) -and (-not (Test-Path $fluentdCandidate))) {
+    Log "  Stale td-agent folder found (no fluentd.bat). Removing before reinstall..."
+    Remove-Item -Recurse -Force $tdAgentPath -ErrorAction SilentlyContinue
+}
+
+if (Test-Path $fluentdCandidate) {
+    $fluentdExe = $fluentdCandidate
     Log "  Log Collector runtime found at $tdAgentPath"
 } elseif (Get-Command fluentd -ErrorAction SilentlyContinue) {
     $fluentdExe = (Get-Command fluentd).Source

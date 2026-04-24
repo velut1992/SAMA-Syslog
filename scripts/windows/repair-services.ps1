@@ -145,8 +145,9 @@ if (-not $allOk) {
 # Detect fluentd
 $tdAgentPath = "C:\opt\td-agent"
 $fluentdExe = $null
-if (Test-Path $tdAgentPath) {
-    $fluentdExe = Join-Path $tdAgentPath "bin\fluentd.bat"
+$fluentdCandidate = Join-Path $tdAgentPath "bin\fluentd.bat"
+if (Test-Path $fluentdCandidate) {
+    $fluentdExe = $fluentdCandidate
     Log "  Log Collector runtime: $fluentdExe"
 } elseif (Get-Command fluentd -ErrorAction SilentlyContinue) {
     $fluentdExe = (Get-Command fluentd).Source

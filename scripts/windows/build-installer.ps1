@@ -39,6 +39,20 @@ $DashboardsSrc = Join-Path $BaseDir "OpenSearch-Dashboards"
 $NssmUrl = "https://nssm.cc/release/nssm-2.24.zip"
 $NssmZip = Join-Path $BaseDir "nssm-2.24.zip"
 
+# Fluentd (td-agent) offline bundle.
+# The MSI is fetched at BUILD time (needs internet on the build host) and then staged
+# inside the installer zip so the TARGET machine can install it without internet.
+# td-agent 4.5.2 ships fluent-plugin-opensearch + opensearch-ruby pre-installed, so no
+# separate gem download is required.
+$TdAgentMsiUrl  = "https://s3.amazonaws.com/packages.treasuredata.com/4/windows/td-agent-4.5.2-x64.msi"
+$TdAgentMsiName = "td-agent-4.5.2-x64.msi"
+$TdAgentMsi     = Join-Path $BaseDir $TdAgentMsiName
+
+# NXLog endpoint agent kit (bundled inside the installer zip for deployment to Windows endpoints)
+# Place a NXLog CE MSI manually at $NxlogDir\nxlog-ce-*.msi; the endpoint config is already in the repo.
+$NxlogDir  = Join-Path $BaseDir "nxlog"
+$NxlogConf = Join-Path $NxlogDir "nxlog.conf"
+
 Write-Host "============================================"
 Write-Host "  Supra Installer Package Builder v${Version}"
 Write-Host "  (Windows Server x64)"
@@ -136,6 +150,45 @@ if (-not (Test-Path $NssmZip)) {
     }
 }
 
+# Download td-agent MSI if not present (target machine will install this offline)
+if (-not (Test-Path $TdAgentMsi)) {
+    Write-Host "  Downloading td-agent (Fluentd) MSI..."
+    try {
+        [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+        Invoke-WebRequest -Uri $TdAgentMsiUrl -OutFile $TdAgentMsi -UseBasicParsing
+        $sizeMB = [math]::Round((Get-Item $TdAgentMsi).Length / 1MB, 1)
+        Write-Host "    td-agent MSI downloaded (${sizeMB} MB)."
+    } catch {
+        Write-Host "ERROR: Failed to download td-agent MSI." -ForegroundColor Red
+        Write-Host "       URL: $TdAgentMsiUrl" -ForegroundColor Red
+        Write-Host "       Please download manually and place at: $TdAgentMsi" -ForegroundColor Red
+        Remove-Item -Path $TdAgentMsi -ErrorAction SilentlyContinue
+        exit 1
+    }
+} else {
+    $sizeMB = [math]::Round((Get-Item $TdAgentMsi).Length / 1MB, 1)
+    Write-Host "  td-agent MSI:         OK (${sizeMB} MB)"
+}
+
+# Note: td-agent 4.5.2 ships with fluent-plugin-opensearch (and opensearch-ruby)
+# pre-installed. No gem fetch is needed — the MSI is self-contained.
+
+# Check for an optional NXLog CE MSI (for Windows endpoints that forward logs to this server).
+# Direct download links from nxlog.co are not stable, so we don't auto-download — the user
+# places the MSI at nxlog\nxlog-ce-*.msi manually.
+$NxlogMsi = $null
+if (Test-Path $NxlogDir) {
+    $NxlogMsi = Get-ChildItem -Path $NxlogDir -Filter "nxlog-ce-*.msi" -ErrorAction SilentlyContinue | Select-Object -First 1
+}
+if ($NxlogMsi) {
+    $sizeMB = [math]::Round($NxlogMsi.Length / 1MB, 1)
+    Write-Host "  NXLog CE MSI:         OK (${sizeMB} MB) - $($NxlogMsi.Name)"
+} else {
+    Write-Host "  NXLog CE MSI:         not found (endpoint kit will ship without MSI)" -ForegroundColor Yellow
+    Write-Host "                        Download from https://nxlog.co/products/nxlog-community-edition/download" -ForegroundColor Yellow
+    Write-Host "                        Place at: $NxlogDir\nxlog-ce-<version>.msi" -ForegroundColor Yellow
+}
+
 # Download missing Dashboards plugins
 $DashboardsPluginBaseUrl = "https://ci.opensearch.org/ci/dbc/distribution-build-opensearch-dashboards/${Version}/latest/windows/x64/zip/builds/opensearch-dashboards/plugins"
 $DashboardsPluginArtifacts = @(
@@ -151,6 +204,7 @@ $DashboardsPluginArtifacts = @(
     @{ Name = "notificationsDashboards";     Url = "${DashboardsPluginBaseUrl}/notificationsDashboards-${Version}.zip" }
     @{ Name = "securityAnalyticsDashboards"; Url = "${DashboardsPluginBaseUrl}/securityAnalyticsDashboards-${Version}.zip" }
     @{ Name = "reportsDashboards";           Url = "${DashboardsPluginBaseUrl}/reportsDashboards-${Version}.zip" }
+    @{ Name = "mlCommonsDashboards";         Url = "${DashboardsPluginBaseUrl}/mlCommonsDashboards-${Version}.zip" }
 )
 
 if (-not (Test-Path $ExtraPluginsDir)) { New-Item -ItemType Directory -Path $ExtraPluginsDir -Force | Out-Null }
@@ -183,7 +237,7 @@ Write-Host "[2/8] Preparing build directory..."
 if (Test-Path $BuildDir) { Remove-Item -Recurse -Force $BuildDir }
 $Staging = Join-Path $BuildDir $PackageName
 New-Item -ItemType Directory -Path $Staging -Force | Out-Null
-foreach ($sub in @("opensearch", "dashboards", "dashboards-plugins", "log-collector", "nssm", "branding", "license-validator", "index-management")) {
+foreach ($sub in @("opensearch", "dashboards", "dashboards-plugins", "log-collector", "nssm", "branding", "license-validator", "index-management", "nxlog-agent")) {
     New-Item -ItemType Directory -Path (Join-Path $Staging $sub) -Force | Out-Null
 }
 
@@ -272,12 +326,151 @@ $dashboardsYml | Out-File -FilePath (Join-Path $Staging "dashboards\opensearch_d
 Write-Host "  Branding and config staged."
 
 # ---------------------------------------------------------------------------
-# Package Supra Log Collector config
+# Package Supra Log Collector config + Fluentd (td-agent) offline bundle
 # ---------------------------------------------------------------------------
 Write-Host ""
-Write-Host "[5/8] Packaging Supra Log Collector config..."
+Write-Host "[5/8] Packaging Supra Log Collector (Fluentd) offline bundle..."
 Copy-Item $FluentdConf -Destination (Join-Path $Staging "log-collector\")
-Write-Host "  Log Collector config staged."
+Write-Host "  fluent.conf staged."
+
+# Stage td-agent MSI (includes fluent-plugin-opensearch pre-installed)
+Copy-Item $TdAgentMsi -Destination (Join-Path $Staging "log-collector\")
+Write-Host "  td-agent MSI staged: $TdAgentMsiName"
+
+# ---------------------------------------------------------------------------
+# Package NXLog endpoint agent kit (for Windows endpoints forwarding to this server)
+# ---------------------------------------------------------------------------
+Write-Host "  Packaging NXLog endpoint agent kit..."
+$nxlogStaging = Join-Path $Staging "nxlog-agent"
+if (Test-Path $NxlogConf) {
+    Copy-Item $NxlogConf -Destination $nxlogStaging
+    Write-Host "    nxlog.conf staged."
+} else {
+    Write-Host "    WARNING: $NxlogConf not found. Endpoint kit will ship without config." -ForegroundColor Yellow
+}
+if ($NxlogMsi) {
+    Copy-Item $NxlogMsi.FullName -Destination $nxlogStaging
+    Write-Host "    NXLog CE MSI staged: $($NxlogMsi.Name)"
+}
+
+# Endpoint-side install script (runs ON each Windows workstation, not on the server)
+$nxlogEndpointScript = @'
+################################################################################
+# Supra NXLog Endpoint Installer (run on each Windows endpoint)
+#
+# Installs NXLog CE offline from the bundled MSI and drops the Supra-specific
+# nxlog.conf. Must be run as Administrator.
+#
+# Usage:
+#   .\install-nxlog.ps1 -SupraServerIP 192.168.1.100
+################################################################################
+
+#Requires -RunAsAdministrator
+
+param(
+    [Parameter(Mandatory=$true)]
+    [string]$SupraServerIP,
+
+    [int]$SupraPort = 5140
+)
+
+$ErrorActionPreference = "Stop"
+$ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
+
+function Log($msg)  { Write-Host "[INFO]  $msg" -ForegroundColor Green }
+function Warn($msg) { Write-Host "[WARN]  $msg" -ForegroundColor Yellow }
+function Err($msg)  { Write-Host "[ERROR] $msg" -ForegroundColor Red }
+
+Write-Host ""
+Write-Host "============================================"
+Write-Host "  Supra NXLog Endpoint Installer"
+Write-Host "============================================"
+Write-Host ""
+Write-Host "  Supra server IP: $SupraServerIP"
+Write-Host "  Supra port     : $SupraPort"
+Write-Host ""
+
+# ---- Install NXLog CE from bundled MSI ----
+$nxlogInstallDir = "C:\Program Files\nxlog"
+if (-not (Test-Path $nxlogInstallDir)) {
+    $nxlogMsi = Get-ChildItem -Path $ScriptDir -Filter "nxlog-ce-*.msi" -ErrorAction SilentlyContinue | Select-Object -First 1
+    if (-not $nxlogMsi) {
+        Err "NXLog CE MSI not found in $ScriptDir."
+        Err "Place nxlog-ce-<version>.msi next to this script and re-run."
+        exit 1
+    }
+    Log "Installing NXLog CE from $($nxlogMsi.Name)..."
+    $proc = Start-Process -FilePath "msiexec.exe" -ArgumentList "/i `"$($nxlogMsi.FullName)`" /quiet /norestart" -Wait -PassThru
+    if ($proc.ExitCode -ne 0) {
+        Err "NXLog MSI install failed (exit $($proc.ExitCode))."
+        exit 1
+    }
+    Log "  NXLog CE installed to $nxlogInstallDir"
+} else {
+    Log "NXLog already installed at $nxlogInstallDir"
+}
+
+# ---- Drop config with substituted server IP ----
+$nxlogConfSrc  = Join-Path $ScriptDir "nxlog.conf"
+$nxlogConfDest = Join-Path $nxlogInstallDir "conf\nxlog.conf"
+if (-not (Test-Path $nxlogConfSrc)) {
+    Err "nxlog.conf not found at $nxlogConfSrc"
+    exit 1
+}
+$conf = Get-Content $nxlogConfSrc -Raw
+$conf = $conf -replace '(?m)^define\s+SUPRA_SERVER_IP\s+.*$', "define SUPRA_SERVER_IP   $SupraServerIP"
+$conf = $conf -replace '(?m)^define\s+SUPRA_PORT\s+.*$',      "define SUPRA_PORT        $SupraPort"
+[System.IO.File]::WriteAllText($nxlogConfDest, $conf, [System.Text.UTF8Encoding]::new($false))
+Log "  nxlog.conf written to $nxlogConfDest (SUPRA_SERVER_IP=$SupraServerIP)"
+
+# ---- Restart service ----
+Log "Restarting nxlog service..."
+try {
+    Stop-Service nxlog -ErrorAction SilentlyContinue
+    Start-Service nxlog
+    Log "  nxlog service running."
+} catch {
+    Warn "  Could not restart nxlog service automatically: $_"
+    Warn "  Run: Restart-Service nxlog"
+}
+
+Write-Host ""
+Write-Host "Done. This endpoint will forward Windows event logs to ${SupraServerIP}:${SupraPort} (UDP)."
+'@
+$nxlogEndpointScript | Out-File -FilePath (Join-Path $nxlogStaging "install-nxlog.ps1") -Encoding UTF8
+
+$nxlogReadme = @'
+Supra NXLog Endpoint Agent Kit
+===============================
+
+This folder is a self-contained kit for Windows endpoints that need to forward
+event logs to the Supra SIEM server. It does NOT need to run on the Supra server
+itself — deploy it to each workstation or server you want to collect logs from.
+
+Contents:
+  - nxlog-ce-*.msi    NXLog Community Edition installer (offline)
+  - nxlog.conf        Supra-specific NXLog configuration (collects Security,
+                      System, Application, and PowerShell event logs)
+  - install-nxlog.ps1 Endpoint installer (offline)
+
+Deployment (on each endpoint, as Administrator):
+  1. Copy this folder to the endpoint (e.g. C:\supra-nxlog-agent)
+  2. Open PowerShell as Administrator
+  3. Run:
+       .\install-nxlog.ps1 -SupraServerIP <your-supra-server-ip>
+     Optional:
+       .\install-nxlog.ps1 -SupraServerIP 10.0.0.5 -SupraPort 5140
+
+Verifying:
+  Get-Service nxlog
+  Get-Content 'C:\Program Files\nxlog\data\nxlog.log' -Tail 50
+
+Uninstall:
+  Run the same MSI with /x, e.g.:
+    msiexec /x nxlog-ce-3.2.2329.msi /quiet
+'@
+$nxlogReadme | Out-File -FilePath (Join-Path $nxlogStaging "README.txt") -Encoding UTF8
+Write-Host "    Endpoint install script + README staged."
 
 # ---------------------------------------------------------------------------
 # Package license validator (auto-build with Maven if zip is missing)
@@ -558,7 +751,13 @@ if (Test-Path $securityPluginDir) {
     $internalUsers = Join-Path $osInstallDir "config\opensearch-security\internal_users.yml"
     if (Test-Path $internalUsers) {
         $iuContent = Get-Content $internalUsers -Raw
-        $iuContent = $iuContent -replace '(hash:\s*")[^"]*(")', '${"1"}$2a$12$VcCDgh2NDk07JGN0rjGbM.Ad41qVR/YFJcgHp0UGns5JDymv..TOG${"2"}'
+        $adminHash = '$2a$12$VcCDgh2NDk07JGN0rjGbM.Ad41qVR/YFJcgHp0UGns5JDymv..TOG'
+        $iuContent = [regex]::Replace(
+            $iuContent,
+            '(?s)(^admin:\s*\n(?:[ \t]+[^\n]*\n)*?[ \t]+hash:\s*")[^"]*(")',
+            { param($m) $m.Groups[1].Value + $adminHash + $m.Groups[2].Value },
+            [System.Text.RegularExpressions.RegexOptions]::Multiline
+        )
         [System.IO.File]::WriteAllText($internalUsers, $iuContent, [System.Text.UTF8Encoding]::new($false))
         Log "  Admin password reset to default (admin/admin)."
     }
@@ -629,17 +828,33 @@ if (Test-Path $fpScriptSrc) {
     Log "  Fingerprint tool installed."
 }
 
-# ---- Install Index Management Plugin ----
+# ---- Install Index Management Plugin (custom build replaces the bundled one) ----
 Log "Installing Index Management plugin..."
 $imPluginZip = Get-ChildItem -Path (Join-Path $ScriptDir "index-management") -Filter "opensearch-index-management-*.zip" -ErrorAction SilentlyContinue | Select-Object -First 1
 if ($imPluginZip) {
+    $pluginBat = Join-Path $osInstallDir "bin\opensearch-plugin.bat"
+    # The full OpenSearch distribution already ships opensearch-index-management.
+    # Remove it first so the custom build can install cleanly.
+    if (Test-Path (Join-Path $osInstallDir "plugins\opensearch-index-management")) {
+        Log "  Removing bundled opensearch-index-management before installing custom build..."
+        $prevE = $ErrorActionPreference
+        $ErrorActionPreference = "Continue"
+        try {
+            & $pluginBat remove --purge opensearch-index-management 2>&1 | Out-Null
+        } catch {
+            Warn "  Remove of bundled index-management threw: $_"
+        } finally {
+            $ErrorActionPreference = $prevE
+        }
+    }
+
     $pluginUri = "file:///" + ($imPluginZip.FullName -replace '[\\]', '/' -replace ' ', '%20')
     $prev = $ErrorActionPreference
     $ErrorActionPreference = "Continue"
     try {
-        $pluginResult = & (Join-Path $osInstallDir "bin\opensearch-plugin.bat") install --batch $pluginUri 2>&1
+        $pluginResult = & $pluginBat install --batch $pluginUri 2>&1
         if ($LASTEXITCODE -eq 0) {
-            Log "  Index Management plugin installed."
+            Log "  Index Management plugin installed (custom build)."
         } else {
             Warn "  Index Management plugin install failed (exit $LASTEXITCODE):"
             $pluginResult | ForEach-Object { Warn "    $_" }
@@ -653,7 +868,7 @@ if ($imPluginZip) {
         $ErrorActionPreference = $prev
     }
 } else {
-    Warn "  Index Management plugin zip not found. Skipping."
+    Log "  No custom Index Management zip staged - keeping the bundled plugin."
 }
 
 # ---- Install Supra Dashboards ----
@@ -732,57 +947,42 @@ $acl.SetAccessRule($rule)
 Set-Acl -Path $osdInstallDir -AclObject $acl -ErrorAction SilentlyContinue
 Log "  Supra Dashboards installed to $osdInstallDir"
 
-# ---- Install Supra Log Collector ----
+# ---- Install Supra Log Collector (Fluentd / td-agent) ----
+# Fully offline: uses the bundled td-agent MSI. td-agent 4.5.2 already ships
+# fluent-plugin-opensearch + opensearch-ruby, so no gem install is needed on
+# the target machine.
 Log "Installing Supra Log Collector..."
 $logCollectorDir = Join-Path $InstallDir "log-collector"
 if (-not (Test-Path $logCollectorDir)) { New-Item -ItemType Directory -Path $logCollectorDir -Force | Out-Null }
 
-# Check if td-agent (log collector runtime for Windows) is installed
 $tdAgentPath = "C:\opt\td-agent"
-$fluentdExe = $null
+$fluentdExe  = $null
+$fluentdCandidate = Join-Path $tdAgentPath "bin\fluentd.bat"
 
-if (Test-Path $tdAgentPath) {
-    $fluentdExe = Join-Path $tdAgentPath "bin\fluentd.bat"
-    Log "  Log Collector runtime found at $tdAgentPath"
-} elseif (Get-Command fluentd -ErrorAction SilentlyContinue) {
-    $fluentdExe = (Get-Command fluentd).Source
-    Log "  Log Collector runtime found at $fluentdExe"
+if (Test-Path $fluentdCandidate) {
+    $fluentdExe = $fluentdCandidate
+    Log "  Log Collector runtime already present at $tdAgentPath"
 } else {
-    Log "  Log Collector runtime not found. Attempting automatic download and install..."
-    $tdAgentMsiUrl = "https://s3.amazonaws.com/packages.treasuredata.com/4/windows/td-agent-4.5.2-x64.msi"
-    $tdAgentMsi = Join-Path $env:TEMP "td-agent-4.5.2-x64.msi"
-
-    try {
-        if (-not (Test-Path $tdAgentMsi)) {
-            Log "  Downloading td-agent installer..."
-            [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
-            Invoke-WebRequest -Uri $tdAgentMsiUrl -OutFile $tdAgentMsi -UseBasicParsing
-            Log "  td-agent downloaded."
-        }
-
-        Log "  Installing td-agent (this may take a minute)..."
-        $msiArgs = "/i `"$tdAgentMsi`" /quiet /norestart"
-        $proc = Start-Process -FilePath "msiexec.exe" -ArgumentList $msiArgs -Wait -PassThru
-        if ($proc.ExitCode -eq 0) {
-            Log "  td-agent installed successfully to $tdAgentPath"
-            $fluentdExe = Join-Path $tdAgentPath "bin\fluentd.bat"
-
-            # Install the opensearch output plugin for fluentd
-            $tdAgentGem = Join-Path $tdAgentPath "bin\fluent-gem.bat"
-            if (Test-Path $tdAgentGem) {
-                Log "  Installing fluent-plugin-opensearch gem..."
-                & $tdAgentGem install fluent-plugin-opensearch --no-document 2>&1 | Out-Null
-                Log "  fluent-plugin-opensearch installed."
-            }
-        } else {
-            Warn "  td-agent MSI installer returned exit code $($proc.ExitCode)."
-            Warn "  Please install td-agent manually from: https://td-agent-package-browser.herokuapp.com/4/windows"
-        }
-    } catch {
-        Warn "  Failed to download/install td-agent: $_"
-        Warn "  Please install td-agent manually from: https://td-agent-package-browser.herokuapp.com/4/windows"
-        Warn "  After installing, re-run this installer to register the Log Collector service."
+    # Folder may exist as empty leftover from a previous uninstall — clean it up
+    # so msiexec can do a fresh install.
+    if (Test-Path $tdAgentPath) {
+        Log "  Stale td-agent folder found (no fluentd.bat). Removing before reinstall..."
+        Remove-Item -Recurse -Force $tdAgentPath -ErrorAction SilentlyContinue
     }
+    $bundledMsi = Get-ChildItem -Path (Join-Path $ScriptDir "log-collector") -Filter "td-agent-*.msi" -ErrorAction SilentlyContinue | Select-Object -First 1
+    if (-not $bundledMsi) {
+        Err "  Bundled td-agent MSI not found in $ScriptDir\log-collector\."
+        Err "  The installer package is incomplete. Re-build with build-installer.ps1."
+        exit 1
+    }
+    Log "  Installing td-agent from bundled MSI: $($bundledMsi.Name)"
+    $proc = Start-Process -FilePath "msiexec.exe" -ArgumentList "/i `"$($bundledMsi.FullName)`" /quiet /norestart" -Wait -PassThru
+    if ($proc.ExitCode -ne 0) {
+        Err "  td-agent MSI install failed (exit $($proc.ExitCode))."
+        exit 1
+    }
+    $fluentdExe = Join-Path $tdAgentPath "bin\fluentd.bat"
+    Log "  td-agent installed to $tdAgentPath (fluent-plugin-opensearch already included)."
 }
 
 # Write log collector config
@@ -822,7 +1022,7 @@ $acl = Get-Acl $logCollectorDir
 $rule = New-Object System.Security.AccessControl.FileSystemAccessRule($SupraUser, "FullControl", "ContainerInherit,ObjectInherit", "None", "Allow")
 $acl.SetAccessRule($rule)
 Set-Acl -Path $logCollectorDir -AclObject $acl -ErrorAction SilentlyContinue
-Log "  Supra Log Collector config installed to $logCollectorDir"
+Log "  Supra Log Collector installed to $logCollectorDir"
 
 # ---- Register Windows Services via NSSM ----
 Log "Registering Windows services via NSSM..."
@@ -956,6 +1156,11 @@ Write-Host "  $InstallDir\opensearch\logs\"
 Write-Host "  $InstallDir\dashboards\logs\"
 Write-Host "  $InstallDir\log-collector\"
 Write-Host ""
+Write-Host "NXLog endpoint kit:"
+Write-Host "  $ScriptDir\nxlog-agent\  (copy this folder to each Windows endpoint)"
+Write-Host "  On each endpoint (as Administrator):"
+Write-Host "    .\install-nxlog.ps1 -SupraServerIP <this-server-ip>"
+Write-Host ""
 Write-Host "Install directory: $InstallDir"
 Write-Host ""
 $InstallEndTime = Get-Date
@@ -1019,6 +1224,39 @@ if ($currentPath -like "*$nssmInstallDir*") {
     Write-Host "  NSSM removed from system PATH."
 }
 
+Write-Host "Uninstalling td-agent (Fluentd runtime)..."
+$tdKeys = @(
+    "HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\*",
+    "HKLM:\Software\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\*"
+)
+$tdEntry = Get-ItemProperty $tdKeys -ErrorAction SilentlyContinue |
+    Where-Object { $_.DisplayName -like "Td-agent*" } | Select-Object -First 1
+if ($tdEntry -and $tdEntry.PSChildName -match '^\{[0-9A-Fa-f-]+\}$') {
+    try {
+        $proc = Start-Process -FilePath "msiexec.exe" -ArgumentList "/x $($tdEntry.PSChildName) /quiet /norestart" -Wait -PassThru
+        if ($proc.ExitCode -eq 0) {
+            Write-Host "  td-agent uninstalled."
+        } else {
+            Write-Host "  td-agent uninstall returned exit $($proc.ExitCode)."
+        }
+    } catch {
+        Write-Host "  td-agent uninstall threw: $_"
+    }
+} else {
+    Write-Host "  td-agent not found in installed programs, skipping."
+}
+
+# Remove any leftover td-agent folder (MSI uninstall leaves empty dirs/logs behind,
+# which confuses the installer's presence check on the next install).
+if (Test-Path "C:\opt\td-agent") {
+    try {
+        Remove-Item -Recurse -Force "C:\opt\td-agent" -ErrorAction Stop
+        Write-Host "  Leftover td-agent folder removed."
+    } catch {
+        Write-Host "  Could not remove C:\opt\td-agent (likely held open by a service). Delete it manually after a reboot."
+    }
+}
+
 Write-Host "Removing installation directory contents..."
 if (Test-Path $InstallDir) {
     Get-ChildItem -Path $InstallDir -Force | Remove-Item -Recurse -Force
@@ -1031,6 +1269,8 @@ Write-Host ""
 Write-Host "Supra stack uninstalled."
 Write-Host "Note: The 'SupraService' user was not removed. To remove:"
 Write-Host "  Remove-LocalUser -Name SupraService"
+Write-Host "Note: NXLog agents on remote endpoints are NOT touched by this uninstaller."
+Write-Host "      Uninstall each endpoint manually with: msiexec /x nxlog-ce-<version>.msi /quiet"
 '@
 
 $uninstallScript | Out-File -FilePath (Join-Path $Staging "uninstall.ps1") -Encoding UTF8
