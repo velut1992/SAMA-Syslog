@@ -686,6 +686,11 @@ if (-not (Test-Path $nssmInstallDir)) { New-Item -ItemType Directory -Path $nssm
 Copy-Item $NssmExe -Destination (Join-Path $nssmInstallDir "nssm.exe") -Force
 Log "  NSSM copied to $nssmInstallDir"
 
+# Use the permanent copy for service registration so services keep working
+# after the extracted installer folder is deleted (SCM stores the exact
+# nssm.exe path as the service ImagePath).
+$NssmExe = Join-Path $nssmInstallDir "nssm.exe"
+
 # Add NSSM to system PATH if not already present
 $currentPath = [Environment]::GetEnvironmentVariable("Path", "Machine")
 if ($currentPath -notlike "*$nssmInstallDir*") {
