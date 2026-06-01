@@ -20,7 +20,7 @@
 ## SYSTEM
 ## ============================================================
 <system>
-  log_level info
+  log_level warn
 </system>
 
 ## ============================================================
@@ -74,6 +74,9 @@
   bind 0.0.0.0
   tag network
   protocol_type udp
+  
+  emit_unmatched_lines true
+  
   <parse>
     message_format auto
     timezone +05:30
@@ -86,6 +89,9 @@
   bind 0.0.0.0
   tag network
   protocol_type tcp
+  
+  emit_unmatched_lines true
+  
   <parse>
     message_format auto
     timezone +05:30
@@ -135,14 +141,56 @@
 ## NETWORK (SWITCH) PROCESSING
 ## ============================================================
 
-<filter network.**>
+<filter network>
   @type record_transformer
   enable_ruby true
+
   <record>
-    event_type ${msg = record["message"].to_s.downcase; msg.include?("link down") ? "link_down" : msg.include?("link up") ? "link_up" : "info"}
-    severity ${record["message"].to_s.downcase.include?("down") ? "critical" : "info"}
-    source_type "network"
-    log_collector "supra"
+
+    switch_name ${
+      m = record["message"].to_s;
+      m[/\bKC\d+\b/] || "unknown"
+    }
+
+    event_type ${
+      msg = record["message"].to_s.downcase;
+
+      msg.include?("link down") || msg.include?("interface down") ? "link_down" :
+      msg.include?("link up") || msg.include?("interface up") ? "link_up" :
+
+      msg.include?("authentication failed") ? "auth_failed" :
+      msg.include?("logged in") ? "login" :
+      msg.include?("logged out") ? "logout" :
+
+      msg.include?("configuration") ? "config_change" :
+
+      msg.include?("snmp") ? "snmp_event" :
+      msg.include?("ntp") ? "ntp_event" :
+      msg.include?("syslog") ? "syslog_event" :
+
+      msg.include?("reboot") || msg.include?("restart") ? "device_restart" :
+
+      "info"
+    }
+
+    severity ${
+      msg = record["message"].to_s.downcase;
+
+      msg.include?("critical") ||
+      msg.include?("failed") ||
+      msg.include?("down") ? "critical" :
+
+      msg.include?("warning") ? "warning" :
+
+      "info"
+    }
+
+    raw_message ${record["message"]}
+
+    source_type network
+
+    log_collector supra
+
   </record>
 </filter>
 
@@ -152,9 +200,11 @@
 
 <filter windows>
   @type record_transformer
+  remove_keys MessageId,ProviderGuid,Keywords,Opcode,ThreadID,ProcessID,Version
+
   <record>
-    source_type "windows"
-    log_collector "supra"
+    source_type windows
+    log_collector supra
   </record>
 </filter>
 
@@ -180,12 +230,19 @@
   flush_interval 5s
 
   <buffer>
-    @type memory
-    flush_mode interval
-    flush_interval 5s
-    retry_max_interval 30s
-    retry_forever true
-    chunk_limit_size 4MB
-    queue_limit_length 64
-  </buffer>
+  @type memory
+
+  flush_mode interval
+  flush_interval 5s
+
+  retry_max_interval 30s
+  retry_forever true
+
+  chunk_limit_size 32MB
+
+  queue_limit_length 128
+  queued_chunks_limit_size 128
+
+  overflow_action block
+</buffer>
 </match>
