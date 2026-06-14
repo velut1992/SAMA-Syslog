@@ -12,6 +12,36 @@ import java.security.PrivilegedAction;
 public class MachineFingerprint {
 
     public static String generate() {
+        return generate(null);
+    }
+
+    /**
+     * Resolve the machine fingerprint, preferring a root-written {@code machine-id}
+     * cache in {@code cacheDir}.
+     *
+     * OpenSearch runs as a non-root user (e.g. 'supra') that cannot read the
+     * root-only DMI files (/sys/class/dmi/id/product_uuid, board_serial, mode
+     * 0400). Computing the fingerprint here would therefore resolve to
+     * UNKNOWN|UNKNOWN|UNKNOWN on every Linux host — inconsistent with
+     * get-fingerprint.sh (run as root) and not machine-bound. The installer's
+     * supra-search.service writes the real fingerprint to
+     * config/supra-license/machine-id via a root ExecStartPre; reading it here
+     * keeps the plugin and get-fingerprint.sh in agreement.
+     */
+    public static String generate(Path cacheDir) {
+        if (cacheDir != null) {
+            try {
+                Path cache = cacheDir.resolve("machine-id");
+                if (Files.exists(cache)) {
+                    String cached = Files.readString(cache).trim();
+                    if (!cached.isEmpty()) {
+                        return cached;
+                    }
+                }
+            } catch (Exception ignore) {
+                // fall through to live hardware computation
+            }
+        }
         return AccessController.doPrivileged((PrivilegedAction<String>) () -> {
             try {
                 String os = System.getProperty("os.name", "").toLowerCase();

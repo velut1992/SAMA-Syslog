@@ -67,23 +67,25 @@ for r in /opt/fluent/bin/ruby /usr/bin/ruby ruby; do
   command -v "$r" >/dev/null 2>&1 && { RUBY_BIN="$r"; break; }
 done
 
-RESP=""
-if command -v curl >/dev/null 2>&1; then
-  echo "  (using curl)"
-  RESP="$(curl -sk -u "${OS_USER}:${OS_PASS}" -X PUT "$ENDPOINT" \
-          -H 'Content-Type: application/json' --data-binary "@${BODY_FILE}")"
+# Pick the HTTP client once. The service's ExecStartPre only waits for TCP :9200
+# to open, which happens BEFORE OpenSearch Security finishes initializing — so a
+# PUT issued now can still come back "OpenSearch Security not initialized". The
+# PUT is idempotent, so put_template() issues it once and echoes the body (never
+# aborting the script); the retry loop below waits security out.
+put_template() {
+  if command -v curl >/dev/null 2>&1; then
+    curl -sk -u "${OS_USER}:${OS_PASS}" -X PUT "$ENDPOINT" \
+         -H 'Content-Type: application/json' --data-binary "@${BODY_FILE}" 2>/dev/null || true
 
-elif command -v wget >/dev/null 2>&1; then
-  echo "  (using wget)"
-  RESP="$(wget -q -O - --no-check-certificate \
-          --user="${OS_USER}" --password="${OS_PASS}" \
-          --method=PUT --header='Content-Type: application/json' \
-          --body-file="${BODY_FILE}" "$ENDPOINT")"
+  elif command -v wget >/dev/null 2>&1; then
+    wget -q -O - --no-check-certificate \
+         --user="${OS_USER}" --password="${OS_PASS}" \
+         --method=PUT --header='Content-Type: application/json' \
+         --body-file="${BODY_FILE}" "$ENDPOINT" 2>/dev/null || true
 
-elif command -v python3 >/dev/null 2>&1; then
-  echo "  (using python3)"
-  RESP="$(OS_URL="$ENDPOINT" OS_USER="$OS_USER" OS_PASS="$OS_PASS" BODY_FILE="$BODY_FILE" python3 - <<'PY'
-import os, ssl, base64, urllib.request
+  elif command -v python3 >/dev/null 2>&1; then
+    OS_URL="$ENDPOINT" OS_USER="$OS_USER" OS_PASS="$OS_PASS" BODY_FILE="$BODY_FILE" python3 - 2>/dev/null <<'PY' || true
+import os, ssl, base64, urllib.request, urllib.error
 url, user, pw = os.environ["OS_URL"], os.environ["OS_USER"], os.environ["OS_PASS"]
 body = open(os.environ["BODY_FILE"], "rb").read()
 ctx = ssl.create_default_context(); ctx.check_hostname = False; ctx.verify_mode = ssl.CERT_NONE
@@ -93,37 +95,54 @@ req.add_header("Authorization", "Basic " + base64.b64encode(f"{user}:{pw}".encod
 try:
     print(urllib.request.urlopen(req, context=ctx).read().decode())
 except urllib.error.HTTPError as e:
-    print(e.read().decode()); raise SystemExit(1)
+    print(e.read().decode())   # echo body; let the bash retry loop decide
 PY
-)"
 
-elif [ -n "$RUBY_BIN" ]; then
-  echo "  (using $RUBY_BIN)"
-  RESP="$(OS_URL="$ENDPOINT" OS_USER="$OS_USER" OS_PASS="$OS_PASS" BODY_FILE="$BODY_FILE" "$RUBY_BIN" <<'RB'
+  elif [ -n "$RUBY_BIN" ]; then
+    OS_URL="$ENDPOINT" OS_USER="$OS_USER" OS_PASS="$OS_PASS" BODY_FILE="$BODY_FILE" "$RUBY_BIN" 2>/dev/null <<'RB' || true
 require "net/http"; require "uri"; require "openssl"
 uri = URI(ENV["OS_URL"]); body = File.read(ENV["BODY_FILE"])
 http = Net::HTTP.new(uri.host, uri.port)
 http.use_ssl = (uri.scheme == "https"); http.verify_mode = OpenSSL::SSL::VERIFY_NONE
 req = Net::HTTP::Put.new(uri); req["Content-Type"] = "application/json"
 req.basic_auth(ENV["OS_USER"], ENV["OS_PASS"]); req.body = body
-res = http.request(req); puts res.body
-exit 1 unless res.code.to_i == 200 || res.code.to_i == 201
+puts http.request(req).body   # echo body; let the bash retry loop decide
 RB
-)"
 
-else
-  echo "ERROR: no curl, wget, python3, or ruby found on this host." >&2
-  exit 1
-fi
+  else
+    echo "ERROR: no curl, wget, python3, or ruby found on this host." >&2
+    return 2
+  fi
+}
+
+# Retry the idempotent PUT until OpenSearch Security is up and the template is
+# acknowledged, or until the bounded window elapses. Tunable via env.
+MAX_TRIES="${MAX_TRIES:-60}"     # 60 x 5s = up to 5 min (oneshot TimeoutStartSec=infinity)
+SLEEP_SECS="${SLEEP_SECS:-5}"
+RESP=""
+for attempt in $(seq 1 "$MAX_TRIES"); do
+  RESP="$(put_template)" || { [ "$?" = 2 ] && exit 2; }
+  if printf '%s' "$RESP" | grep -q '"acknowledged"[[:space:]]*:[[:space:]]*true'; then
+    break
+  fi
+  if printf '%s' "$RESP" | grep -qi 'security not initialized\|not initialized'; then
+    echo "  attempt ${attempt}/${MAX_TRIES}: OpenSearch Security still initializing; retrying in ${SLEEP_SECS}s..."
+  elif [ -z "$RESP" ]; then
+    echo "  attempt ${attempt}/${MAX_TRIES}: no response yet (cluster starting); retrying in ${SLEEP_SECS}s..."
+  else
+    echo "  attempt ${attempt}/${MAX_TRIES}: not acknowledged yet; retrying in ${SLEEP_SECS}s..."
+  fi
+  sleep "$SLEEP_SECS"
+done
 
 echo "$RESP"
-if echo "$RESP" | grep -q '"acknowledged"[[:space:]]*:[[:space:]]*true'; then
+if printf '%s' "$RESP" | grep -q '"acknowledged"[[:space:]]*:[[:space:]]*true'; then
   echo "OK: template installed."
   echo "NOTE: existing supra-* indices keep their old mapping. The template"
   echo "      applies to indices created from now on (a new one rolls daily"
   echo "      with logstash_format). To apply today immediately, delete the"
   echo "      current bad index, e.g.:  supra-windows-\$(date +%Y.%m.%d)"
 else
-  echo "WARNING: did not see acknowledged:true — check the response above." >&2
+  echo "WARNING: did not see acknowledged:true after ${MAX_TRIES} attempts — check the response above." >&2
   exit 1
 fi

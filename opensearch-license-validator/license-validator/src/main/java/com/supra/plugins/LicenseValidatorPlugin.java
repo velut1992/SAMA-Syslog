@@ -26,8 +26,10 @@ public class LicenseValidatorPlugin extends Plugin {
             Path licensePath = licenseDir.resolve("license.key");
             Path publicKeyPath = licenseDir.resolve("public.key");
 
-            // Compute machine fingerprint first (needed for error messages)
-            String localFingerprint = MachineFingerprint.generate();
+            // Compute machine fingerprint first (needed for error messages).
+            // Prefer the root-written machine-id cache in the license dir — the
+            // OpenSearch process user cannot read the root-only DMI files.
+            String localFingerprint = MachineFingerprint.generate(licenseDir);
 
             if (!Files.exists(licensePath)) {
                 throw new RuntimeException(

@@ -168,8 +168,8 @@
     </div>
     <h1 id="supra-siem-platform-installation-and-user-guide">Supra SIEM Platform - Installation and User Guide</h1>
 <p><strong>Version:</strong> 3.6.0<br />
-<strong>Date:</strong> March 2026<br />
-<strong>Platform:</strong> Linux x64 (Ubuntu/Debian/RHEL/CentOS)</p>
+<strong>Date:</strong> June 2026<br />
+<strong>Platform:</strong> Ubuntu 22.04 LTS (jammy), x86_64 — fully offline installer</p>
 <hr />
 <h2 id="table-of-contents">Table of Contents</h2>
 <ol>
@@ -179,7 +179,7 @@
 <li><a href="#4-installation">Installation</a></li>
 <li><a href="#5-post-installation-verification">Post-Installation Verification</a></li>
 <li><a href="#6-syslog-configuration-on-devices">Syslog Configuration on Devices</a></li>
-<li><a href="#7-fluentd-configuration">Fluentd Configuration</a></li>
+<li><a href="#7-log-collector-fluentd-configuration">Log Collector (Fluentd) Configuration</a></li>
 <li><a href="#8-index-management">Index Management</a></li>
 <li><a href="#9-creating-users-and-roles">Creating Users and Roles</a></li>
 <li><a href="#10-dashboards-setup">Dashboards Setup</a></li>
@@ -198,25 +198,35 @@
 <thead>
 <tr>
 <th>Component</th>
+<th>systemd service</th>
 <th>Purpose</th>
 <th>Port</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><strong>OpenSearch 3.6.0</strong></td>
-<td>Log storage, indexing, and search engine</td>
+<td><strong>Supra Search Engine</strong> (OpenSearch 3.6.0 + Supra License Validator + Index Management)</td>
+<td><code>supra-search</code></td>
+<td>Log storage, indexing, search engine, license enforcement</td>
 <td>9200 (HTTPS)</td>
 </tr>
 <tr>
-<td><strong>OpenSearch Dashboards</strong></td>
-<td>Web UI for visualization, dashboards, and alerts</td>
+<td><strong>Supra Dashboards</strong> (OpenSearch Dashboards + SIEM plugins)</td>
+<td><code>supra-dashboards</code></td>
+<td>Web UI for visualization, dashboards, alerts</td>
 <td>5601 (HTTP)</td>
 </tr>
 <tr>
-<td><strong>Fluentd</strong></td>
-<td>Log collector - receives syslog from devices</td>
-<td>5140 (syslog), 24224 (forward)</td>
+<td><strong>Supra Log Collector</strong> (fluent-package 5.0.9 + fluent-plugin-opensearch)</td>
+<td><code>supra-log-collector</code></td>
+<td>Receives syslog from devices and forwards to the search engine</td>
+<td>514 (syslog), 24224 (forward)</td>
+</tr>
+<tr>
+<td><strong>Supra Index Template</strong> (one-shot)</td>
+<td><code>supra-index-template</code></td>
+<td>Auto-applies the <code>supra-*</code> index template once the search engine is healthy</td>
+<td>—</td>
 </tr>
 </tbody>
 </table>
@@ -226,41 +236,44 @@
 - Provides dashboards, alerts, reports, and security analytics via the web UI</p>
 <hr />
 <h2 id="2-architecture">2. Architecture</h2>
-<div class="code"><pre><span></span><code>+------------------+     +------------------+     +------------------+
-|  Network Devices |     |   Servers/Apps   |     |   IED Devices    |
-|  (Routers, FW,   |     |  (Linux, Windows)|     |  (IEC 61850)     |
-|   Switches)      |     |                  |     |                  |
-+--------+---------+     +--------+---------+     +--------+---------+
-         |                        |                        |
-         |    Syslog (UDP/TCP)    |     Syslog (UDP/TCP)   |
-         |    Port 5140           |     Port 5140          |
-         +----------+------------+----------+--------------+
-                    |                       |
-                    v                       v
-           +--------+-----------------------+--------+
-           |              Fluentd                     |
-           |  - Receives syslog on port 5140          |
-           |  - Receives forwarded logs on port 24224 |
-           |  - Parses and tags logs                  |
-           +-------------------+----------------------+
-                               |
-                               | HTTPS (port 9200)
-                               v
-           +-------------------+----------------------+
-           |             OpenSearch                    |
-           |  - Indexes and stores logs               |
-           |  - Full-text search                      |
-           |  - Security analytics                    |
-           +-------------------+----------------------+
-                               |
-                               v
-           +-------------------+----------------------+
-           |       OpenSearch Dashboards               |
-           |  - Web UI (port 5601)                    |
-           |  - Dashboards &amp; Visualizations           |
-           |  - Alerts &amp; Notifications                |
-           |  - Reports &amp; Security Analytics          |
-           +------------------------------------------+
+<div class="code"><pre><span></span><code><span class="o">+------------------+</span><span class="w">     </span><span class="o">+------------------+</span><span class="w">     </span><span class="o">+------------------+</span>
+<span class="o">|</span><span class="w">  </span><span class="nx">Network</span><span class="w"> </span><span class="nx">Devices</span><span class="w"> </span><span class="o">|</span><span class="w">     </span><span class="o">|</span><span class="w">   </span><span class="nx">Servers</span><span class="o">/</span><span class="nx">Apps</span><span class="w">   </span><span class="o">|</span><span class="w">     </span><span class="o">|</span><span class="w">   </span><span class="nx">IED</span><span class="w"> </span><span class="nx">Devices</span><span class="w">    </span><span class="o">|</span>
+<span class="o">|</span><span class="w">  </span><span class="p">(</span><span class="nx">Routers</span><span class="p">,</span><span class="w"> </span><span class="nx">FW</span><span class="p">,</span><span class="w">   </span><span class="o">|</span><span class="w">     </span><span class="o">|</span><span class="w">  </span><span class="p">(</span><span class="nx">Linux</span><span class="p">,</span><span class="w"> </span><span class="nx">Windows</span><span class="p">)</span><span class="o">|</span><span class="w">     </span><span class="o">|</span><span class="w">  </span><span class="p">(</span><span class="nx">IEC</span><span class="w"> </span><span class="mi">61850</span><span class="p">)</span><span class="w">     </span><span class="o">|</span>
+<span class="o">|</span><span class="w">   </span><span class="nx">Switches</span><span class="p">)</span><span class="w">      </span><span class="o">|</span><span class="w">     </span><span class="o">|</span><span class="w">                  </span><span class="o">|</span><span class="w">     </span><span class="o">|</span><span class="w">                  </span><span class="o">|</span>
+<span class="o">+--------+---------+</span><span class="w">     </span><span class="o">+--------+---------+</span><span class="w">     </span><span class="o">+--------+---------+</span>
+<span class="w">         </span><span class="o">|</span><span class="w">                        </span><span class="o">|</span><span class="w">                        </span><span class="o">|</span>
+<span class="w">         </span><span class="o">|</span><span class="w">    </span><span class="nx">Syslog</span><span class="w"> </span><span class="p">(</span><span class="nx">UDP</span><span class="o">/</span><span class="nx">TCP</span><span class="p">)</span><span class="w">    </span><span class="o">|</span><span class="w">     </span><span class="nx">Syslog</span><span class="w"> </span><span class="p">(</span><span class="nx">UDP</span><span class="o">/</span><span class="nx">TCP</span><span class="p">)</span><span class="w">   </span><span class="o">|</span>
+<span class="w">         </span><span class="o">|</span><span class="w">    </span><span class="nx">Port</span><span class="w"> </span><span class="mi">514</span><span class="w">           </span><span class="o">|</span><span class="w">     </span><span class="nx">Port</span><span class="w"> </span><span class="mi">514</span><span class="w">          </span><span class="o">|</span>
+<span class="w">         </span><span class="o">+----------+------------+----------+--------------+</span>
+<span class="w">                    </span><span class="o">|</span><span class="w">                       </span><span class="o">|</span>
+<span class="w">                    </span><span class="nx">v</span><span class="w">                       </span><span class="nx">v</span>
+<span class="w">           </span><span class="o">+--------+-----------------------+--------+</span>
+<span class="w">           </span><span class="o">|</span><span class="w">          </span><span class="nx">Supra</span><span class="w"> </span><span class="nx">Log</span><span class="w"> </span><span class="nx">Collector</span><span class="w">             </span><span class="o">|</span>
+<span class="w">           </span><span class="o">|</span><span class="w">  </span><span class="p">(</span><span class="nx">fluent</span><span class="o">-</span><span class="kn">package</span><span class="w"> </span><span class="m m-Double">5.0.9</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="nx">opensearch</span><span class="w"> </span><span class="nx">out</span><span class="p">)</span><span class="w"> </span><span class="o">|</span>
+<span class="w">           </span><span class="o">|</span><span class="w">  </span><span class="o">-</span><span class="w"> </span><span class="nx">Receives</span><span class="w"> </span><span class="nx">syslog</span><span class="w"> </span><span class="nx">on</span><span class="w"> </span><span class="nx">UDP</span><span class="o">/</span><span class="mi">514</span><span class="w">            </span><span class="o">|</span>
+<span class="w">           </span><span class="o">|</span><span class="w">  </span><span class="o">-</span><span class="w"> </span><span class="nx">Receives</span><span class="w"> </span><span class="nx">forwarded</span><span class="w"> </span><span class="nx">logs</span><span class="w"> </span><span class="nx">on</span><span class="w"> </span><span class="nx">TCP</span><span class="o">/</span><span class="mi">24224</span><span class="w">  </span><span class="o">|</span>
+<span class="w">           </span><span class="o">|</span><span class="w">  </span><span class="o">-</span><span class="w"> </span><span class="nx">Tags</span><span class="p">,</span><span class="w"> </span><span class="nx">enriches</span><span class="p">,</span><span class="w"> </span><span class="nx">ships</span><span class="w"> </span><span class="nx">to</span><span class="w"> </span><span class="nx">search</span><span class="w">       </span><span class="o">|</span>
+<span class="w">           </span><span class="o">+-------------------+----------------------+</span>
+<span class="w">                               </span><span class="o">|</span>
+<span class="w">                               </span><span class="o">|</span><span class="w"> </span><span class="nx">HTTPS</span><span class="w"> </span><span class="p">(</span><span class="nx">port</span><span class="w"> </span><span class="mi">9200</span><span class="p">)</span>
+<span class="w">                               </span><span class="nx">v</span>
+<span class="w">           </span><span class="o">+-------------------+----------------------+</span>
+<span class="w">           </span><span class="o">|</span><span class="w">           </span><span class="nx">Supra</span><span class="w"> </span><span class="nx">Search</span><span class="w"> </span><span class="nx">Engine</span><span class="w">            </span><span class="o">|</span>
+<span class="w">           </span><span class="o">|</span><span class="w">       </span><span class="p">(</span><span class="nx">OpenSearch</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="nx">License</span><span class="w"> </span><span class="nx">Validator</span><span class="p">)</span><span class="w">   </span><span class="o">|</span>
+<span class="w">           </span><span class="o">|</span><span class="w">  </span><span class="o">-</span><span class="w"> </span><span class="nx">Indexes</span><span class="w"> </span><span class="k">and</span><span class="w"> </span><span class="nx">stores</span><span class="w"> </span><span class="nx">logs</span><span class="w">               </span><span class="o">|</span>
+<span class="w">           </span><span class="o">|</span><span class="w">  </span><span class="o">-</span><span class="w"> </span><span class="nx">supra</span><span class="o">-</span><span class="nx">index</span><span class="o">-</span><span class="nx">template</span><span class="w"> </span><span class="nx">one</span><span class="o">-</span><span class="nx">shot</span><span class="w">         </span><span class="o">|</span>
+<span class="w">           </span><span class="o">|</span><span class="w">    </span><span class="kt">auto</span><span class="o">-</span><span class="nx">applies</span><span class="w"> </span><span class="nx">the</span><span class="w"> </span><span class="nx">supra</span><span class="o">-*</span><span class="w"> </span><span class="nx">template</span><span class="w">     </span><span class="o">|</span>
+<span class="w">           </span><span class="o">|</span><span class="w">  </span><span class="o">-</span><span class="w"> </span><span class="nx">Full</span><span class="o">-</span><span class="nx">text</span><span class="w"> </span><span class="nx">search</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="nx">security</span><span class="w"> </span><span class="nx">analytics</span><span class="w"> </span><span class="o">|</span>
+<span class="w">           </span><span class="o">+-------------------+----------------------+</span>
+<span class="w">                               </span><span class="o">|</span>
+<span class="w">                               </span><span class="nx">v</span>
+<span class="w">           </span><span class="o">+-------------------+----------------------+</span>
+<span class="w">           </span><span class="o">|</span><span class="w">            </span><span class="nx">Supra</span><span class="w"> </span><span class="nx">Dashboards</span><span class="w">              </span><span class="o">|</span>
+<span class="w">           </span><span class="o">|</span><span class="w">  </span><span class="o">-</span><span class="w"> </span><span class="nx">Web</span><span class="w"> </span><span class="nx">UI</span><span class="w"> </span><span class="p">(</span><span class="nx">port</span><span class="w"> </span><span class="mi">5601</span><span class="p">)</span><span class="w">                    </span><span class="o">|</span>
+<span class="w">           </span><span class="o">|</span><span class="w">  </span><span class="o">-</span><span class="w"> </span><span class="nx">Dashboards</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="nx">Visualizations</span><span class="w">           </span><span class="o">|</span>
+<span class="w">           </span><span class="o">|</span><span class="w">  </span><span class="o">-</span><span class="w"> </span><span class="nx">Alerts</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="nx">Notifications</span><span class="w">                </span><span class="o">|</span>
+<span class="w">           </span><span class="o">|</span><span class="w">  </span><span class="o">-</span><span class="w"> </span><span class="nx">Reports</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="nx">Security</span><span class="w"> </span><span class="nx">Analytics</span><span class="w">          </span><span class="o">|</span>
+<span class="w">           </span><span class="o">+------------------------------------------+</span>
 </code></pre></div>
 
 <hr />
@@ -299,9 +312,17 @@
 </table>
 <h3 id="software-requirements">Software Requirements</h3>
 <ul>
-<li>Linux x64 (Ubuntu 20.04+, RHEL 8+, CentOS 8+, Debian 10+)</li>
-<li>Ruby 3.0+ (for Fluentd)</li>
-<li>Root/sudo access</li>
+<li><strong>Ubuntu 22.04 LTS (jammy), x86_64 only.</strong> The installer is fully offline and the<br />
+  bundled <code>fluent-package</code> <code>.deb</code>s link against jammy library ABIs (<code>libssl3</code>,<br />
+<code>libffi8</code>, <code>libreadline8</code>, <code>libncurses6</code>, <code>libtinfo6</code>, <code>libyaml-0-2</code>,<br />
+<code>libgmp10</code>, <code>zlib1g</code>). <code>install.sh</code> enforces this and refuses to run on<br />
+  20.04/24.04/RHEL/CentOS or non-amd64.</li>
+<li><strong>No internet access required.</strong> Everything ships in the tarball: OpenSearch,<br />
+  OpenSearch Dashboards, dashboards plugins, fluent-package, all of<br />
+  fluent-plugin-opensearch's pure-Ruby dependency gems, and the index-template<br />
+  bootstrap. Ruby is <strong>not</strong> a prerequisite — fluent-package brings its own<br />
+  embedded Ruby at <code>/opt/fluent/</code>.</li>
+<li>Root / sudo access.</li>
 </ul>
 <h3 id="network-requirements">Network Requirements</h3>
 <p>Ensure the following ports are open on the Supra server:</p>
@@ -316,8 +337,8 @@
 </thead>
 <tbody>
 <tr>
-<td>5140</td>
-<td>UDP/TCP</td>
+<td>514</td>
+<td>UDP</td>
 <td>Inbound</td>
 <td>Syslog from devices</td>
 </tr>
@@ -331,27 +352,20 @@
 <td>9200</td>
 <td>TCP</td>
 <td>Localhost</td>
-<td>OpenSearch API</td>
+<td>Supra Search Engine API</td>
 </tr>
 <tr>
 <td>5601</td>
 <td>TCP</td>
 <td>Inbound</td>
-<td>Dashboards Web UI</td>
+<td>Supra Dashboards Web UI</td>
 </tr>
 </tbody>
 </table>
-<h3 id="firewall-rules-on-the-supra-server">Firewall Rules (on the Supra server)</h3>
-<div class="code"><pre><span></span><code><span class="c1"># Ubuntu/Debian (ufw)</span>
-sudo<span class="w"> </span>ufw<span class="w"> </span>allow<span class="w"> </span><span class="m">5140</span>/udp<span class="w"> </span>comment<span class="w"> </span><span class="s2">&quot;Syslog UDP&quot;</span>
-sudo<span class="w"> </span>ufw<span class="w"> </span>allow<span class="w"> </span><span class="m">5140</span>/tcp<span class="w"> </span>comment<span class="w"> </span><span class="s2">&quot;Syslog TCP&quot;</span>
-sudo<span class="w"> </span>ufw<span class="w"> </span>allow<span class="w"> </span><span class="m">5601</span>/tcp<span class="w"> </span>comment<span class="w"> </span><span class="s2">&quot;Supra Dashboards&quot;</span>
-
-<span class="c1"># RHEL/CentOS (firewalld)</span>
-sudo<span class="w"> </span>firewall-cmd<span class="w"> </span>--permanent<span class="w"> </span>--add-port<span class="o">=</span><span class="m">5140</span>/udp
-sudo<span class="w"> </span>firewall-cmd<span class="w"> </span>--permanent<span class="w"> </span>--add-port<span class="o">=</span><span class="m">5140</span>/tcp
-sudo<span class="w"> </span>firewall-cmd<span class="w"> </span>--permanent<span class="w"> </span>--add-port<span class="o">=</span><span class="m">5601</span>/tcp
-sudo<span class="w"> </span>firewall-cmd<span class="w"> </span>--reload
+<h3 id="firewall-rules-on-the-supra-server-ubuntu-2204-ufw">Firewall Rules (on the Supra server, Ubuntu 22.04 / ufw)</h3>
+<div class="code"><pre><span></span><code>sudo<span class="w"> </span>ufw<span class="w"> </span>allow<span class="w"> </span><span class="m">514</span>/udp<span class="w"> </span>comment<span class="w"> </span><span class="s2">&quot;Supra syslog (UDP)&quot;</span>
+sudo<span class="w"> </span>ufw<span class="w"> </span>allow<span class="w"> </span><span class="m">24224</span>/tcp<span class="w"> </span>comment<span class="w"> </span><span class="s2">&quot;Supra fluentd forward&quot;</span>
+sudo<span class="w"> </span>ufw<span class="w"> </span>allow<span class="w"> </span><span class="m">5601</span>/tcp<span class="w"> </span>comment<span class="w"> </span><span class="s2">&quot;Supra Dashboards UI&quot;</span>
 </code></pre></div>
 
 <hr />
@@ -372,24 +386,56 @@ sudo<span class="w"> </span>bash<span class="w"> </span>install.sh
 </code></pre></div>
 
 <p>The installer will automatically:<br />
-1. Create a <code>supra</code> system user<br />
-2. Apply system tuning (<code>vm.max_map_count=262144</code>)<br />
-3. Install OpenSearch to <code>/opt/supra/opensearch</code><br />
-4. Initialize security certificates and default credentials<br />
-5. Install OpenSearch Dashboards to <code>/opt/supra/dashboards</code><br />
-6. Install extra plugins (Security Analytics, Index Management, Notifications)<br />
-7. Install Fluentd and configure it<br />
-8. Create and enable systemd services<br />
-9. Start all services</p>
-<h3 id="step-4-verify-installation">Step 4: Verify Installation</h3>
-<div class="code"><pre><span></span><code><span class="c1"># Check OpenSearch</span>
+1. Verify host OS is Ubuntu 22.04 jammy / amd64, and abort otherwise<br />
+2. Create a <code>supra</code> system user<br />
+3. Apply system tuning (<code>vm.max_map_count=262144</code>)<br />
+4. Install Supra Search Engine to <code>/opt/supra/opensearch</code>, install the Supra<br />
+   License Validator plugin, install the Index Management plugin<br />
+5. Initialize security certificates and default credentials (admin/admin)<br />
+6. Install Supra Dashboards to <code>/opt/supra/dashboards</code> with all SIEM plugins<br />
+7. Install <strong>Supra Log Collector</strong> fully offline:<br />
+   - Install jammy dependency libs from bundled <code>.deb</code>s<br />
+   - Install <code>fluent-package</code> 5.0.9 (embedded Ruby at <code>/opt/fluent/</code>)<br />
+   - Install <code>fluent-plugin-opensearch</code> from bundled <code>.gem</code>s (<code>--local --ignore-dependencies</code>)<br />
+   - Deploy the bundled <code>fluent.conf</code> to <code>/opt/supra/log-collector/</code><br />
+   - Disable the stock <code>fluentd.service</code> shipped with fluent-package<br />
+8. Install the index-template bootstrap script to <code>/opt/supra/index-template/</code><br />
+9. Install and <strong>enable</strong> (but do not start) four systemd services:<br />
+<code>supra-search</code>, <code>supra-dashboards</code>, <code>supra-log-collector</code>, <code>supra-index-template</code></p>
+<blockquote>
+<p><strong>Note:</strong> Services are not started by the installer — license activation<br />
+must happen first (Step 4). The <code>supra-index-template</code> one-shot will fire<br />
+automatically as soon as <code>supra-search</code> is started and reports healthy on<br />
+<code>:9200</code>.</p>
+</blockquote>
+<h3 id="step-4-license-activation">Step 4: License Activation</h3>
+<p>Activation is required before the search engine will accept queries.</p>
+<div class="code"><pre><span></span><code><span class="c1"># 1. Get this machine&#39;s fingerprint (MFP):</span>
+sudo<span class="w"> </span>bash<span class="w"> </span>/opt/supra/opensearch/config/supra-license/get-fingerprint.sh
+
+<span class="c1"># 2. Send the MFP to your Supra vendor and receive license.key in return.</span>
+
+<span class="c1"># 3. Install the license:</span>
+sudo<span class="w"> </span>cp<span class="w"> </span>license.key<span class="w"> </span>/opt/supra/opensearch/config/supra-license/
+sudo<span class="w"> </span>chown<span class="w"> </span>supra:supra<span class="w"> </span>/opt/supra/opensearch/config/supra-license/license.key
+sudo<span class="w"> </span>chmod<span class="w"> </span><span class="m">600</span><span class="w"> </span>/opt/supra/opensearch/config/supra-license/license.key
+</code></pre></div>
+
+<h3 id="step-5-start-services-and-verify">Step 5: Start Services and Verify</h3>
+<div class="code"><pre><span></span><code><span class="c1"># Start the search engine first</span>
+sudo<span class="w"> </span>systemctl<span class="w"> </span>start<span class="w"> </span>supra-search
+
+<span class="c1"># supra-index-template auto-fires once :9200 is healthy. To watch it:</span>
+journalctl<span class="w"> </span>-u<span class="w"> </span>supra-index-template<span class="w"> </span>-f
+
+<span class="c1"># Once supra-search is up, start the rest</span>
+sudo<span class="w"> </span>systemctl<span class="w"> </span>start<span class="w"> </span>supra-dashboards
+sudo<span class="w"> </span>systemctl<span class="w"> </span>start<span class="w"> </span>supra-log-collector
+
+<span class="c1"># Verify</span>
 curl<span class="w"> </span>-sk<span class="w"> </span>-u<span class="w"> </span>admin:admin<span class="w"> </span>https://localhost:9200
-
-<span class="c1"># Check Dashboards (wait 1-2 minutes for startup)</span>
 curl<span class="w"> </span>-s<span class="w"> </span>-o<span class="w"> </span>/dev/null<span class="w"> </span>-w<span class="w"> </span><span class="s2">&quot;%{http_code}&quot;</span><span class="w"> </span>http://localhost:5601
-
-<span class="c1"># Check all services</span>
-sudo<span class="w"> </span>systemctl<span class="w"> </span>status<span class="w"> </span>opensearch<span class="w"> </span>opensearch-dashboards<span class="w"> </span>fluentd
+sudo<span class="w"> </span>systemctl<span class="w"> </span>status<span class="w"> </span>supra-search<span class="w"> </span>supra-dashboards<span class="w"> </span>supra-log-collector<span class="w"> </span>supra-index-template
 </code></pre></div>
 
 <h3 id="default-credentials">Default Credentials</h3>
@@ -425,25 +471,36 @@ sudo<span class="w"> </span>systemctl<span class="w"> </span>status<span class="
 </code></pre></div>
 
 <p>Expected output should show <code>"status": "green"</code> or <code>"yellow"</code> (yellow is normal for single-node).</p>
-<h3 id="53-verify-fluentd-is-running">5.3 Verify Fluentd is Running</h3>
-<div class="code"><pre><span></span><code>sudo<span class="w"> </span>systemctl<span class="w"> </span>status<span class="w"> </span>fluentd
+<h3 id="53-verify-log-collector-is-running">5.3 Verify Log Collector is Running</h3>
+<div class="code"><pre><span></span><code>sudo<span class="w"> </span>systemctl<span class="w"> </span>status<span class="w"> </span>supra-log-collector
 
-<span class="c1"># Test syslog reception</span>
-logger<span class="w"> </span>-n<span class="w"> </span><span class="m">127</span>.0.0.1<span class="w"> </span>-P<span class="w"> </span><span class="m">5140</span><span class="w"> </span>-d<span class="w"> </span><span class="s2">&quot;Test syslog message from Supra&quot;</span>
+<span class="c1"># Test syslog reception (UDP/514 is privileged - logger needs sudo)</span>
+sudo<span class="w"> </span>logger<span class="w"> </span>-n<span class="w"> </span><span class="m">127</span>.0.0.1<span class="w"> </span>-P<span class="w"> </span><span class="m">514</span><span class="w"> </span>-d<span class="w"> </span><span class="s2">&quot;Test syslog message from Supra&quot;</span>
 </code></pre></div>
 
-<h3 id="54-verify-logs-are-being-indexed">5.4 Verify Logs are Being Indexed</h3>
-<div class="code"><pre><span></span><code><span class="c1"># Check for fluentd indices</span>
+<h3 id="54-verify-the-index-template-has-been-applied">5.4 Verify the Index Template Has Been Applied</h3>
+<p>The <code>supra-index-template</code> one-shot installs an index template named<br />
+<code>supra-logs</code> covering all <code>supra-*</code> indices. This is what prevents the<br />
+"400 - Rejected by OpenSearch" mapping conflicts from heterogeneous syslog.</p>
+<div class="code"><pre><span></span><code><span class="c1"># Confirm it ran cleanly</span>
+journalctl<span class="w"> </span>-u<span class="w"> </span>supra-index-template<span class="w"> </span>--no-pager<span class="w"> </span><span class="p">|</span><span class="w"> </span>tail<span class="w"> </span>-20
+
+<span class="c1"># Inspect the template itself</span>
+curl<span class="w"> </span>-sk<span class="w"> </span>-u<span class="w"> </span>admin:admin<span class="w"> </span>https://localhost:9200/_index_template/supra-logs?pretty
+</code></pre></div>
+
+<h3 id="55-verify-logs-are-being-indexed">5.5 Verify Logs are Being Indexed</h3>
+<div class="code"><pre><span></span><code><span class="c1"># Check for supra-logs indices</span>
 curl<span class="w"> </span>-sk<span class="w"> </span>-u<span class="w"> </span>admin:admin<span class="w"> </span>https://localhost:9200/_cat/indices?v
 </code></pre></div>
 
-<p>You should see indices like <code>fluentd-YYYY.MM.DD</code>.</p>
+<p>You should see indices like <code>supra-logs-YYYY.MM.DD</code>.</p>
 <hr />
 <h2 id="6-syslog-configuration-on-devices">6. Syslog Configuration on Devices</h2>
-<p>Configure your network devices, servers, and applications to send syslog to the Supra server on <strong>port 5140 (UDP)</strong>.</p>
+<p>Configure your network devices, servers, and applications to send syslog to the Supra server on <strong>port 514 (UDP)</strong>.</p>
 <h3 id="61-cisco-routers-and-switches-iosios-xe">6.1 Cisco Routers and Switches (IOS/IOS-XE)</h3>
 <div class="code"><pre><span></span><code><span class="nv">configure</span><span class="w"> </span><span class="nv">terminal</span>
-<span class="nv">logging</span><span class="w"> </span><span class="nv">host</span><span class="w"> </span><span class="o">&lt;</span><span class="nv">SUPRA_SERVER_IP</span><span class="o">&gt;</span><span class="w"> </span><span class="nv">transport</span><span class="w"> </span><span class="nv">udp</span><span class="w"> </span><span class="nv">port</span><span class="w"> </span><span class="mi">5140</span>
+<span class="nv">logging</span><span class="w"> </span><span class="nv">host</span><span class="w"> </span><span class="o">&lt;</span><span class="nv">SUPRA_SERVER_IP</span><span class="o">&gt;</span><span class="w"> </span><span class="nv">transport</span><span class="w"> </span><span class="nv">udp</span><span class="w"> </span><span class="nv">port</span><span class="w"> </span><span class="mi">514</span>
 <span class="nv">logging</span><span class="w"> </span><span class="nv">trap</span><span class="w"> </span><span class="nv">informational</span>
 <span class="nv">logging</span><span class="w"> </span><span class="nv">facility</span><span class="w"> </span><span class="nv">local7</span>
 <span class="nv">logging</span><span class="w"> </span><span class="nv">source</span><span class="o">-</span><span class="nv">interface</span><span class="w"> </span><span class="nv">Loopback0</span>
@@ -458,7 +515,7 @@ curl<span class="w"> </span>-sk<span class="w"> </span>-u<span class="w"> </span
 
 <h3 id="62-cisco-nexus-switches-nx-os">6.2 Cisco Nexus Switches (NX-OS)</h3>
 <div class="code"><pre><span></span><code><span class="nv">configure</span><span class="w"> </span><span class="nv">terminal</span>
-<span class="nv">logging</span><span class="w"> </span><span class="nv">server</span><span class="w"> </span><span class="o">&lt;</span><span class="nv">SUPRA_SERVER_IP</span><span class="o">&gt;</span><span class="w"> </span><span class="mi">6</span><span class="w"> </span><span class="nv">port</span><span class="w"> </span><span class="mi">5140</span><span class="w"> </span><span class="nv">facility</span><span class="w"> </span><span class="nv">local7</span>
+<span class="nv">logging</span><span class="w"> </span><span class="nv">server</span><span class="w"> </span><span class="o">&lt;</span><span class="nv">SUPRA_SERVER_IP</span><span class="o">&gt;</span><span class="w"> </span><span class="mi">6</span><span class="w"> </span><span class="nv">port</span><span class="w"> </span><span class="mi">514</span><span class="w"> </span><span class="nv">facility</span><span class="w"> </span><span class="nv">local7</span>
 <span class="nv">logging</span><span class="w"> </span><span class="nv">source</span><span class="o">-</span><span class="nv">interface</span><span class="w"> </span><span class="nv">loopback0</span>
 <span class="nv">logging</span><span class="w"> </span><span class="nv">timestamp</span><span class="w"> </span><span class="nv">milliseconds</span>
 <span class="k">end</span>
@@ -466,7 +523,7 @@ curl<span class="w"> </span>-sk<span class="w"> </span>-u<span class="w"> </span
 </code></pre></div>
 
 <h3 id="63-juniper-routers-and-switches-junos">6.3 Juniper Routers and Switches (Junos)</h3>
-<div class="code"><pre><span></span><code>set system syslog host &lt;SUPRA_SERVER_IP&gt; port 5140
+<div class="code"><pre><span></span><code>set system syslog host &lt;SUPRA_SERVER_IP&gt; port 514
 set system syslog host &lt;SUPRA_SERVER_IP&gt; any info
 set system syslog host &lt;SUPRA_SERVER_IP&gt; authorization any
 set system syslog host &lt;SUPRA_SERVER_IP&gt; firewall any
@@ -485,7 +542,7 @@ commit
 <li><strong>Name:</strong> <code>Supra-SIEM</code></li>
 <li><strong>Syslog Server:</strong> <code>&lt;SUPRA_SERVER_IP&gt;</code></li>
 <li><strong>Transport:</strong> <code>UDP</code></li>
-<li><strong>Port:</strong> <code>5140</code></li>
+<li><strong>Port:</strong> <code>514</code></li>
 <li><strong>Facility:</strong> <code>LOG_LOCAL7</code></li>
 <li>Navigate to <strong>Objects &gt; Log Forwarding</strong> and create a profile using the syslog server</li>
 <li>Apply the log forwarding profile to security rules under <strong>Policies &gt; Security</strong></li>
@@ -495,7 +552,7 @@ commit
 <div class="code"><pre><span></span><code><span class="nv">config</span><span class="w"> </span><span class="nv">log</span><span class="w"> </span><span class="nv">syslogd</span><span class="w"> </span><span class="nv">setting</span>
 <span class="w">    </span><span class="nv">set</span><span class="w"> </span><span class="nv">status</span><span class="w"> </span><span class="nv">enable</span>
 <span class="w">    </span><span class="nv">set</span><span class="w"> </span><span class="nv">server</span><span class="w"> </span><span class="s2">&quot;&lt;SUPRA_SERVER_IP&gt;&quot;</span>
-<span class="w">    </span><span class="nv">set</span><span class="w"> </span><span class="nv">port</span><span class="w"> </span><span class="mi">5140</span>
+<span class="w">    </span><span class="nv">set</span><span class="w"> </span><span class="nv">port</span><span class="w"> </span><span class="mi">514</span>
 <span class="w">    </span><span class="nv">set</span><span class="w"> </span><span class="nv">facility</span><span class="w"> </span><span class="nv">local7</span>
 <span class="w">    </span><span class="nv">set</span><span class="w"> </span><span class="nv">source</span><span class="o">-</span><span class="nv">ip</span><span class="w"> </span><span class="s2">&quot;&quot;</span>
 <span class="w">    </span><span class="nv">set</span><span class="w"> </span><span class="nv">format</span><span class="w"> </span><span class="nv">default</span>
@@ -510,10 +567,10 @@ get log syslogd setting
 <h3 id="66-linux-servers-rsyslog">6.6 Linux Servers (rsyslog)</h3>
 <p>Edit <code>/etc/rsyslog.conf</code> or create <code>/etc/rsyslog.d/supra.conf</code>:</p>
 <div class="code"><pre><span></span><code><span class="c1"># Send all logs to Supra via UDP</span>
-*.*<span class="w"> </span>@&lt;SUPRA_SERVER_IP&gt;:5140
+*.*<span class="w"> </span>@&lt;SUPRA_SERVER_IP&gt;:514
 
 <span class="c1"># Or via TCP (more reliable)</span>
-*.*<span class="w"> </span>@@&lt;SUPRA_SERVER_IP&gt;:5140
+*.*<span class="w"> </span>@@&lt;SUPRA_SERVER_IP&gt;:514
 </code></pre></div>
 
 <p>Restart rsyslog:</p>
@@ -527,7 +584,7 @@ get log syslogd setting
 <h3 id="67-linux-servers-syslog-ng">6.7 Linux Servers (syslog-ng)</h3>
 <p>Edit <code>/etc/syslog-ng/syslog-ng.conf</code>:</p>
 <div class="code"><pre><span></span><code>destination d_supra {
-    network(&quot;&lt;SUPRA_SERVER_IP&gt;&quot; port(5140) transport(&quot;udp&quot;));
+    network(&quot;&lt;SUPRA_SERVER_IP&gt;&quot; port(514) transport(&quot;udp&quot;));
 };
 
 log {
@@ -557,7 +614,7 @@ log {
 <span class="nt">&lt;Output</span><span class="w"> </span><span class="err">out_supra</span><span class="nt">&gt;</span>
 <span class="w">    </span>Module<span class="w">      </span>om_udp
 <span class="w">    </span>Host<span class="w">        </span><span class="nt">&lt;SUPRA_SERVER_IP&gt;</span>
-<span class="w">    </span>Port<span class="w">        </span>5140
+<span class="w">    </span>Port<span class="w">        </span>514
 <span class="w">    </span>Exec<span class="w">        </span>to_syslog_bsd();
 <span class="nt">&lt;/Output&gt;</span>
 
@@ -572,7 +629,7 @@ log {
 <p><strong>Option B: Snare Agent</strong></p>
 <ol>
 <li>Download and install Snare for Windows</li>
-<li>Configure the syslog destination: <code>&lt;SUPRA_SERVER_IP&gt;:5140</code> (UDP)</li>
+<li>Configure the syslog destination: <code>&lt;SUPRA_SERVER_IP&gt;:514</code> (UDP)</li>
 <li>Select event log sources (Security, System, Application)</li>
 </ol>
 <h3 id="69-ied-devices-intelligent-electronic-devices-iec-61850">6.9 IED Devices (Intelligent Electronic Devices - IEC 61850)</h3>
@@ -581,7 +638,7 @@ log {
 1. Access the IED via PCM600 engineering tool<br />
 2. Navigate to <strong>Communication &gt; Syslog</strong><br />
 3. Set <strong>Syslog Server IP:</strong> <code>&lt;SUPRA_SERVER_IP&gt;</code><br />
-4. Set <strong>Syslog Port:</strong> <code>5140</code><br />
+4. Set <strong>Syslog Port:</strong> <code>514</code><br />
 5. Set <strong>Severity Level:</strong> <code>Informational</code><br />
 6. Download configuration to IED</p>
 <p><strong>Siemens SIPROTEC 5:</strong><br />
@@ -589,32 +646,32 @@ log {
 2. Navigate to <strong>Communication &gt; Syslog Client</strong><br />
 3. Configure:<br />
    - Server Address: <code>&lt;SUPRA_SERVER_IP&gt;</code><br />
-   - Server Port: <code>5140</code><br />
+   - Server Port: <code>514</code><br />
    - Protocol: UDP<br />
 4. Transfer settings to device</p>
 <p><strong>SEL (Schweitzer Engineering Laboratories):</strong><br />
 1. Connect via SEL terminal (serial or network)<br />
 2. Configure syslog:</p>
 <div class="code"><pre><span></span><code>SET SYSLOG_IP1 &lt;SUPRA_SERVER_IP&gt;
-SET SYSLOG_PORT1 5140
+SET SYSLOG_PORT1 514
 SET SYSLOG_SEV INFO
 </code></pre></div>
 
 <p><strong>GE Multilin:</strong><br />
 1. Access via EnerVista software<br />
 2. Navigate to <strong>Settings &gt; Communications &gt; Syslog</strong><br />
-3. Set Server IP and Port (5140)</p>
+3. Set Server IP and Port (514)</p>
 <blockquote>
 <p><strong>Note:</strong> If the IED does not support syslog natively, use a gateway/relay server running rsyslog to collect IED logs (serial, GOOSE, MMS) and forward them to Supra.</p>
 </blockquote>
 <h3 id="610-hparuba-switches">6.10 HP/Aruba Switches</h3>
-<div class="code"><pre><span></span><code>logging &lt;SUPRA_SERVER_IP&gt; transport udp 5140
+<div class="code"><pre><span></span><code>logging &lt;SUPRA_SERVER_IP&gt; transport udp 514
 logging severity info
 logging facility local7
 </code></pre></div>
 
 <h3 id="611-vmware-esxi">6.11 VMware ESXi</h3>
-<div class="code"><pre><span></span><code>esxcli<span class="w"> </span>system<span class="w"> </span>syslog<span class="w"> </span>config<span class="w"> </span><span class="nb">set</span><span class="w"> </span>--loghost<span class="o">=</span><span class="s1">&#39;udp://&lt;SUPRA_SERVER_IP&gt;:5140&#39;</span>
+<div class="code"><pre><span></span><code>esxcli<span class="w"> </span>system<span class="w"> </span>syslog<span class="w"> </span>config<span class="w"> </span><span class="nb">set</span><span class="w"> </span>--loghost<span class="o">=</span><span class="s1">&#39;udp://&lt;SUPRA_SERVER_IP&gt;:514&#39;</span>
 esxcli<span class="w"> </span>system<span class="w"> </span>syslog<span class="w"> </span>reload
 </code></pre></div>
 
@@ -623,46 +680,97 @@ esxcli<span class="w"> </span>system<span class="w"> </span>syslog<span class="w
 </code></pre></div>
 
 <hr />
-<h2 id="7-fluentd-configuration">7. Fluentd Configuration</h2>
-<p>The Fluentd configuration file is located at:</p>
-<div class="code"><pre><span></span><code>/opt/supra/fluentd/fluent.conf
+<h2 id="7-log-collector-fluentd-configuration">7. Log Collector (Fluentd) Configuration</h2>
+<p>The log collector is shipped as <code>fluent-package</code> 5.0.9, with its own embedded<br />
+Ruby and binaries under <code>/opt/fluent/</code>. The systemd unit invokes it as:</p>
+<div class="code"><pre><span></span><code>/opt/fluent/bin/fluentd -c /opt/supra/log-collector/fluent.conf
 </code></pre></div>
 
+<p>The configuration file lives at:</p>
+<div class="code"><pre><span></span><code>/opt/supra/log-collector/fluent.conf
+</code></pre></div>
+
+<blockquote>
+<p><strong>Air-gapped install — read this before editing.</strong> Do <strong>not</strong> run<br />
+<code>gem install ...</code> to add plugins on a deployed box. The server has no<br />
+internet access. If you need an extra Fluentd plugin, build the bundle<br />
+on a build host (<code>fluent-gem fetch &lt;plugin&gt;</code>), copy the resulting <code>.gem</code>s<br />
+to the target, and install with:<br />
+<code>bash
+sudo /opt/fluent/bin/fluent-gem install --local --ignore-dependencies *.gem
+sudo systemctl restart supra-log-collector</code></p>
+</blockquote>
 <h3 id="71-default-configuration">7.1 Default Configuration</h3>
-<div class="code"><pre><span></span><code>#<span class="w"> </span>Syslog<span class="w"> </span>input<span class="w"> </span>-<span class="w"> </span>receives<span class="w"> </span>syslog<span class="w"> </span>from<span class="w"> </span>all<span class="w"> </span>devices
+<p>The installer deploys this config (lightly trimmed for the guide; see the<br />
+real file on disk for full debug/enrichment blocks):</p>
+<div class="code"><pre><span></span><code><span class="nt">&lt;system&gt;</span>
+<span class="w">  </span>log_level<span class="w"> </span>info
+<span class="nt">&lt;/system&gt;</span>
+
+#<span class="w"> </span>Syslog<span class="w"> </span>input<span class="w"> </span>(UDP/514)<span class="w"> </span>-<span class="w"> </span>all<span class="w"> </span>devices<span class="w"> </span>and<span class="w"> </span>NXLog<span class="w"> </span>agents<span class="w"> </span>land<span class="w"> </span>here.
 <span class="nt">&lt;source&gt;</span>
 <span class="w">  </span>@type<span class="w"> </span>syslog
-<span class="w">  </span>port<span class="w"> </span>5140
-<span class="w">  </span>tag<span class="w"> </span>system
+<span class="w">  </span>port<span class="w"> </span>514
+<span class="w">  </span>bind<span class="w"> </span>0.0.0.0
+<span class="w">  </span>tag<span class="w"> </span>syslog
+<span class="w">  </span><span class="nt">&lt;parse&gt;</span>
+<span class="w">    </span>message_format<span class="w"> </span>auto
+<span class="w">  </span><span class="nt">&lt;/parse&gt;</span>
 <span class="nt">&lt;/source&gt;</span>
 
-#<span class="w"> </span>Forward<span class="w"> </span>input<span class="w"> </span>-<span class="w"> </span>for<span class="w"> </span>Fluentd-to-Fluentd<span class="w"> </span>forwarding
+#<span class="w"> </span>Forward<span class="w"> </span>input<span class="w"> </span>(TCP/24224)<span class="w"> </span>-<span class="w"> </span>from<span class="w"> </span>other<span class="w"> </span>Fluentd<span class="w"> </span>/<span class="w"> </span>fluent-bit<span class="w"> </span>agents.
 <span class="nt">&lt;source&gt;</span>
 <span class="w">  </span>@type<span class="w"> </span>forward
 <span class="w">  </span>port<span class="w"> </span>24224
+<span class="w">  </span>bind<span class="w"> </span>0.0.0.0
 <span class="nt">&lt;/source&gt;</span>
 
-#<span class="w"> </span>Send<span class="w"> </span>all<span class="w"> </span>logs<span class="w"> </span>to<span class="w"> </span>OpenSearch
+#<span class="w"> </span>Tag<span class="w"> </span>every<span class="w"> </span>syslog<span class="w"> </span>message<span class="w"> </span>with<span class="w"> </span>the<span class="w"> </span>collector<span class="w"> </span>identity.
+<span class="nt">&lt;filter</span><span class="w"> </span><span class="err">syslog.**</span><span class="nt">&gt;</span>
+<span class="w">  </span>@type<span class="w"> </span>record_transformer
+<span class="w">  </span><span class="nt">&lt;record&gt;</span>
+<span class="w">    </span>log_collector<span class="w"> </span>&quot;supra&quot;
+<span class="w">  </span><span class="nt">&lt;/record&gt;</span>
+<span class="nt">&lt;/filter&gt;</span>
+
+#<span class="w"> </span>Ship<span class="w"> </span>everything<span class="w"> </span>to<span class="w"> </span>the<span class="w"> </span>Supra<span class="w"> </span>search<span class="w"> </span>engine.
 <span class="nt">&lt;match</span><span class="w"> </span><span class="err">**</span><span class="nt">&gt;</span>
-<span class="w">  </span>@type<span class="w"> </span>opensearch
-<span class="w">  </span>host<span class="w"> </span>localhost
-<span class="w">  </span>port<span class="w"> </span>9200
-<span class="w">  </span>scheme<span class="w"> </span>https
-<span class="w">  </span>ssl_verify<span class="w"> </span>false
-<span class="w">  </span>user<span class="w"> </span>admin
-<span class="w">  </span>password<span class="w"> </span>admin
-<span class="w">  </span>logstash_format<span class="w"> </span>true
-<span class="w">  </span>logstash_prefix<span class="w"> </span>fluentd
-<span class="w">  </span>flush_interval<span class="w"> </span>10s
+<span class="w">  </span>@type<span class="w"> </span>copy
+<span class="w">  </span><span class="nt">&lt;store&gt;</span>
+<span class="w">    </span>@type<span class="w"> </span>opensearch
+<span class="w">    </span>host<span class="w"> </span>localhost
+<span class="w">    </span>port<span class="w"> </span>9200
+<span class="w">    </span>scheme<span class="w"> </span>https
+<span class="w">    </span>ssl_verify<span class="w"> </span>false
+<span class="w">    </span>user<span class="w"> </span>admin
+<span class="w">    </span>password<span class="w"> </span>admin
+<span class="w">    </span>logstash_format<span class="w"> </span>true
+<span class="w">    </span>logstash_prefix<span class="w"> </span>supra-logs
+<span class="w">    </span>include_tag_key<span class="w"> </span>true
+<span class="w">    </span>tag_key<span class="w"> </span>fluentd_tag
+<span class="w">    </span>flush_interval<span class="w"> </span>5s
+<span class="w">    </span><span class="nt">&lt;buffer&gt;</span>
+<span class="w">      </span>@type<span class="w"> </span>memory
+<span class="w">      </span>flush_mode<span class="w"> </span>interval
+<span class="w">      </span>flush_interval<span class="w"> </span>5s
+<span class="w">      </span>retry_max_interval<span class="w"> </span>30s
+<span class="w">      </span>retry_forever<span class="w"> </span>true
+<span class="w">      </span>chunk_limit_size<span class="w"> </span>4MB
+<span class="w">      </span>queue_limit_length<span class="w"> </span>64
+<span class="w">    </span><span class="nt">&lt;/buffer&gt;</span>
+<span class="w">  </span><span class="nt">&lt;/store&gt;</span>
 <span class="nt">&lt;/match&gt;</span>
 </code></pre></div>
 
+<p>Daily indices land at <code>supra-logs-YYYY.MM.DD</code> and inherit the <code>supra-logs</code><br />
+index template applied by <code>supra-index-template.service</code> (date detection off,<br />
+keyword by default, <code>ignore_malformed: true</code>).</p>
 <h3 id="72-advanced-separate-indices-per-device-type">7.2 Advanced: Separate Indices per Device Type</h3>
 <p>To create separate indices for different device types, update the Fluentd config:</p>
 <div class="code"><pre><span></span><code>#<span class="w"> </span>Syslog<span class="w"> </span>input<span class="w"> </span>with<span class="w"> </span>facility-based<span class="w"> </span>tagging
 <span class="nt">&lt;source&gt;</span>
 <span class="w">  </span>@type<span class="w"> </span>syslog
-<span class="w">  </span>port<span class="w"> </span>5140
+<span class="w">  </span>port<span class="w"> </span>514
 <span class="w">  </span>tag<span class="w"> </span>syslog
 <span class="w">  </span><span class="nt">&lt;parse&gt;</span>
 <span class="w">    </span>message_format<span class="w"> </span>auto
@@ -770,25 +878,32 @@ esxcli<span class="w"> </span>system<span class="w"> </span>syslog<span class="w
 <span class="nt">&lt;/match&gt;</span>
 </code></pre></div>
 
-<p>Install the required plugin:</p>
-<div class="code"><pre><span></span><code>sudo<span class="w"> </span>gem<span class="w"> </span>install<span class="w"> </span>fluent-plugin-rewrite-tag-filter<span class="w"> </span>--no-document
+<p>The <code>fluent-plugin-rewrite-tag-filter</code> plugin is required for the example<br />
+above. On an air-gapped server it must be staged from <code>.gem</code>s, not pulled<br />
+from rubygems.org:</p>
+<div class="code"><pre><span></span><code><span class="c1"># On a build host with internet:</span>
+/opt/fluent/bin/fluent-gem<span class="w"> </span>fetch<span class="w"> </span>fluent-plugin-rewrite-tag-filter
+<span class="c1"># (also fetch any dependency .gem files it reports)</span>
+
+<span class="c1"># Then copy the .gem(s) to the target server and install offline:</span>
+sudo<span class="w"> </span>/opt/fluent/bin/fluent-gem<span class="w"> </span>install<span class="w"> </span>--local<span class="w"> </span>--ignore-dependencies<span class="w"> </span>*.gem
 </code></pre></div>
 
 <p>After any config change:</p>
-<div class="code"><pre><span></span><code>sudo<span class="w"> </span>systemctl<span class="w"> </span>restart<span class="w"> </span>fluentd
+<div class="code"><pre><span></span><code>sudo<span class="w"> </span>systemctl<span class="w"> </span>restart<span class="w"> </span>supra-log-collector
 </code></pre></div>
 
 <h3 id="73-enable-tcp-syslog-in-addition-to-udp">7.3 Enable TCP Syslog (in addition to UDP)</h3>
 <div class="code"><pre><span></span><code><span class="nt">&lt;source&gt;</span>
 <span class="w">  </span>@type<span class="w"> </span>syslog
-<span class="w">  </span>port<span class="w"> </span>5140
+<span class="w">  </span>port<span class="w"> </span>514
 <span class="w">  </span>protocol_type<span class="w"> </span>udp
 <span class="w">  </span>tag<span class="w"> </span>syslog.udp
 <span class="nt">&lt;/source&gt;</span>
 
 <span class="nt">&lt;source&gt;</span>
 <span class="w">  </span>@type<span class="w"> </span>syslog
-<span class="w">  </span>port<span class="w"> </span>5140
+<span class="w">  </span>port<span class="w"> </span>514
 <span class="w">  </span>protocol_type<span class="w"> </span>tcp
 <span class="w">  </span>tag<span class="w"> </span>syslog.tcp
 <span class="nt">&lt;/source&gt;</span>
@@ -807,7 +922,7 @@ esxcli<span class="w"> </span>system<span class="w"> </span>syslog<span class="w
 <ol>
 <li>Go to <strong>Menu &gt; Stack Management &gt; Index Patterns</strong></li>
 <li>Click <strong>Create index pattern</strong></li>
-<li>Enter the pattern: <code>fluentd-*</code> (or <code>router-logs-*</code>, <code>firewall-logs-*</code>, etc.)</li>
+<li>Enter the pattern: <code>supra-logs-*</code> (or <code>router-logs-*</code>, <code>firewall-logs-*</code>, etc.)</li>
 <li>Select <code>@timestamp</code> as the time field</li>
 <li>Click <strong>Create index pattern</strong></li>
 </ol>
@@ -848,7 +963,7 @@ esxcli<span class="w"> </span>system<span class="w"> </span>syslog<span class="w
 <span class="w">    </span><span class="p">],</span>
 <span class="w">    </span><span class="nt">&quot;ism_template&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
 <span class="w">      </span><span class="p">{</span>
-<span class="w">        </span><span class="nt">&quot;index_patterns&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;fluentd-*&quot;</span><span class="p">],</span>
+<span class="w">        </span><span class="nt">&quot;index_patterns&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;supra-logs-*&quot;</span><span class="p">],</span>
 <span class="w">        </span><span class="nt">&quot;priority&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">100</span>
 <span class="w">      </span><span class="p">}</span>
 <span class="w">    </span><span class="p">]</span>
@@ -882,7 +997,7 @@ esxcli<span class="w"> </span>system<span class="w"> </span>syslog<span class="w
 <span class="s1">        }</span>
 <span class="s1">      ],</span>
 <span class="s1">      &quot;ism_template&quot;: [</span>
-<span class="s1">        { &quot;index_patterns&quot;: [&quot;fluentd-*&quot;], &quot;priority&quot;: 100 }</span>
+<span class="s1">        { &quot;index_patterns&quot;: [&quot;supra-logs-*&quot;], &quot;priority&quot;: 100 }</span>
 <span class="s1">      ]</span>
 <span class="s1">    }</span>
 <span class="s1">  }&#39;</span>
@@ -894,7 +1009,7 @@ esxcli<span class="w"> </span>system<span class="w"> </span>syslog<span class="w
 <span class="w">  </span>https://localhost:9200/_index_template/syslog-template<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>-H<span class="w"> </span><span class="s2">&quot;Content-Type: application/json&quot;</span><span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>-d<span class="w"> </span><span class="s1">&#39;{</span>
-<span class="s1">    &quot;index_patterns&quot;: [&quot;fluentd-*&quot;, &quot;router-logs-*&quot;, &quot;switch-logs-*&quot;, &quot;firewall-logs-*&quot;, &quot;ied-logs-*&quot;],</span>
+<span class="s1">    &quot;index_patterns&quot;: [&quot;supra-logs-*&quot;, &quot;router-logs-*&quot;, &quot;switch-logs-*&quot;, &quot;firewall-logs-*&quot;, &quot;ied-logs-*&quot;],</span>
 <span class="s1">    &quot;template&quot;: {</span>
 <span class="s1">      &quot;settings&quot;: {</span>
 <span class="s1">        &quot;number_of_shards&quot;: 1,</span>
@@ -939,10 +1054,19 @@ sudo<span class="w"> </span>-u<span class="w"> </span>supra<span class="w"> </sp
 <span class="w">  </span>-key<span class="w"> </span>/opt/supra/opensearch/config/kirk-key.pem
 </code></pre></div>
 
-<p><strong>Step 4:</strong> Update the Fluentd config with the new password:</p>
-<div class="code"><pre><span></span><code>sudo<span class="w"> </span>nano<span class="w"> </span>/opt/supra/fluentd/fluent.conf
+<p><strong>Step 4:</strong> Update the Log Collector config with the new password:</p>
+<div class="code"><pre><span></span><code>sudo<span class="w"> </span>nano<span class="w"> </span>/opt/supra/log-collector/fluent.conf
 <span class="c1"># Change: password admin -&gt; password YOUR_NEW_PASSWORD</span>
-sudo<span class="w"> </span>systemctl<span class="w"> </span>restart<span class="w"> </span>fluentd
+sudo<span class="w"> </span>systemctl<span class="w"> </span>restart<span class="w"> </span>supra-log-collector
+</code></pre></div>
+
+<p><strong>Step 5:</strong> Update the index-template service environment with the new password<br />
+so the one-shot can still authenticate on re-runs:</p>
+<div class="code"><pre><span></span><code>sudo<span class="w"> </span>systemctl<span class="w"> </span>edit<span class="w"> </span>supra-index-template.service
+<span class="c1"># In the override, add:</span>
+<span class="c1">#   [Service]</span>
+<span class="c1">#   Environment=OS_PASS=YOUR_NEW_PASSWORD</span>
+sudo<span class="w"> </span>systemctl<span class="w"> </span>daemon-reload
 </code></pre></div>
 
 <h3 id="92-create-a-new-role">9.2 Create a New Role</h3>
@@ -970,7 +1094,7 @@ sudo<span class="w"> </span>systemctl<span class="w"> </span>restart<span class=
 </tr>
 <tr>
 <td>Index patterns</td>
-<td><code>fluentd-*</code>, <code>firewall-logs-*</code>, <code>router-logs-*</code></td>
+<td><code>supra-logs-*</code>, <code>firewall-logs-*</code>, <code>router-logs-*</code></td>
 </tr>
 <tr>
 <td>Index permissions</td>
@@ -993,7 +1117,7 @@ sudo<span class="w"> </span>systemctl<span class="w"> </span>restart<span class=
 <span class="s1">    &quot;cluster_permissions&quot;: [&quot;cluster_monitor&quot;],</span>
 <span class="s1">    &quot;index_permissions&quot;: [</span>
 <span class="s1">      {</span>
-<span class="s1">        &quot;index_patterns&quot;: [&quot;fluentd-*&quot;, &quot;firewall-logs-*&quot;, &quot;router-logs-*&quot;, &quot;switch-logs-*&quot;, &quot;ied-logs-*&quot;],</span>
+<span class="s1">        &quot;index_patterns&quot;: [&quot;supra-logs-*&quot;, &quot;firewall-logs-*&quot;, &quot;router-logs-*&quot;, &quot;switch-logs-*&quot;, &quot;ied-logs-*&quot;],</span>
 <span class="s1">        &quot;allowed_actions&quot;: [&quot;read&quot;, &quot;search&quot;]</span>
 <span class="s1">      }</span>
 <span class="s1">    ],</span>
@@ -1112,24 +1236,24 @@ curl<span class="w"> </span>-sk<span class="w"> </span>-u<span class="w"> </span
 </ol>
 <p><strong>Example 1: Log Volume Over Time (Area Chart)</strong><br />
 - Type: <strong>Area</strong><br />
-- Index pattern: <code>fluentd-*</code><br />
+- Index pattern: <code>supra-logs-*</code><br />
 - Y-axis: Count<br />
 - X-axis: Date Histogram on <code>@timestamp</code> (interval: hourly)<br />
 - Save as: "Log Volume Over Time"</p>
 <p><strong>Example 2: Top Log Sources (Pie Chart)</strong><br />
 - Type: <strong>Pie</strong><br />
-- Index pattern: <code>fluentd-*</code><br />
+- Index pattern: <code>supra-logs-*</code><br />
 - Slice: Terms aggregation on <code>host</code> (size: 10)<br />
 - Save as: "Top Log Sources"</p>
 <p><strong>Example 3: Severity Distribution (Bar Chart)</strong><br />
 - Type: <strong>Vertical Bar</strong><br />
-- Index pattern: <code>fluentd-*</code><br />
+- Index pattern: <code>supra-logs-*</code><br />
 - Y-axis: Count<br />
 - X-axis: Terms on <code>severity</code> or <code>priority</code><br />
 - Save as: "Log Severity Distribution"</p>
 <p><strong>Example 4: Recent Logs Table</strong><br />
 - Type: <strong>Data Table</strong><br />
-- Index pattern: <code>fluentd-*</code><br />
+- Index pattern: <code>supra-logs-*</code><br />
 - Columns: <code>@timestamp</code>, <code>host</code>, <code>ident</code>, <code>severity</code>, <code>message</code><br />
 - Save as: "Recent Log Events"</p>
 <h3 id="102-create-a-dashboard">10.2 Create a Dashboard</h3>
@@ -1207,7 +1331,7 @@ curl<span class="w"> </span>-sk<span class="w"> </span>-u<span class="w"> </span
 <p><strong>Example 1: High Volume Alert (DDoS/Log Storm)</strong><br />
 - Name: <code>High Log Volume Alert</code><br />
 - Method: Visual editor<br />
-- Index: <code>fluentd-*</code><br />
+- Index: <code>supra-logs-*</code><br />
 - Time field: <code>@timestamp</code><br />
 - Frequency: Every 5 minutes<br />
 - Condition: Count is ABOVE <code>10000</code> in the last <code>5 minutes</code><br />
@@ -1247,7 +1371,7 @@ curl<span class="w"> </span>-sk<span class="w"> </span>-u<span class="w"> </span
 <p><strong>Example 5: Device Offline (No Logs Received)</strong><br />
 - Name: <code>Device Offline Detection</code><br />
 - Method: Visual editor<br />
-- Index: <code>fluentd-*</code><br />
+- Index: <code>supra-logs-*</code><br />
 - Condition: Count from a specific host is BELOW <code>1</code> in the last <code>15 minutes</code><br />
 - Action: Send notification to <code>SOC-Email</code></p>
 <h3 id="113-view-alert-history">11.3 View Alert History</h3>
@@ -1322,7 +1446,7 @@ curl<span class="w"> </span>-sk<span class="w"> </span>-u<span class="w"> </span
 <li>Click <strong>Create detector</strong></li>
 <li>Configure:</li>
 <li><strong>Name:</strong> <code>Network Threat Detector</code></li>
-<li><strong>Data source:</strong> <code>fluentd-*</code> (or <code>firewall-logs-*</code>)</li>
+<li><strong>Data source:</strong> <code>supra-logs-*</code> (or <code>firewall-logs-*</code>)</li>
 <li><strong>Log type:</strong> Select appropriate type (e.g., <code>network</code>, <code>linux</code>, <code>windows</code>)</li>
 <li><strong>Detection rules:</strong> Select from pre-built rules or add custom ones</li>
 <li><strong>Schedule:</strong> Run every 1 minute</li>
@@ -1373,46 +1497,65 @@ curl<span class="w"> </span>-sk<span class="w"> </span>-u<span class="w"> </span
 <h2 id="14-service-management">14. Service Management</h2>
 <h3 id="startstoprestart-services">Start/Stop/Restart Services</h3>
 <div class="code"><pre><span></span><code><span class="c1"># All services</span>
-sudo<span class="w"> </span>systemctl<span class="w"> </span>start<span class="w"> </span>opensearch<span class="w"> </span>opensearch-dashboards<span class="w"> </span>fluentd
-sudo<span class="w"> </span>systemctl<span class="w"> </span>stop<span class="w"> </span>opensearch-dashboards<span class="w"> </span>fluentd<span class="w"> </span>opensearch
-sudo<span class="w"> </span>systemctl<span class="w"> </span>restart<span class="w"> </span>opensearch<span class="w"> </span>opensearch-dashboards<span class="w"> </span>fluentd
+sudo<span class="w"> </span>systemctl<span class="w"> </span>start<span class="w"> </span>supra-search<span class="w"> </span>supra-dashboards<span class="w"> </span>supra-log-collector
+sudo<span class="w"> </span>systemctl<span class="w"> </span>stop<span class="w"> </span>supra-dashboards<span class="w"> </span>supra-log-collector<span class="w"> </span>supra-search
+sudo<span class="w"> </span>systemctl<span class="w"> </span>restart<span class="w"> </span>supra-search<span class="w"> </span>supra-dashboards<span class="w"> </span>supra-log-collector
 
 <span class="c1"># Individual services</span>
-sudo<span class="w"> </span>systemctl<span class="w"> </span>start<span class="w"> </span>opensearch
-sudo<span class="w"> </span>systemctl<span class="w"> </span>stop<span class="w"> </span>opensearch
-sudo<span class="w"> </span>systemctl<span class="w"> </span>restart<span class="w"> </span>opensearch
+sudo<span class="w"> </span>systemctl<span class="w"> </span>start<span class="w"> </span>supra-search
+sudo<span class="w"> </span>systemctl<span class="w"> </span>stop<span class="w"> </span>supra-search
+sudo<span class="w"> </span>systemctl<span class="w"> </span>restart<span class="w"> </span>supra-search
 
-sudo<span class="w"> </span>systemctl<span class="w"> </span>start<span class="w"> </span>opensearch-dashboards
-sudo<span class="w"> </span>systemctl<span class="w"> </span>stop<span class="w"> </span>opensearch-dashboards
+sudo<span class="w"> </span>systemctl<span class="w"> </span>start<span class="w"> </span>supra-dashboards
+sudo<span class="w"> </span>systemctl<span class="w"> </span>stop<span class="w"> </span>supra-dashboards
 
-sudo<span class="w"> </span>systemctl<span class="w"> </span>start<span class="w"> </span>fluentd
-sudo<span class="w"> </span>systemctl<span class="w"> </span>stop<span class="w"> </span>fluentd
+sudo<span class="w"> </span>systemctl<span class="w"> </span>start<span class="w"> </span>supra-log-collector
+sudo<span class="w"> </span>systemctl<span class="w"> </span>stop<span class="w"> </span>supra-log-collector
 </code></pre></div>
 
 <h3 id="check-service-status">Check Service Status</h3>
-<div class="code"><pre><span></span><code>sudo<span class="w"> </span>systemctl<span class="w"> </span>status<span class="w"> </span>opensearch<span class="w"> </span>opensearch-dashboards<span class="w"> </span>fluentd
+<div class="code"><pre><span></span><code>sudo<span class="w"> </span>systemctl<span class="w"> </span>status<span class="w"> </span>supra-search<span class="w"> </span>supra-dashboards<span class="w"> </span>supra-log-collector<span class="w"> </span>supra-index-template
+</code></pre></div>
+
+<h3 id="the-supra-index-template-one-shot">The <code>supra-index-template</code> One-shot</h3>
+<p><code>supra-index-template.service</code> is a <code>Type=oneshot</code> unit that fires whenever<br />
+<code>supra-search</code> is started. It polls <code>:9200/_cluster/health</code> for up to ~5 min,<br />
+then PUTs the <code>supra-logs</code> index template. Re-runs are idempotent, so it is<br />
+safe to restart manually:</p>
+<div class="code"><pre><span></span><code>sudo<span class="w"> </span>systemctl<span class="w"> </span>restart<span class="w"> </span>supra-index-template
+journalctl<span class="w"> </span>-u<span class="w"> </span>supra-index-template<span class="w"> </span>--no-pager<span class="w"> </span><span class="p">|</span><span class="w"> </span>tail<span class="w"> </span>-30
+</code></pre></div>
+
+<p>Timeout / credentials can be tuned via a systemd override:</p>
+<div class="code"><pre><span></span><code>sudo<span class="w"> </span>systemctl<span class="w"> </span>edit<span class="w"> </span>supra-index-template.service
+<span class="c1"># Example override:</span>
+<span class="c1">#   [Service]</span>
+<span class="c1">#   Environment=OS_BOOT_RETRIES=40</span>
+<span class="c1">#   Environment=OS_BOOT_SLEEP=15</span>
+<span class="c1">#   Environment=OS_PASS=YOUR_NEW_PASSWORD</span>
+sudo<span class="w"> </span>systemctl<span class="w"> </span>daemon-reload
 </code></pre></div>
 
 <h3 id="view-logs">View Logs</h3>
 <div class="code"><pre><span></span><code><span class="c1"># OpenSearch logs</span>
-journalctl<span class="w"> </span>-u<span class="w"> </span>opensearch<span class="w"> </span>-f
+journalctl<span class="w"> </span>-u<span class="w"> </span>supra-search<span class="w"> </span>-f
 
 <span class="c1"># Dashboards logs</span>
-journalctl<span class="w"> </span>-u<span class="w"> </span>opensearch-dashboards<span class="w"> </span>-f
+journalctl<span class="w"> </span>-u<span class="w"> </span>supra-dashboards<span class="w"> </span>-f
 
-<span class="c1"># Fluentd logs</span>
-journalctl<span class="w"> </span>-u<span class="w"> </span>fluentd<span class="w"> </span>-f
+<span class="c1"># Log Collector logs</span>
+journalctl<span class="w"> </span>-u<span class="w"> </span>supra-log-collector<span class="w"> </span>-f
 
 <span class="c1"># All Supra logs</span>
-journalctl<span class="w"> </span>-u<span class="w"> </span>opensearch<span class="w"> </span>-u<span class="w"> </span>opensearch-dashboards<span class="w"> </span>-u<span class="w"> </span>fluentd<span class="w"> </span>--since<span class="w"> </span><span class="s2">&quot;1 hour ago&quot;</span>
+journalctl<span class="w"> </span>-u<span class="w"> </span>supra-search<span class="w"> </span>-u<span class="w"> </span>supra-dashboards<span class="w"> </span>-u<span class="w"> </span>supra-log-collector<span class="w"> </span>-u<span class="w"> </span>supra-index-template<span class="w"> </span>--since<span class="w"> </span><span class="s2">&quot;1 hour ago&quot;</span>
 </code></pre></div>
 
 <h3 id="enabledisable-auto-start-on-boot">Enable/Disable Auto-Start on Boot</h3>
 <div class="code"><pre><span></span><code><span class="c1"># Enable auto-start</span>
-sudo<span class="w"> </span>systemctl<span class="w"> </span><span class="nb">enable</span><span class="w"> </span>opensearch<span class="w"> </span>opensearch-dashboards<span class="w"> </span>fluentd
+sudo<span class="w"> </span>systemctl<span class="w"> </span><span class="nb">enable</span><span class="w"> </span>supra-search<span class="w"> </span>supra-dashboards<span class="w"> </span>supra-log-collector
 
 <span class="c1"># Disable auto-start</span>
-sudo<span class="w"> </span>systemctl<span class="w"> </span>disable<span class="w"> </span>opensearch<span class="w"> </span>opensearch-dashboards<span class="w"> </span>fluentd
+sudo<span class="w"> </span>systemctl<span class="w"> </span>disable<span class="w"> </span>supra-search<span class="w"> </span>supra-dashboards<span class="w"> </span>supra-log-collector
 </code></pre></div>
 
 <hr />
@@ -1442,7 +1585,7 @@ curl<span class="w"> </span>-sk<span class="w"> </span>-u<span class="w"> </span
 <div class="code"><pre><span></span><code>curl<span class="w"> </span>-sk<span class="w"> </span>-u<span class="w"> </span>admin:admin<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>https://localhost:9200/_snapshot/supra_backup/snapshot_20260306/_restore<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>-H<span class="w"> </span><span class="s2">&quot;Content-Type: application/json&quot;</span><span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>-d<span class="w"> </span><span class="s1">&#39;{ &quot;indices&quot;: &quot;fluentd-*&quot; }&#39;</span>
+<span class="w">  </span>-d<span class="w"> </span><span class="s1">&#39;{ &quot;indices&quot;: &quot;supra-logs-*&quot; }&#39;</span>
 </code></pre></div>
 
 <h3 id="154-automated-daily-backup-cron">15.4 Automated Daily Backup (Cron)</h3>
@@ -1454,7 +1597,7 @@ curl<span class="w"> </span>-sk<span class="w"> </span>-u<span class="w"> </span
 <h2 id="16-troubleshooting">16. Troubleshooting</h2>
 <h3 id="opensearch-wont-start">OpenSearch won't start</h3>
 <div class="code"><pre><span></span><code><span class="c1"># Check logs</span>
-journalctl<span class="w"> </span>-u<span class="w"> </span>opensearch<span class="w"> </span>--no-pager<span class="w"> </span>-n<span class="w"> </span><span class="m">50</span>
+journalctl<span class="w"> </span>-u<span class="w"> </span>supra-search<span class="w"> </span>--no-pager<span class="w"> </span>-n<span class="w"> </span><span class="m">50</span>
 
 <span class="c1"># Common fix: increase vm.max_map_count</span>
 sudo<span class="w"> </span>sysctl<span class="w"> </span>-w<span class="w"> </span>vm.max_map_count<span class="o">=</span><span class="m">262144</span>
@@ -1474,20 +1617,61 @@ curl<span class="w"> </span>-sk<span class="w"> </span>-u<span class="w"> </span
 cat<span class="w"> </span>/opt/supra/dashboards/config/opensearch_dashboards.yml<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>opensearch.hosts
 
 <span class="c1"># Restart dashboards</span>
-sudo<span class="w"> </span>systemctl<span class="w"> </span>restart<span class="w"> </span>opensearch-dashboards
+sudo<span class="w"> </span>systemctl<span class="w"> </span>restart<span class="w"> </span>supra-dashboards
+</code></pre></div>
+
+<h3 id="installer-fails-with-unsupported-os">Installer fails with "Unsupported OS"</h3>
+<p>The installer is built for <strong>Ubuntu 22.04 LTS (jammy), amd64 only</strong>. The<br />
+bundled <code>fluent-package</code> <code>.deb</code>s link against jammy library ABIs and would<br />
+either fail to install or downgrade host libraries on other releases.</p>
+<div class="code"><pre><span></span><code><span class="c1"># Confirm the host is jammy:</span>
+cat<span class="w"> </span>/etc/os-release<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>-E<span class="w"> </span><span class="s1">&#39;^(ID|VERSION_CODENAME)=&#39;</span>
+<span class="c1"># Should show:  ID=ubuntu  and  VERSION_CODENAME=jammy</span>
+</code></pre></div>
+
+<p>If you are on 20.04 (focal) or 24.04 (noble), redeploy on a jammy host. The<br />
+installer will refuse to proceed by design — running it past the OS guard<br />
+would corrupt the system library set.</p>
+<h3 id="log-collector-fails-to-bind-udp514">Log Collector fails to bind UDP/514</h3>
+<p>UDP/514 is a privileged port. The <code>supra-log-collector.service</code> unit grants<br />
+<code>CAP_NET_BIND_SERVICE</code> to the <code>supra</code> user so this works, but a stock<br />
+<code>fluentd.service</code> (the one bundled with fluent-package) does not — and if it<br />
+is still enabled it will race for the port.</p>
+<div class="code"><pre><span></span><code><span class="c1"># Confirm the stock fluentd unit is disabled:</span>
+sudo<span class="w"> </span>systemctl<span class="w"> </span>is-enabled<span class="w"> </span>fluentd<span class="w">      </span><span class="c1"># expected: disabled / masked</span>
+sudo<span class="w"> </span>systemctl<span class="w"> </span>disable<span class="w"> </span>--now<span class="w"> </span>fluentd<span class="w"> </span><span class="m">2</span>&gt;/dev/null
+
+<span class="c1"># Check who currently holds :514:</span>
+sudo<span class="w"> </span>ss<span class="w"> </span>-lupn<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span><span class="s1">&#39;:514 &#39;</span>
+</code></pre></div>
+
+<h3 id="supra-index-template-failed-or-did-not-run"><code>supra-index-template</code> failed or did not run</h3>
+<div class="code"><pre><span></span><code>journalctl<span class="w"> </span>-u<span class="w"> </span>supra-index-template<span class="w"> </span>--no-pager<span class="w"> </span><span class="p">|</span><span class="w"> </span>tail<span class="w"> </span>-50
+</code></pre></div>
+
+<p>Common causes:<br />
+- <code>supra-search</code> is not healthy yet — the one-shot waits up to ~5 min by<br />
+  default. If startup is slow, extend <code>OS_BOOT_RETRIES</code> / <code>OS_BOOT_SLEEP</code><br />
+  via <code>systemctl edit supra-index-template.service</code>.<br />
+- Admin password was changed but the override was not added (Section 9.1<br />
+  Step 5).<br />
+- License has not been installed yet — the search engine may be up on<br />
+<code>:9200</code> but reject mutating requests until a valid license is present.</p>
+<p>After fixing the underlying issue, re-run the one-shot:</p>
+<div class="code"><pre><span></span><code>sudo<span class="w"> </span>systemctl<span class="w"> </span>restart<span class="w"> </span>supra-index-template
 </code></pre></div>
 
 <h3 id="no-logs-appearing-in-dashboards">No logs appearing in Dashboards</h3>
 <ol>
 <li>
-<p><strong>Check Fluentd is running:</strong><br />
+<p><strong>Check Log Collector is running:</strong><br />
 <code>bash
-   sudo systemctl status fluentd</code></p>
+   sudo systemctl status supra-log-collector</code></p>
 </li>
 <li>
-<p><strong>Test syslog reception:</strong><br />
+<p><strong>Test syslog reception (UDP/514 is privileged):</strong><br />
 <code>bash
-   logger -n 127.0.0.1 -P 5140 -d "Test message"</code></p>
+   sudo logger -n 127.0.0.1 -P 514 -d "Test message"</code></p>
 </li>
 <li>
 <p><strong>Check if indices exist:</strong><br />
@@ -1496,12 +1680,12 @@ sudo<span class="w"> </span>systemctl<span class="w"> </span>restart<span class=
 </li>
 <li>
 <p><strong>Verify index pattern exists in Dashboards:</strong><br />
-   Go to <strong>Stack Management &gt; Index Patterns</strong> and ensure <code>fluentd-*</code> is created.</p>
+   Go to <strong>Stack Management &gt; Index Patterns</strong> and ensure <code>supra-logs-*</code> is created.</p>
 </li>
 <li>
-<p><strong>Check Fluentd logs for errors:</strong><br />
+<p><strong>Check Log Collector logs for errors:</strong><br />
 <code>bash
-   journalctl -u fluentd --no-pager -n 50</code></p>
+   journalctl -u supra-log-collector --no-pager -n 50</code></p>
 </li>
 </ol>
 <h3 id="device-syslog-not-reaching-supra">Device syslog not reaching Supra</h3>
@@ -1510,18 +1694,17 @@ sudo<span class="w"> </span>systemctl<span class="w"> </span>restart<span class=
 <p><strong>Verify network connectivity:</strong><br />
 <code>bash
    # From the device (or a machine on the same network)
-   nc -vuz &lt;SUPRA_SERVER_IP&gt; 5140</code></p>
+   nc -vuz &lt;SUPRA_SERVER_IP&gt; 514</code></p>
 </li>
 <li>
 <p><strong>Check firewall on Supra server:</strong><br />
 <code>bash
-   sudo ufw status         # Ubuntu
-   sudo firewall-cmd --list-ports  # RHEL</code></p>
+   sudo ufw status</code></p>
 </li>
 <li>
 <p><strong>Test with tcpdump:</strong><br />
 <code>bash
-   sudo tcpdump -i any port 5140 -nn</code></p>
+   sudo tcpdump -i any port 514 -nn</code></p>
 </li>
 <li>
 <p><strong>Verify device syslog config:</strong> Refer to <a href="#6-syslog-configuration-on-devices">Section 6</a>.</p>
@@ -1532,7 +1715,7 @@ sudo<span class="w"> </span>systemctl<span class="w"> </span>restart<span class=
 curl<span class="w"> </span>-sk<span class="w"> </span>-u<span class="w"> </span>admin:admin<span class="w"> </span><span class="s2">&quot;https://localhost:9200/_cat/indices?v&amp;s=store.size:desc&quot;</span>
 
 <span class="c1"># Delete old indices manually</span>
-curl<span class="w"> </span>-sk<span class="w"> </span>-u<span class="w"> </span>admin:admin<span class="w"> </span>-X<span class="w"> </span>DELETE<span class="w"> </span><span class="s2">&quot;https://localhost:9200/fluentd-2025.01.*&quot;</span>
+curl<span class="w"> </span>-sk<span class="w"> </span>-u<span class="w"> </span>admin:admin<span class="w"> </span>-X<span class="w"> </span>DELETE<span class="w"> </span><span class="s2">&quot;https://localhost:9200/supra-logs-2025.01.*&quot;</span>
 
 <span class="c1"># Set up automatic cleanup - see Section 8.3</span>
 </code></pre></div>
@@ -1550,23 +1733,23 @@ curl<span class="w"> </span>-sk<span class="w"> </span>-u<span class="w"> </span
 </thead>
 <tbody>
 <tr>
-<td>5140</td>
-<td>Fluentd syslog input</td>
-<td>UDP/TCP</td>
+<td>514</td>
+<td>Supra Log Collector syslog input</td>
+<td>UDP</td>
 </tr>
 <tr>
 <td>24224</td>
-<td>Fluentd forward input</td>
+<td>Supra Log Collector forward input</td>
 <td>TCP</td>
 </tr>
 <tr>
 <td>9200</td>
-<td>OpenSearch API</td>
+<td>Supra Search Engine API</td>
 <td>HTTPS</td>
 </tr>
 <tr>
 <td>5601</td>
-<td>Dashboards Web UI</td>
+<td>Supra Dashboards Web UI</td>
 <td>HTTP</td>
 </tr>
 </tbody>
@@ -1575,46 +1758,70 @@ curl<span class="w"> </span>-sk<span class="w"> </span>-u<span class="w"> </span
 <table>
 <thead>
 <tr>
-<th>File/Directory</th>
+<th>File / Directory</th>
 <th>Purpose</th>
 </tr>
 </thead>
 <tbody>
 <tr>
 <td><code>/opt/supra/opensearch/</code></td>
-<td>OpenSearch installation</td>
+<td>Supra Search Engine installation</td>
 </tr>
 <tr>
 <td><code>/opt/supra/opensearch/config/opensearch.yml</code></td>
-<td>OpenSearch configuration</td>
+<td>Search engine configuration</td>
 </tr>
 <tr>
 <td><code>/opt/supra/opensearch/config/opensearch-security/</code></td>
 <td>Security plugin configs</td>
 </tr>
 <tr>
+<td><code>/opt/supra/opensearch/config/supra-license/</code></td>
+<td>License key + public key + fingerprint tool</td>
+</tr>
+<tr>
 <td><code>/opt/supra/dashboards/</code></td>
-<td>Dashboards installation</td>
+<td>Supra Dashboards installation</td>
 </tr>
 <tr>
 <td><code>/opt/supra/dashboards/config/opensearch_dashboards.yml</code></td>
 <td>Dashboards configuration</td>
 </tr>
 <tr>
-<td><code>/opt/supra/fluentd/fluent.conf</code></td>
-<td>Fluentd configuration</td>
+<td><code>/opt/supra/log-collector/fluent.conf</code></td>
+<td>Log Collector configuration</td>
 </tr>
 <tr>
-<td><code>/etc/systemd/system/opensearch.service</code></td>
-<td>OpenSearch service file</td>
+<td><code>/opt/supra/index-template/supra-index-template.sh</code></td>
+<td>Index template bootstrap script</td>
 </tr>
 <tr>
-<td><code>/etc/systemd/system/opensearch-dashboards.service</code></td>
-<td>Dashboards service file</td>
+<td><code>/opt/fluent/bin/fluentd</code></td>
+<td>Log Collector binary (fluent-package embedded Ruby)</td>
 </tr>
 <tr>
-<td><code>/etc/systemd/system/fluentd.service</code></td>
-<td>Fluentd service file</td>
+<td><code>/opt/fluent/bin/fluent-gem</code></td>
+<td>Offline gem installer used for fluent plugins</td>
+</tr>
+<tr>
+<td><code>/etc/systemd/system/supra-search.service</code></td>
+<td>Search engine service unit</td>
+</tr>
+<tr>
+<td><code>/etc/systemd/system/supra-dashboards.service</code></td>
+<td>Dashboards service unit</td>
+</tr>
+<tr>
+<td><code>/etc/systemd/system/supra-log-collector.service</code></td>
+<td>Log Collector service unit</td>
+</tr>
+<tr>
+<td><code>/etc/systemd/system/supra-index-template.service</code></td>
+<td>Index template one-shot unit</td>
+</tr>
+<tr>
+<td><code>/etc/sysctl.d/99-supra.conf</code></td>
+<td><code>vm.max_map_count=262144</code> tuning</td>
 </tr>
 </tbody>
 </table>
@@ -1629,12 +1836,12 @@ curl<span class="w"> </span>-sk<span class="w"> </span>-u<span class="w"> </span
 curl<span class="w"> </span>-sk<span class="w"> </span>-u<span class="w"> </span>admin:admin<span class="w"> </span>https://localhost:9200/_nodes/stats?pretty
 
 <span class="c1"># Search logs</span>
-curl<span class="w"> </span>-sk<span class="w"> </span>-u<span class="w"> </span>admin:admin<span class="w"> </span>https://localhost:9200/fluentd-*/_search?pretty<span class="w"> </span><span class="se">\</span>
+curl<span class="w"> </span>-sk<span class="w"> </span>-u<span class="w"> </span>admin:admin<span class="w"> </span>https://localhost:9200/supra-logs-*/_search?pretty<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>-H<span class="w"> </span><span class="s2">&quot;Content-Type: application/json&quot;</span><span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>-d<span class="w"> </span><span class="s1">&#39;{ &quot;query&quot;: { &quot;match&quot;: { &quot;message&quot;: &quot;error&quot; } }, &quot;size&quot;: 10 }&#39;</span>
 
 <span class="c1"># Count documents in an index</span>
-curl<span class="w"> </span>-sk<span class="w"> </span>-u<span class="w"> </span>admin:admin<span class="w"> </span>https://localhost:9200/fluentd-*/_count
+curl<span class="w"> </span>-sk<span class="w"> </span>-u<span class="w"> </span>admin:admin<span class="w"> </span>https://localhost:9200/supra-logs-*/_count
 
 <span class="c1"># List all users</span>
 curl<span class="w"> </span>-sk<span class="w"> </span>-u<span class="w"> </span>admin:admin<span class="w"> </span>https://localhost:9200/_plugins/_security/api/internalusers?pretty
@@ -1696,20 +1903,29 @@ curl<span class="w"> </span>-sk<span class="w"> </span>-u<span class="w"> </span
 </tbody>
 </table>
 <h3 id="e-uninstallation">E. Uninstallation</h3>
-<p>To completely remove Supra:</p>
-<div class="code"><pre><span></span><code>sudo<span class="w"> </span>bash<span class="w"> </span>/opt/supra/uninstall.sh
+<p>To completely remove Supra (preferred — also purges fluent-package):</p>
+<div class="code"><pre><span></span><code>sudo<span class="w"> </span>bash<span class="w"> </span>/tmp/supra-installer/uninstall.sh
 </code></pre></div>
 
 <p>Or manually:</p>
-<div class="code"><pre><span></span><code>sudo<span class="w"> </span>systemctl<span class="w"> </span>stop<span class="w"> </span>opensearch<span class="w"> </span>opensearch-dashboards<span class="w"> </span>fluentd
-sudo<span class="w"> </span>systemctl<span class="w"> </span>disable<span class="w"> </span>opensearch<span class="w"> </span>opensearch-dashboards<span class="w"> </span>fluentd
-sudo<span class="w"> </span>rm<span class="w"> </span>-f<span class="w"> </span>/etc/systemd/system/<span class="o">{</span>opensearch,opensearch-dashboards,fluentd<span class="o">}</span>.service
+<div class="code"><pre><span></span><code>sudo<span class="w"> </span>systemctl<span class="w"> </span>stop<span class="w"> </span>supra-search<span class="w"> </span>supra-dashboards<span class="w"> </span>supra-log-collector<span class="w"> </span>supra-index-template
+sudo<span class="w"> </span>systemctl<span class="w"> </span>disable<span class="w"> </span>supra-search<span class="w"> </span>supra-dashboards<span class="w"> </span>supra-log-collector<span class="w"> </span>supra-index-template
+sudo<span class="w"> </span>rm<span class="w"> </span>-f<span class="w"> </span>/etc/systemd/system/<span class="o">{</span>supra-search,supra-dashboards,supra-log-collector,supra-index-template<span class="o">}</span>.service
 sudo<span class="w"> </span>systemctl<span class="w"> </span>daemon-reload
+
+<span class="c1"># Purge the offline-installed fluent-package</span>
+sudo<span class="w"> </span>dpkg<span class="w"> </span>--purge<span class="w"> </span>--force-all<span class="w"> </span>fluent-package
+
 sudo<span class="w"> </span>rm<span class="w"> </span>-rf<span class="w"> </span>/opt/supra
 sudo<span class="w"> </span>rm<span class="w"> </span>-f<span class="w"> </span>/etc/sysctl.d/99-supra.conf
 sudo<span class="w"> </span>sysctl<span class="w"> </span>--system
 </code></pre></div>
 
+<blockquote>
+<p>The jammy dependency libraries (<code>libssl3</code>, <code>libffi8</code>, etc.) installed by<br />
+the bundled <code>.deb</code>s are left in place — they are standard Ubuntu packages<br />
+and are typically required by other system software.</p>
+</blockquote>
 <hr />
 <p><strong>Document Version:</strong> 1.0<br />
 <strong>Last Updated:</strong> March 2026<br />

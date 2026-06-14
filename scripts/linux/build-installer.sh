@@ -31,7 +31,12 @@ EXTRA_PLUGINS_DIR="$BASE_DIR/dashboards-plugins"
 FLUENTD_CONF="$BASE_DIR/fluent/fluent.conf"
 LICENSE_VALIDATOR_DIR="$BASE_DIR/opensearch-license-validator"
 INDEX_MANAGEMENT_DIR="$BASE_DIR/index-management"
+INDEX_TEMPLATE_SCRIPT="$BASE_DIR/supra-index-template.sh"
 DASHBOARDS_SRC="$BASE_DIR/OpenSearch-Dashboards"
+# Canonical, version-controlled installer scripts (copied into the bundle below
+# instead of being inlined here — keeps them diffable and prevents the drift
+# that previously left the shipped install.sh ahead of this builder).
+INSTALLER_SRC="$SCRIPT_DIR/installer-src"
 
 echo "============================================"
 echo "  Supra Installer Package Builder v${VERSION}"
@@ -71,6 +76,13 @@ if [ ! -f "$FLUENTD_CONF" ]; then
     echo "ERROR: Log Collector config not found at $FLUENTD_CONF"
     exit 1
 fi
+
+for f in install.sh uninstall.sh; do
+    if [ ! -f "$INSTALLER_SRC/$f" ]; then
+        echo "ERROR: Installer source $INSTALLER_SRC/$f not found." >&2
+        exit 1
+    fi
+done
 
 echo "  Search engine tarball: OK"
 echo "  Dashboards tarball:    OK"
@@ -127,7 +139,7 @@ rm -rf "$BUILD_DIR"
 mkdir -p "$BUILD_DIR/$PACKAGE_NAME"
 
 STAGING="$BUILD_DIR/$PACKAGE_NAME"
-mkdir -p "$STAGING"/{opensearch,dashboards,dashboards-plugins,log-collector,systemd,branding,license-validator,index-management}
+mkdir -p "$STAGING"/{opensearch,dashboards,dashboards-plugins,log-collector,systemd,branding,license-validator,index-management,index-template}
 
 # ---------------------------------------------------------------------------
 # Package Supra Search Engine
@@ -224,40 +236,63 @@ echo "[5/7] Packaging Supra Log Collector..."
 cp "$FLUENTD_CONF" "$STAGING/log-collector/"
 echo "  Log Collector config staged."
 
-# Download fluent-package .deb for offline installation (self-contained, bundles its own Ruby)
-FLUENT_PKG_VERSION="5.0.9"
-FLUENT_PKG_DEB="fluent-package_${FLUENT_PKG_VERSION}-1_amd64.deb"
-FLUENT_PKG_URL="https://s3.amazonaws.com/packages.treasuredata.com/lts/5/ubuntu/focal/pool/contrib/f/fluent-package/${FLUENT_PKG_DEB}"
-FLUENT_PKG_PATH="$STAGING/log-collector/$FLUENT_PKG_DEB"
-
-if [ ! -f "$FLUENT_PKG_PATH" ]; then
-    echo "  Downloading fluent-package ${FLUENT_PKG_VERSION}..."
-    if curl -fSL -o "$FLUENT_PKG_PATH" "$FLUENT_PKG_URL" 2>&1; then
-        echo "  Downloaded: $(du -sh "$FLUENT_PKG_PATH" | cut -f1)"
-    else
-        echo "  WARNING: Failed to download fluent-package."
-        echo "           Download manually from: $FLUENT_PKG_URL"
-        echo "           Place at: $FLUENT_PKG_PATH"
-        rm -f "$FLUENT_PKG_PATH"
+# Provide release-matched fluent-package + dependency-lib sets for every
+# supported Ubuntu LTS as log-collector/deb/<codename>/. install.sh selects the
+# matching set at runtime. We prefer reusing a known-good local set (these are
+# version-controlled and already validated); fetching fresh is only needed for
+# codenames that aren't present locally, and cross-release fetching requires
+# Docker. $DEB_SETS_SRC can be overridden; it defaults to the fix package's set.
+DEB_SETS_SRC="${DEB_SETS_SRC:-$BASE_DIR/supra-logcollector-fix/deb}"
+DEB_SETS_SCRIPT="$BASE_DIR/scripts/build-deb-sets.sh"
+echo "  Assembling release-matched Log Collector .deb sets (focal/jammy/noble)..."
+for cn in focal jammy noble; do
+    dest="$STAGING/log-collector/deb/$cn"
+    mkdir -p "$dest"
+    if ls "$DEB_SETS_SRC/$cn"/fluent-package_*.deb >/dev/null 2>&1; then
+        cp "$DEB_SETS_SRC/$cn"/*.deb "$dest/"
+        echo "    $cn: reused local set ($(ls "$dest"/*.deb | wc -l) debs)."
+    elif [ -x "$DEB_SETS_SCRIPT" ]; then
+        echo "    $cn: not present locally — fetching..."
+        bash "$DEB_SETS_SCRIPT" "$STAGING/log-collector/deb" "$cn" || true
     fi
-else
-    echo "  fluent-package .deb already present."
-fi
+    if ! ls "$dest"/fluent-package_*.deb >/dev/null 2>&1; then
+        echo "ERROR: fluent-package .deb missing for $cn." >&2
+        echo "       Provide it under $DEB_SETS_SRC/$cn/ or re-run with Docker available." >&2
+        exit 1
+    fi
+done
 
-# Download OpenSearch plugin gems for offline installation
-echo "  Downloading fluent-plugin-opensearch gems for offline install..."
+# Stage the OpenSearch plugin gems for offline installation.
+#
+# install.sh uses this set only as a FALLBACK: (a) a complete-closure install if
+# a given fluent-package build somehow lacks fluent-plugin-opensearch, and (b) a
+# self-healing backfill if the fluentd dry-run trips over a missing transitive
+# gem (e.g. jmespath behind aws-sdk-core). install.sh no longer uninstalls
+# anything — fluent-package's bundled stack is used as-is — so this set must be
+# the COMPLETE dependency closure (fluent-plugin-opensearch + opensearch-ruby +
+# aws-* + faraday* + jmespath + ...), which the curated fix-package gems are.
+# Prefer those version-controlled gems; only download as a last resort when
+# they're absent (a bare `gem install` also drags in a 34-gem fluentd stack).
 GEMS_DIR="$STAGING/log-collector/gems"
 mkdir -p "$GEMS_DIR"
-TMPGEM=$(mktemp -d)
-if gem install fluent-plugin-opensearch --no-document --install-dir "$TMPGEM" 2>/dev/null; then
-    cp "$TMPGEM"/cache/*.gem "$GEMS_DIR/" 2>/dev/null
+CURATED_GEMS="$BASE_DIR/supra-logcollector-fix/gems"
+if ls "$CURATED_GEMS"/*.gem >/dev/null 2>&1; then
+    cp "$CURATED_GEMS"/*.gem "$GEMS_DIR/"
     GEMS_COUNT=$(find "$GEMS_DIR" -name "*.gem" 2>/dev/null | wc -l)
-    echo "  $GEMS_COUNT plugin gem files cached for offline install."
+    echo "  Reused curated opensearch gem stack ($GEMS_COUNT gems) from fix package."
 else
-    echo "  WARNING: Failed to download plugin gems."
-    echo "           Target machines will need internet to install fluent-plugin-opensearch."
+    echo "  Curated gem set not found; downloading fluent-plugin-opensearch..."
+    TMPGEM=$(mktemp -d)
+    if gem install fluent-plugin-opensearch --no-document --install-dir "$TMPGEM" 2>/dev/null; then
+        cp "$TMPGEM"/cache/*.gem "$GEMS_DIR/" 2>/dev/null
+        GEMS_COUNT=$(find "$GEMS_DIR" -name "*.gem" 2>/dev/null | wc -l)
+        echo "  $GEMS_COUNT plugin gem files cached for offline install."
+    else
+        echo "  WARNING: Failed to download plugin gems."
+        echo "           Target machines will need internet to install fluent-plugin-opensearch."
+    fi
+    rm -rf "$TMPGEM"
 fi
-rm -rf "$TMPGEM"
 
 # ---------------------------------------------------------------------------
 # Package license validator (auto-build with Maven if zip is missing)
@@ -348,6 +383,20 @@ if [ -d "$INDEX_MANAGEMENT_DIR" ]; then
 fi
 
 # ---------------------------------------------------------------------------
+# Package index template one-shot script
+# ---------------------------------------------------------------------------
+# install.sh copies this to /opt/supra/index-template/ and enables
+# supra-index-template.service, which applies it once supra-search is healthy.
+# Without it staged here, install.sh's `cp` would fail under `set -e`.
+if [ -f "$INDEX_TEMPLATE_SCRIPT" ]; then
+    cp "$INDEX_TEMPLATE_SCRIPT" "$STAGING/index-template/supra-index-template.sh"
+    echo "  Index template script staged."
+else
+    echo "ERROR: Index template script not found at $INDEX_TEMPLATE_SCRIPT" >&2
+    exit 1
+fi
+
+# ---------------------------------------------------------------------------
 # Create systemd service files
 # ---------------------------------------------------------------------------
 cat > "$STAGING/systemd/supra-search.service" <<'EOF'
@@ -360,6 +409,12 @@ Type=simple
 User=supra
 Group=supra
 WorkingDirectory=/opt/supra/opensearch
+# Write the hardware fingerprint to a supra-readable cache BEFORE OpenSearch
+# starts. The '+' runs this as root (User= is ignored) so it can read the
+# root-only DMI files; the license-validator plugin (running as supra) then
+# reads config/supra-license/machine-id, keeping it consistent with
+# get-fingerprint.sh and machine-bound. See MachineFingerprint.generate(Path).
+ExecStartPre=+/bin/bash -c 'MACHINE_ID_FILE=/opt/supra/opensearch/config/supra-license/machine-id bash /opt/supra/opensearch/config/supra-license/get-fingerprint.sh >/dev/null 2>&1 || true'
 ExecStart=/opt/supra/opensearch/bin/opensearch
 Restart=on-failure
 RestartSec=10
@@ -410,523 +465,39 @@ StandardError=journal
 WantedBy=multi-user.target
 EOF
 
+# One-shot: waits for the search engine HTTP API to come up, then applies the
+# supra-* index template. RemainAfterExit keeps it from re-running every boot;
+# the PUT is idempotent, so a manual `systemctl start supra-index-template`
+# after licensing is always safe.
+cat > "$STAGING/systemd/supra-index-template.service" <<'EOF'
+[Unit]
+Description=Supra Index Template (one-shot)
+After=network.target supra-search.service
+Requires=supra-search.service
+
+[Service]
+Type=oneshot
+User=supra
+Group=supra
+RemainAfterExit=true
+ExecStartPre=/bin/bash -c 'for i in $(seq 1 120); do (exec 3<>/dev/tcp/localhost/9200) 2>/dev/null && exit 0; sleep 5; done; echo "timed out waiting for supra-search on :9200" >&2; exit 1'
+ExecStart=/opt/supra/index-template/supra-index-template.sh
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
 # ---------------------------------------------------------------------------
 # Create the install script
 # ---------------------------------------------------------------------------
-cat > "$STAGING/install.sh" <<'INSTALL_SCRIPT'
-#!/bin/bash
-set -e
-
-################################################################################
-# Supra Stack Installer
-#
-# Installs Supra Search Engine, Supra Dashboards, and Supra Log Collector
-# as systemd services. Must be run as root (or with sudo).
-################################################################################
-
-INSTALL_DIR="/opt/supra"
-SUPRA_USER="supra"
-SUPRA_GROUP="supra"
-
-# Colors
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-NC='\033[0m'
-
-log()  { echo -e "${GREEN}[INFO]${NC}  $1"; }
-warn() { echo -e "${YELLOW}[WARN]${NC}  $1"; }
-err()  { echo -e "${RED}[ERROR]${NC} $1"; }
-
-# ---- Root check ----
-if [ "$EUID" -ne 0 ]; then
-    err "This script must be run as root. Use: sudo bash install.sh"
-    exit 1
-fi
-
-SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-
-echo ""
-echo "============================================"
-echo "  Supra Stack Installer"
-echo "============================================"
-echo ""
-echo "Install directory: $INSTALL_DIR"
-echo ""
-
-ADMIN_PASSWORD="admin"
-
-# ---- Create supra user ----
-log "Creating system user '$SUPRA_USER'..."
-if id "$SUPRA_USER" &>/dev/null; then
-    warn "User '$SUPRA_USER' already exists, skipping."
-else
-    useradd -r -m -d "$INSTALL_DIR" -s /bin/false "$SUPRA_USER"
-fi
-
-mkdir -p "$INSTALL_DIR"
-
-# ---- System tuning ----
-log "Applying system tuning..."
-SYSCTL_CONF="/etc/sysctl.d/99-supra.conf"
-if [ ! -f "$SYSCTL_CONF" ]; then
-    cat > "$SYSCTL_CONF" <<SYSCTL
-vm.max_map_count=262144
-SYSCTL
-    sysctl --system > /dev/null 2>&1
-else
-    warn "Sysctl config already exists, skipping."
-fi
-
-# ---- Install Supra Search Engine ----
-log "Installing Supra Search Engine..."
-OS_TARBALL=$(find "$SCRIPT_DIR/opensearch" -name "opensearch-*.tar.gz" | head -1)
-if [ -z "$OS_TARBALL" ]; then
-    err "Search engine tarball not found in $SCRIPT_DIR/opensearch/"
-    exit 1
-fi
-
-rm -rf "$INSTALL_DIR/opensearch"
-mkdir -p "$INSTALL_DIR/opensearch"
-tar -xzf "$OS_TARBALL" -C "$INSTALL_DIR/opensearch" --strip-components=1
-
-# Initialize security plugin demo certificates
-SECURITY_PLUGIN_DIR="$INSTALL_DIR/opensearch/plugins/opensearch-security"
-if [ -d "$SECURITY_PLUGIN_DIR" ]; then
-    log "  Initializing security demo certificates..."
-    chmod +x "$SECURITY_PLUGIN_DIR/tools/install_demo_configuration.sh"
-    chmod +x "$SECURITY_PLUGIN_DIR/tools/securityadmin.sh"
-    cd "$INSTALL_DIR/opensearch"
-    export OPENSEARCH_INITIAL_ADMIN_PASSWORD="MyS3cur!tyP@ss"
-    bash "$SECURITY_PLUGIN_DIR/tools/install_demo_configuration.sh" -y -i -s 2>&1 | tail -5
-    unset OPENSEARCH_INITIAL_ADMIN_PASSWORD
-    cd "$SCRIPT_DIR"
-    log "  Security demo certificates installed."
-
-    # Reset admin password hash to default "admin"
-    INTERNAL_USERS="$INSTALL_DIR/opensearch/config/opensearch-security/internal_users.yml"
-    if [ -f "$INTERNAL_USERS" ]; then
-        sed -i '/^admin:/,/^[a-zA-Z]/{s|hash: ".*"|hash: "$2a$12$VcCDgh2NDk07JGN0rjGbM.Ad41qVR/YFJcgHp0UGns5JDymv..TOG"|}' "$INTERNAL_USERS"
-        log "  Admin password reset to default (admin/admin)."
-    fi
-
-    cp "$SCRIPT_DIR/opensearch/opensearch.yml" "$INSTALL_DIR/opensearch/config/opensearch.yml"
-else
-    warn "Security plugin not found. Authentication will not be available."
-    cp "$SCRIPT_DIR/opensearch/opensearch.yml" "$INSTALL_DIR/opensearch/config/opensearch.yml"
-fi
-
-# Set JVM heap (50% of RAM, max 8g)
-TOTAL_MEM_KB=$(grep MemTotal /proc/meminfo | awk '{print $2}')
-HEAP_MB=$(( TOTAL_MEM_KB / 1024 / 2 ))
-if [ "$HEAP_MB" -gt 8192 ]; then HEAP_MB=8192; fi
-if [ "$HEAP_MB" -lt 512 ]; then HEAP_MB=512; fi
-
-JVM_OPTIONS="$INSTALL_DIR/opensearch/config/jvm.options"
-if [ -f "$JVM_OPTIONS" ]; then
-    sed -i "s/^-Xms.*/-Xms${HEAP_MB}m/" "$JVM_OPTIONS"
-    sed -i "s/^-Xmx.*/-Xmx${HEAP_MB}m/" "$JVM_OPTIONS"
-    log "  JVM heap set to ${HEAP_MB}m"
-fi
-
-chown -R "$SUPRA_USER:$SUPRA_GROUP" "$INSTALL_DIR/opensearch"
-
-# Secure PEM certificate file permissions (OpenSearch Security requires 0600)
-for pem_file in esnode.pem esnode-key.pem kirk.pem kirk-key.pem root-ca.pem; do
-    if [ -f "$INSTALL_DIR/opensearch/config/$pem_file" ]; then
-        chmod 600 "$INSTALL_DIR/opensearch/config/$pem_file"
-    fi
-done
-log "  PEM certificate permissions secured."
-
-log "  Supra Search Engine installed to $INSTALL_DIR/opensearch"
-
-# ---- Install Supra License Validator Plugin ----
-log "Installing Supra License Validator plugin..."
-PLUGIN_ZIP=$(find "$SCRIPT_DIR/license-validator" -name "supra-license-validator-*.zip" 2>/dev/null | head -1)
-if [ -n "$PLUGIN_ZIP" ]; then
-    sudo -u "$SUPRA_USER" "$INSTALL_DIR/opensearch/bin/opensearch-plugin" install --batch "file://$PLUGIN_ZIP"
-    log "  License validator plugin installed."
-else
-    warn "  License validator plugin zip not found. Skipping."
-fi
-
-# Create license config directory with secure permissions
-mkdir -p "$INSTALL_DIR/opensearch/config/supra-license"
-if [ -f "$SCRIPT_DIR/license-validator/public.key" ]; then
-    cp "$SCRIPT_DIR/license-validator/public.key" "$INSTALL_DIR/opensearch/config/supra-license/"
-    chmod 600 "$INSTALL_DIR/opensearch/config/supra-license/public.key"
-    log "  Public key installed."
-fi
-if [ -f "$SCRIPT_DIR/license-validator/get-fingerprint.sh" ]; then
-    cp "$SCRIPT_DIR/license-validator/get-fingerprint.sh" "$INSTALL_DIR/opensearch/config/supra-license/"
-    chmod 600 "$INSTALL_DIR/opensearch/config/supra-license/get-fingerprint.sh"
-    log "  Fingerprint tool installed."
-fi
-chown -R "$SUPRA_USER:$SUPRA_GROUP" "$INSTALL_DIR/opensearch/config/supra-license"
-chmod 700 "$INSTALL_DIR/opensearch/config/supra-license"
-
-# ---- Install Index Management Plugin ----
-log "Installing Index Management plugin..."
-IM_PLUGIN_ZIP=$(find "$SCRIPT_DIR/index-management" -name "opensearch-index-management-*.zip" 2>/dev/null | head -1)
-if [ -n "$IM_PLUGIN_ZIP" ]; then
-    sudo -u "$SUPRA_USER" "$INSTALL_DIR/opensearch/bin/opensearch-plugin" install --batch "file://$IM_PLUGIN_ZIP" || {
-        warn "  Index Management plugin install failed."
-        warn "  Plugin zip may be built for a different OpenSearch version."
-        warn "  Continuing install - place a compatible plugin zip and re-run."
-    }
-    log "  Index Management plugin installed."
-else
-    warn "  Index Management plugin zip not found. Skipping."
-fi
-
-# ---- Install Supra Dashboards ----
-log "Installing Supra Dashboards..."
-OSD_TARBALL=$(find "$SCRIPT_DIR/dashboards" -name "opensearch-dashboards-*.tar.gz" | head -1)
-if [ -z "$OSD_TARBALL" ]; then
-    err "Dashboards tarball not found in $SCRIPT_DIR/dashboards/"
-    exit 1
-fi
-
-rm -rf "$INSTALL_DIR/dashboards"
-mkdir -p "$INSTALL_DIR/dashboards"
-tar -xzf "$OSD_TARBALL" -C "$INSTALL_DIR/dashboards" --strip-components=1
-
-# Install extra dashboards plugins
-if [ -d "$SCRIPT_DIR/dashboards-plugins" ]; then
-    for plugin_zip in "$SCRIPT_DIR/dashboards-plugins"/*.zip; do
-        if [ -f "$plugin_zip" ]; then
-            plugin_name=$(basename "$plugin_zip" .zip | sed 's/-[0-9].*//')
-            log "  Installing dashboards plugin: $plugin_name..."
-            unzip -q -o "$plugin_zip" -d /tmp/osd-plugin-tmp 2>/dev/null
-            if [ -d "/tmp/osd-plugin-tmp/opensearch-dashboards" ]; then
-                cp -r /tmp/osd-plugin-tmp/opensearch-dashboards/* "$INSTALL_DIR/dashboards/plugins/"
-                log "  Plugin $plugin_name installed."
-            else
-                warn "  Plugin $plugin_name has unexpected zip structure, skipping."
-            fi
-            rm -rf /tmp/osd-plugin-tmp
-        fi
-    done
-fi
-
-cp "$SCRIPT_DIR/dashboards/opensearch_dashboards.yml" "$INSTALL_DIR/dashboards/config/opensearch_dashboards.yml"
-
-# Add security config if security plugin is present
-if [ -d "$INSTALL_DIR/dashboards/plugins/securityDashboards" ]; then
-    log "  Security plugin detected — adding security config..."
-    cat >> "$INSTALL_DIR/dashboards/config/opensearch_dashboards.yml" <<'SECCONF'
-
-opensearch_security.multitenancy.enabled: false
-opensearch_security.readonly_mode.roles: ["kibana_read_only"]
-opensearch_security.cookie.secure: false
-opensearch_security.ui.basicauth.login.title: "Log in to Supra Dashboard"
-SECCONF
-fi
-
-# Copy branding assets
-BRANDING_DIR="$INSTALL_DIR/dashboards/src/core/server/core_app/assets/default_branding"
-mkdir -p "$BRANDING_DIR"
-if [ -f "$SCRIPT_DIR/branding/scpl.png" ]; then
-    cp "$SCRIPT_DIR/branding/scpl.png" "$BRANDING_DIR/"
-    cp "$SCRIPT_DIR/branding/favicon.png" "$BRANDING_DIR/"
-fi
-
-chown -R "$SUPRA_USER:$SUPRA_GROUP" "$INSTALL_DIR/dashboards"
-log "  Supra Dashboards installed to $INSTALL_DIR/dashboards"
-
-# ---- Install Supra Log Collector ----
-log "Installing Supra Log Collector..."
-
-# Step 1: Install fluent-package (self-contained Fluentd with bundled Ruby)
-FLUENT_GEM="/opt/fluent/bin/fluent-gem"
-if [ -f "$FLUENT_GEM" ]; then
-    log "  fluent-package already installed."
-else
-    FLUENT_DEB=$(find "$SCRIPT_DIR/log-collector" -name "fluent-package_*.deb" 2>/dev/null | head -1)
-    if [ -n "$FLUENT_DEB" ]; then
-        log "  Installing fluent-package from bundled .deb (offline)..."
-        dpkg -i "$FLUENT_DEB" 2>&1 || true
-        apt-get -f install -y --no-download 2>/dev/null || true
-        if [ -f "$FLUENT_GEM" ]; then
-            log "  fluent-package installed successfully."
-        else
-            err "  fluent-package installation failed. Check errors above."
-            warn "Skipping Log Collector installation."
-        fi
-    else
-        err "  fluent-package .deb not found in installer package."
-        warn "Skipping Log Collector installation."
-    fi
-fi
-
-# Step 2: Install fluent-plugin-opensearch
-if [ -f "$FLUENT_GEM" ]; then
-    if $FLUENT_GEM list 2>/dev/null | grep -q fluent-plugin-opensearch; then
-        log "  fluent-plugin-opensearch already installed."
-    else
-        GEMS_DIR="$SCRIPT_DIR/log-collector/gems"
-        if [ -d "$GEMS_DIR" ] && ls "$GEMS_DIR"/*.gem &>/dev/null 2>&1; then
-            log "  Installing fluent-plugin-opensearch from bundled gems (offline)..."
-            $FLUENT_GEM install --no-document --local "$GEMS_DIR"/*.gem 2>&1
-            log "  OpenSearch plugin installed."
-        else
-            log "  No bundled gems found, trying online install..."
-            if $FLUENT_GEM install --no-document fluent-plugin-opensearch 2>&1; then
-                log "  OpenSearch plugin installed (online)."
-            else
-                err "  Failed to install fluent-plugin-opensearch."
-                err "  For offline install, rebuild the installer on a machine with internet."
-            fi
-        fi
-    fi
-
-    # Disable the default fluentd service (we use supra-log-collector instead)
-    systemctl stop fluentd.service 2>/dev/null || true
-    systemctl disable fluentd.service 2>/dev/null || true
-fi
-
-# Step 3: Deploy Supra Log Collector config
-mkdir -p "$INSTALL_DIR/log-collector"
-
-if [ -f "$SCRIPT_DIR/log-collector/fluent.conf" ]; then
-    cp "$SCRIPT_DIR/log-collector/fluent.conf" "$INSTALL_DIR/log-collector/fluent.conf"
-    log "  Using packaged fluent.conf"
-else
-    warn "  Packaged fluent.conf not found, creating default config"
-    cat > "$INSTALL_DIR/log-collector/fluent.conf" <<'FLUENTDCONF'
-## Supra Log Collector Configuration (Fluentd)
-## Ports: 514 (IEDs/UTC), 1514 (Windows/JSON), 2514 (Network devices/IST), 24224 (Forward)
-
-# IED syslog input (UTC timestamps)
-<source>
-  @type syslog
-  port 514
-  bind 0.0.0.0
-  tag ied
-  protocol_type udp
-  <parse>
-    message_format auto
-    timezone +00:00
-  </parse>
-</source>
-
-<source>
-  @type syslog
-  port 514
-  bind 0.0.0.0
-  tag ied
-  protocol_type tcp
-  <parse>
-    message_format auto
-    timezone +00:00
-  </parse>
-</source>
-
-# Windows NXLog input (JSON, IST timestamps)
-<source>
-  @type udp
-  port 1514
-  bind 0.0.0.0
-  tag windows
-  <parse>
-    @type json
-    time_key EventTime
-    time_format %Y-%m-%d %H:%M:%S
-    timezone +05:30
-    keep_time_key true
-  </parse>
-</source>
-
-# Network devices input (IST timestamps) — switches, routers, firewalls
-<source>
-  @type syslog
-  port 2514
-  bind 0.0.0.0
-  tag network
-  protocol_type udp
-  <parse>
-    message_format auto
-    timezone +05:30
-  </parse>
-</source>
-
-<source>
-  @type syslog
-  port 2514
-  bind 0.0.0.0
-  tag network
-  protocol_type tcp
-  <parse>
-    message_format auto
-    timezone +05:30
-  </parse>
-</source>
-
-# Fluentd forward input
-<source>
-  @type forward
-  port 24224
-  bind 0.0.0.0
-</source>
-
-<filter ied.**>
-  @type record_transformer
-  <record>
-    log_collector "supra"
-    source_type "ied"
-  </record>
-</filter>
-
-<filter windows>
-  @type record_transformer
-  <record>
-    log_collector "supra"
-    source_type "windows"
-  </record>
-</filter>
-
-<filter network.**>
-  @type record_transformer
-  <record>
-    log_collector "supra"
-    source_type "network"
-  </record>
-</filter>
-
-<match **>
-  @type opensearch
-  host localhost
-  port 9200
-  scheme https
-  ssl_verify false
-  user admin
-  password admin
-  logstash_format true
-  logstash_prefix supra-logs
-  include_tag_key true
-  tag_key fluentd_tag
-  flush_interval 5s
-  <buffer>
-    @type memory
-    flush_mode interval
-    flush_interval 5s
-    retry_max_interval 30s
-    retry_forever true
-    chunk_limit_size 4MB
-    queue_limit_length 64
-  </buffer>
-</match>
-FLUENTDCONF
-fi
-
-chown -R "$SUPRA_USER:$SUPRA_GROUP" "$INSTALL_DIR/log-collector"
-log "  Supra Log Collector config installed to $INSTALL_DIR/log-collector/"
-
-# ---- Install systemd services ----
-log "Installing systemd services..."
-cp "$SCRIPT_DIR/systemd/supra-search.service" /etc/systemd/system/
-cp "$SCRIPT_DIR/systemd/supra-dashboards.service" /etc/systemd/system/
-cp "$SCRIPT_DIR/systemd/supra-log-collector.service" /etc/systemd/system/
-
-systemctl daemon-reload
-systemctl enable supra-search.service
-systemctl enable supra-dashboards.service
-systemctl enable supra-log-collector.service
-log "  Systemd services installed and enabled."
-
-# ---- Licensing ----
-echo ""
-echo "============================================"
-echo "  Installation Complete!"
-echo "============================================"
-echo ""
-echo "IMPORTANT: License activation required before starting services."
-echo ""
-echo "Step 1: Get this machine's fingerprint:"
-echo "  sudo bash $INSTALL_DIR/opensearch/config/supra-license/get-fingerprint.sh"
-echo ""
-echo "Step 2: Send the fingerprint (MFP) to your Supra vendor to receive a license.key file."
-echo ""
-echo "Step 3: Place the license file:"
-echo "  sudo cp license.key $INSTALL_DIR/opensearch/config/supra-license/"
-echo "  sudo chown $SUPRA_USER:$SUPRA_GROUP $INSTALL_DIR/opensearch/config/supra-license/license.key"
-echo "  sudo chmod 600 $INSTALL_DIR/opensearch/config/supra-license/license.key"
-echo ""
-echo "Step 4: Start services and initialize security:"
-echo "  sudo systemctl start supra-search"
-echo "  # Wait ~30 seconds for Search Engine to be ready, then initialize security:"
-echo "  sudo -u supra env JAVA_HOME=$INSTALL_DIR/opensearch/jdk bash $INSTALL_DIR/opensearch/plugins/opensearch-security/tools/securityadmin.sh -cd $INSTALL_DIR/opensearch/config/opensearch-security/ -icl -nhnv -cacert $INSTALL_DIR/opensearch/config/root-ca.pem -cert $INSTALL_DIR/opensearch/config/kirk.pem -key $INSTALL_DIR/opensearch/config/kirk-key.pem"
-echo "  sudo systemctl start supra-dashboards"
-echo "  sudo systemctl start supra-log-collector"
-echo ""
-echo "Services:"
-echo "  Supra Search Engine:   https://localhost:9200"
-echo "  Supra Dashboards:      http://localhost:5601"
-echo "  Supra Log Collector:   UDP/514 (IEDs), UDP/1514 (Windows), UDP/2514 (network devices), TCP/24224 (forward)"
-echo ""
-echo "Credentials:"
-echo "  Username: admin"
-echo "  Password: admin"
-echo ""
-echo "Manage services:"
-echo "  sudo systemctl {start|stop|restart|status} supra-search"
-echo "  sudo systemctl {start|stop|restart|status} supra-dashboards"
-echo "  sudo systemctl {start|stop|restart|status} supra-log-collector"
-echo ""
-echo "Logs:"
-echo "  journalctl -u supra-search -f"
-echo "  journalctl -u supra-dashboards -f"
-echo "  journalctl -u supra-log-collector -f"
-echo ""
-echo "Install directory: $INSTALL_DIR"
-echo ""
-INSTALL_SCRIPT
+cp "$INSTALLER_SRC/install.sh" "$STAGING/install.sh"
 
 chmod +x "$STAGING/install.sh"
 
 # ---------------------------------------------------------------------------
 # Create uninstall script
 # ---------------------------------------------------------------------------
-cat > "$STAGING/uninstall.sh" <<'UNINSTALL_SCRIPT'
-#!/bin/bash
-set -e
-
-if [ "$EUID" -ne 0 ]; then
-    echo "ERROR: This script must be run as root."
-    exit 1
-fi
-
-echo "Stopping services..."
-systemctl stop supra-dashboards.service 2>/dev/null || true
-systemctl stop supra-log-collector.service 2>/dev/null || true
-systemctl stop supra-search.service 2>/dev/null || true
-
-echo "Disabling services..."
-systemctl disable supra-search.service 2>/dev/null || true
-systemctl disable supra-dashboards.service 2>/dev/null || true
-systemctl disable supra-log-collector.service 2>/dev/null || true
-
-echo "Removing service files..."
-rm -f /etc/systemd/system/supra-search.service
-rm -f /etc/systemd/system/supra-dashboards.service
-rm -f /etc/systemd/system/supra-log-collector.service
-systemctl daemon-reload
-
-echo "Removing fluent-package..."
-dpkg -r fluent-package 2>/dev/null || true
-
-echo "Removing installation directory..."
-rm -rf /opt/supra
-
-echo "Removing sysctl config..."
-rm -f /etc/sysctl.d/99-supra.conf
-sysctl --system > /dev/null 2>&1
-
-echo ""
-echo "Supra stack uninstalled."
-echo "Note: The 'supra' user was not removed. To remove: sudo userdel -r supra"
-UNINSTALL_SCRIPT
+cp "$INSTALLER_SRC/uninstall.sh" "$STAGING/uninstall.sh"
 
 chmod +x "$STAGING/uninstall.sh"
 

@@ -1,0 +1,21 @@
+# Systemd-enabled Ubuntu base for offline installer testing.
+# Built ONCE per codename WITH network (to add systemd — the test scaffolding).
+# The Supra installer itself is then run in a container started with
+# `--network none`, proving it needs zero internet.
+ARG CODENAME=jammy
+FROM ubuntu:${CODENAME}
+
+ENV DEBIAN_FRONTEND=noninteractive container=docker
+# systemd (for systemctl), plus tools the installer/verifier expect on a real host.
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+        systemd systemd-sysv dbus \
+        curl iproute2 procps sudo ca-certificates \
+        rsyslog && \
+    apt-get clean && rm -rf /var/lib/apt/lists/* && \
+    # Disable units that fight a containerized init.
+    find /etc/systemd/system /lib/systemd/system -name '*.wants' -prune -o \
+         -name 'systemd-*udev*' -print 2>/dev/null | true
+
+STOPSIGNAL SIGRTMIN+3
+CMD ["/lib/systemd/systemd"]

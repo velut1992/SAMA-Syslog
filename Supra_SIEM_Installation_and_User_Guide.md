@@ -1,8 +1,8 @@
 # Supra SIEM Platform - Installation and User Guide
 
 **Version:** 3.6.0
-**Date:** March 2026
-**Platform:** Linux x64 (Ubuntu/Debian/RHEL/CentOS)
+**Date:** June 2026
+**Platform:** Ubuntu 22.04 LTS (jammy), x86_64 — fully offline installer
 
 ---
 
@@ -14,7 +14,7 @@
 4. [Installation](#4-installation)
 5. [Post-Installation Verification](#5-post-installation-verification)
 6. [Syslog Configuration on Devices](#6-syslog-configuration-on-devices)
-7. [Fluentd Configuration](#7-fluentd-configuration)
+7. [Log Collector (Fluentd) Configuration](#7-log-collector-fluentd-configuration)
 8. [Index Management](#8-index-management)
 9. [Creating Users and Roles](#9-creating-users-and-roles)
 10. [Dashboards Setup](#10-dashboards-setup)
@@ -32,11 +32,12 @@
 
 Supra SIEM is a centralized log management and security analytics platform built on:
 
-| Component | Purpose | Port |
-|-----------|---------|------|
-| **OpenSearch 3.6.0** | Log storage, indexing, and search engine | 9200 (HTTPS) |
-| **OpenSearch Dashboards** | Web UI for visualization, dashboards, and alerts | 5601 (HTTP) |
-| **Fluentd** | Log collector - receives syslog from devices | 5140 (syslog), 24224 (forward) |
+| Component | systemd service | Purpose | Port |
+|-----------|-----------------|---------|------|
+| **Supra Search Engine** (OpenSearch 3.6.0 + Supra License Validator + Index Management) | `supra-search` | Log storage, indexing, search engine, license enforcement | 9200 (HTTPS) |
+| **Supra Dashboards** (OpenSearch Dashboards + SIEM plugins) | `supra-dashboards` | Web UI for visualization, dashboards, alerts | 5601 (HTTP) |
+| **Supra Log Collector** (fluent-package 5.0.9 + fluent-plugin-opensearch) | `supra-log-collector` | Receives syslog from devices and forwards to the search engine | 514 (syslog), 24224 (forward) |
+| **Supra Index Template** (one-shot) | `supra-index-template` | Auto-applies the `supra-*` index template once the search engine is healthy | — |
 
 **What it does:**
 - Collects syslog from network devices (routers, switches, firewalls, IEDs, servers)
@@ -55,29 +56,32 @@ Supra SIEM is a centralized log management and security analytics platform built
 +--------+---------+     +--------+---------+     +--------+---------+
          |                        |                        |
          |    Syslog (UDP/TCP)    |     Syslog (UDP/TCP)   |
-         |    Port 5140           |     Port 5140          |
+         |    Port 514           |     Port 514          |
          +----------+------------+----------+--------------+
                     |                       |
                     v                       v
            +--------+-----------------------+--------+
-           |              Fluentd                     |
-           |  - Receives syslog on port 5140          |
-           |  - Receives forwarded logs on port 24224 |
-           |  - Parses and tags logs                  |
+           |          Supra Log Collector             |
+           |  (fluent-package 5.0.9 + opensearch out) |
+           |  - Receives syslog on UDP/514            |
+           |  - Receives forwarded logs on TCP/24224  |
+           |  - Tags, enriches, ships to search       |
            +-------------------+----------------------+
                                |
                                | HTTPS (port 9200)
                                v
            +-------------------+----------------------+
-           |             OpenSearch                    |
+           |           Supra Search Engine            |
+           |       (OpenSearch + License Validator)   |
            |  - Indexes and stores logs               |
-           |  - Full-text search                      |
-           |  - Security analytics                    |
+           |  - supra-index-template one-shot         |
+           |    auto-applies the supra-* template     |
+           |  - Full-text search + security analytics |
            +-------------------+----------------------+
                                |
                                v
            +-------------------+----------------------+
-           |       OpenSearch Dashboards               |
+           |            Supra Dashboards              |
            |  - Web UI (port 5601)                    |
            |  - Dashboards & Visualizations           |
            |  - Alerts & Notifications                |
@@ -100,9 +104,17 @@ Supra SIEM is a centralized log management and security analytics platform built
 
 ### Software Requirements
 
-- Linux x64 (Ubuntu 20.04+, RHEL 8+, CentOS 8+, Debian 10+)
-- Ruby 3.0+ (for Fluentd)
-- Root/sudo access
+- **Ubuntu 22.04 LTS (jammy), x86_64 only.** The installer is fully offline and the
+  bundled `fluent-package` `.deb`s link against jammy library ABIs (`libssl3`,
+  `libffi8`, `libreadline8`, `libncurses6`, `libtinfo6`, `libyaml-0-2`,
+  `libgmp10`, `zlib1g`). `install.sh` enforces this and refuses to run on
+  20.04/24.04/RHEL/CentOS or non-amd64.
+- **No internet access required.** Everything ships in the tarball: OpenSearch,
+  OpenSearch Dashboards, dashboards plugins, fluent-package, all of
+  fluent-plugin-opensearch's pure-Ruby dependency gems, and the index-template
+  bootstrap. Ruby is **not** a prerequisite — fluent-package brings its own
+  embedded Ruby at `/opt/fluent/`.
+- Root / sudo access.
 
 ### Network Requirements
 
@@ -110,24 +122,17 @@ Ensure the following ports are open on the Supra server:
 
 | Port | Protocol | Direction | Purpose |
 |------|----------|-----------|---------|
-| 5140 | UDP/TCP | Inbound | Syslog from devices |
+| 514 | UDP | Inbound | Syslog from devices |
 | 24224 | TCP | Inbound | Fluentd forward protocol |
-| 9200 | TCP | Localhost | OpenSearch API |
-| 5601 | TCP | Inbound | Dashboards Web UI |
+| 9200 | TCP | Localhost | Supra Search Engine API |
+| 5601 | TCP | Inbound | Supra Dashboards Web UI |
 
-### Firewall Rules (on the Supra server)
+### Firewall Rules (on the Supra server, Ubuntu 22.04 / ufw)
 
 ```bash
-# Ubuntu/Debian (ufw)
-sudo ufw allow 5140/udp comment "Syslog UDP"
-sudo ufw allow 5140/tcp comment "Syslog TCP"
-sudo ufw allow 5601/tcp comment "Supra Dashboards"
-
-# RHEL/CentOS (firewalld)
-sudo firewall-cmd --permanent --add-port=5140/udp
-sudo firewall-cmd --permanent --add-port=5140/tcp
-sudo firewall-cmd --permanent --add-port=5601/tcp
-sudo firewall-cmd --reload
+sudo ufw allow 514/udp comment "Supra syslog (UDP)"
+sudo ufw allow 24224/tcp comment "Supra fluentd forward"
+sudo ufw allow 5601/tcp comment "Supra Dashboards UI"
 ```
 
 ---
@@ -157,27 +162,61 @@ sudo bash install.sh
 ```
 
 The installer will automatically:
-1. Create a `supra` system user
-2. Apply system tuning (`vm.max_map_count=262144`)
-3. Install OpenSearch to `/opt/supra/opensearch`
-4. Initialize security certificates and default credentials
-5. Install OpenSearch Dashboards to `/opt/supra/dashboards`
-6. Install extra plugins (Security Analytics, Index Management, Notifications)
-7. Install Fluentd and configure it
-8. Create and enable systemd services
-9. Start all services
+1. Verify host OS is Ubuntu 22.04 jammy / amd64, and abort otherwise
+2. Create a `supra` system user
+3. Apply system tuning (`vm.max_map_count=262144`)
+4. Install Supra Search Engine to `/opt/supra/opensearch`, install the Supra
+   License Validator plugin, install the Index Management plugin
+5. Initialize security certificates and default credentials (admin/admin)
+6. Install Supra Dashboards to `/opt/supra/dashboards` with all SIEM plugins
+7. Install **Supra Log Collector** fully offline:
+   - Install jammy dependency libs from bundled `.deb`s
+   - Install `fluent-package` 5.0.9 (embedded Ruby at `/opt/fluent/`)
+   - Install `fluent-plugin-opensearch` from bundled `.gem`s (`--local --ignore-dependencies`)
+   - Deploy the bundled `fluent.conf` to `/opt/supra/log-collector/`
+   - Disable the stock `fluentd.service` shipped with fluent-package
+8. Install the index-template bootstrap script to `/opt/supra/index-template/`
+9. Install and **enable** (but do not start) four systemd services:
+   `supra-search`, `supra-dashboards`, `supra-log-collector`, `supra-index-template`
 
-### Step 4: Verify Installation
+> **Note:** Services are not started by the installer — license activation
+> must happen first (Step 4). The `supra-index-template` one-shot will fire
+> automatically as soon as `supra-search` is started and reports healthy on
+> `:9200`.
+
+### Step 4: License Activation
+
+Activation is required before the search engine will accept queries.
 
 ```bash
-# Check OpenSearch
+# 1. Get this machine's fingerprint (MFP):
+sudo bash /opt/supra/opensearch/config/supra-license/get-fingerprint.sh
+
+# 2. Send the MFP to your Supra vendor and receive license.key in return.
+
+# 3. Install the license:
+sudo cp license.key /opt/supra/opensearch/config/supra-license/
+sudo chown supra:supra /opt/supra/opensearch/config/supra-license/license.key
+sudo chmod 600 /opt/supra/opensearch/config/supra-license/license.key
+```
+
+### Step 5: Start Services and Verify
+
+```bash
+# Start the search engine first
+sudo systemctl start supra-search
+
+# supra-index-template auto-fires once :9200 is healthy. To watch it:
+journalctl -u supra-index-template -f
+
+# Once supra-search is up, start the rest
+sudo systemctl start supra-dashboards
+sudo systemctl start supra-log-collector
+
+# Verify
 curl -sk -u admin:admin https://localhost:9200
-
-# Check Dashboards (wait 1-2 minutes for startup)
 curl -s -o /dev/null -w "%{http_code}" http://localhost:5601
-
-# Check all services
-sudo systemctl status opensearch opensearch-dashboards fluentd
+sudo systemctl status supra-search supra-dashboards supra-log-collector supra-index-template
 ```
 
 ### Default Credentials
@@ -210,35 +249,49 @@ curl -sk -u admin:admin https://localhost:9200/_cluster/health?pretty
 
 Expected output should show `"status": "green"` or `"yellow"` (yellow is normal for single-node).
 
-### 5.3 Verify Fluentd is Running
+### 5.3 Verify Log Collector is Running
 
 ```bash
-sudo systemctl status fluentd
+sudo systemctl status supra-log-collector
 
-# Test syslog reception
-logger -n 127.0.0.1 -P 5140 -d "Test syslog message from Supra"
+# Test syslog reception (UDP/514 is privileged - logger needs sudo)
+sudo logger -n 127.0.0.1 -P 514 -d "Test syslog message from Supra"
 ```
 
-### 5.4 Verify Logs are Being Indexed
+### 5.4 Verify the Index Template Has Been Applied
+
+The `supra-index-template` one-shot installs an index template named
+`supra-logs` covering all `supra-*` indices. This is what prevents the
+"400 - Rejected by OpenSearch" mapping conflicts from heterogeneous syslog.
 
 ```bash
-# Check for fluentd indices
+# Confirm it ran cleanly
+journalctl -u supra-index-template --no-pager | tail -20
+
+# Inspect the template itself
+curl -sk -u admin:admin https://localhost:9200/_index_template/supra-logs?pretty
+```
+
+### 5.5 Verify Logs are Being Indexed
+
+```bash
+# Check for supra-logs indices
 curl -sk -u admin:admin https://localhost:9200/_cat/indices?v
 ```
 
-You should see indices like `fluentd-YYYY.MM.DD`.
+You should see indices like `supra-logs-YYYY.MM.DD`.
 
 ---
 
 ## 6. Syslog Configuration on Devices
 
-Configure your network devices, servers, and applications to send syslog to the Supra server on **port 5140 (UDP)**.
+Configure your network devices, servers, and applications to send syslog to the Supra server on **port 514 (UDP)**.
 
 ### 6.1 Cisco Routers and Switches (IOS/IOS-XE)
 
 ```
 configure terminal
-logging host <SUPRA_SERVER_IP> transport udp port 5140
+logging host <SUPRA_SERVER_IP> transport udp port 514
 logging trap informational
 logging facility local7
 logging source-interface Loopback0
@@ -256,7 +309,7 @@ show logging
 
 ```
 configure terminal
-logging server <SUPRA_SERVER_IP> 6 port 5140 facility local7
+logging server <SUPRA_SERVER_IP> 6 port 514 facility local7
 logging source-interface loopback0
 logging timestamp milliseconds
 end
@@ -266,7 +319,7 @@ copy running-config startup-config
 ### 6.3 Juniper Routers and Switches (Junos)
 
 ```
-set system syslog host <SUPRA_SERVER_IP> port 5140
+set system syslog host <SUPRA_SERVER_IP> port 514
 set system syslog host <SUPRA_SERVER_IP> any info
 set system syslog host <SUPRA_SERVER_IP> authorization any
 set system syslog host <SUPRA_SERVER_IP> firewall any
@@ -286,7 +339,7 @@ show system syslog
    - **Name:** `Supra-SIEM`
    - **Syslog Server:** `<SUPRA_SERVER_IP>`
    - **Transport:** `UDP`
-   - **Port:** `5140`
+   - **Port:** `514`
    - **Facility:** `LOG_LOCAL7`
 3. Navigate to **Objects > Log Forwarding** and create a profile using the syslog server
 4. Apply the log forwarding profile to security rules under **Policies > Security**
@@ -298,7 +351,7 @@ show system syslog
 config log syslogd setting
     set status enable
     set server "<SUPRA_SERVER_IP>"
-    set port 5140
+    set port 514
     set facility local7
     set source-ip ""
     set format default
@@ -317,10 +370,10 @@ Edit `/etc/rsyslog.conf` or create `/etc/rsyslog.d/supra.conf`:
 
 ```bash
 # Send all logs to Supra via UDP
-*.* @<SUPRA_SERVER_IP>:5140
+*.* @<SUPRA_SERVER_IP>:514
 
 # Or via TCP (more reliable)
-*.* @@<SUPRA_SERVER_IP>:5140
+*.* @@<SUPRA_SERVER_IP>:514
 ```
 
 Restart rsyslog:
@@ -340,7 +393,7 @@ Edit `/etc/syslog-ng/syslog-ng.conf`:
 
 ```
 destination d_supra {
-    network("<SUPRA_SERVER_IP>" port(5140) transport("udp"));
+    network("<SUPRA_SERVER_IP>" port(514) transport("udp"));
 };
 
 log {
@@ -374,7 +427,7 @@ Windows does not natively support syslog. Use one of these agents:
 <Output out_supra>
     Module      om_udp
     Host        <SUPRA_SERVER_IP>
-    Port        5140
+    Port        514
     Exec        to_syslog_bsd();
 </Output>
 
@@ -388,7 +441,7 @@ Windows does not natively support syslog. Use one of these agents:
 **Option B: Snare Agent**
 
 1. Download and install Snare for Windows
-2. Configure the syslog destination: `<SUPRA_SERVER_IP>:5140` (UDP)
+2. Configure the syslog destination: `<SUPRA_SERVER_IP>:514` (UDP)
 3. Select event log sources (Security, System, Application)
 
 ### 6.9 IED Devices (Intelligent Electronic Devices - IEC 61850)
@@ -399,7 +452,7 @@ IED configuration varies by manufacturer. General steps:
 1. Access the IED via PCM600 engineering tool
 2. Navigate to **Communication > Syslog**
 3. Set **Syslog Server IP:** `<SUPRA_SERVER_IP>`
-4. Set **Syslog Port:** `5140`
+4. Set **Syslog Port:** `514`
 5. Set **Severity Level:** `Informational`
 6. Download configuration to IED
 
@@ -408,7 +461,7 @@ IED configuration varies by manufacturer. General steps:
 2. Navigate to **Communication > Syslog Client**
 3. Configure:
    - Server Address: `<SUPRA_SERVER_IP>`
-   - Server Port: `5140`
+   - Server Port: `514`
    - Protocol: UDP
 4. Transfer settings to device
 
@@ -417,21 +470,21 @@ IED configuration varies by manufacturer. General steps:
 2. Configure syslog:
 ```
 SET SYSLOG_IP1 <SUPRA_SERVER_IP>
-SET SYSLOG_PORT1 5140
+SET SYSLOG_PORT1 514
 SET SYSLOG_SEV INFO
 ```
 
 **GE Multilin:**
 1. Access via EnerVista software
 2. Navigate to **Settings > Communications > Syslog**
-3. Set Server IP and Port (5140)
+3. Set Server IP and Port (514)
 
 > **Note:** If the IED does not support syslog natively, use a gateway/relay server running rsyslog to collect IED logs (serial, GOOSE, MMS) and forward them to Supra.
 
 ### 6.10 HP/Aruba Switches
 
 ```
-logging <SUPRA_SERVER_IP> transport udp 5140
+logging <SUPRA_SERVER_IP> transport udp 514
 logging severity info
 logging facility local7
 ```
@@ -439,7 +492,7 @@ logging facility local7
 ### 6.11 VMware ESXi
 
 ```bash
-esxcli system syslog config set --loghost='udp://<SUPRA_SERVER_IP>:5140'
+esxcli system syslog config set --loghost='udp://<SUPRA_SERVER_IP>:514'
 esxcli system syslog reload
 ```
 
@@ -450,44 +503,99 @@ esxcli system syslog config get
 
 ---
 
-## 7. Fluentd Configuration
+## 7. Log Collector (Fluentd) Configuration
 
-The Fluentd configuration file is located at:
+The log collector is shipped as `fluent-package` 5.0.9, with its own embedded
+Ruby and binaries under `/opt/fluent/`. The systemd unit invokes it as:
 
 ```
-/opt/supra/fluentd/fluent.conf
+/opt/fluent/bin/fluentd -c /opt/supra/log-collector/fluent.conf
 ```
+
+The configuration file lives at:
+
+```
+/opt/supra/log-collector/fluent.conf
+```
+
+> **Air-gapped install — read this before editing.** Do **not** run
+> `gem install ...` to add plugins on a deployed box. The server has no
+> internet access. If you need an extra Fluentd plugin, build the bundle
+> on a build host (`fluent-gem fetch <plugin>`), copy the resulting `.gem`s
+> to the target, and install with:
+> ```bash
+> sudo /opt/fluent/bin/fluent-gem install --local --ignore-dependencies *.gem
+> sudo systemctl restart supra-log-collector
+> ```
 
 ### 7.1 Default Configuration
 
-```xml
-# Syslog input - receives syslog from all devices
+The installer deploys this config (lightly trimmed for the guide; see the
+real file on disk for full debug/enrichment blocks):
+
+```
+<system>
+  log_level info
+</system>
+
+# Syslog input (UDP/514) - all devices and NXLog agents land here.
 <source>
   @type syslog
-  port 5140
-  tag system
+  port 514
+  bind 0.0.0.0
+  tag syslog
+  <parse>
+    message_format auto
+  </parse>
 </source>
 
-# Forward input - for Fluentd-to-Fluentd forwarding
+# Forward input (TCP/24224) - from other Fluentd / fluent-bit agents.
 <source>
   @type forward
   port 24224
+  bind 0.0.0.0
 </source>
 
-# Send all logs to OpenSearch
+# Tag every syslog message with the collector identity.
+<filter syslog.**>
+  @type record_transformer
+  <record>
+    log_collector "supra"
+  </record>
+</filter>
+
+# Ship everything to the Supra search engine.
 <match **>
-  @type opensearch
-  host localhost
-  port 9200
-  scheme https
-  ssl_verify false
-  user admin
-  password admin
-  logstash_format true
-  logstash_prefix fluentd
-  flush_interval 10s
+  @type copy
+  <store>
+    @type opensearch
+    host localhost
+    port 9200
+    scheme https
+    ssl_verify false
+    user admin
+    password admin
+    logstash_format true
+    logstash_prefix supra-logs
+    include_tag_key true
+    tag_key fluentd_tag
+    flush_interval 5s
+    <buffer>
+      @type memory
+      flush_mode interval
+      flush_interval 5s
+      retry_max_interval 30s
+      retry_forever true
+      chunk_limit_size 4MB
+      queue_limit_length 64
+    </buffer>
+  </store>
 </match>
 ```
+
+Daily indices land at `supra-logs-YYYY.MM.DD` and inherit the `supra-logs`
+index template applied by `supra-index-template.service` (date detection off,
+keyword by default, `ignore_malformed: true`).
 
 ### 7.2 Advanced: Separate Indices per Device Type
 
@@ -497,7 +605,7 @@ To create separate indices for different device types, update the Fluentd config
 # Syslog input with facility-based tagging
 <source>
   @type syslog
-  port 5140
+  port 514
   tag syslog
   <parse>
     message_format auto
@@ -605,14 +713,22 @@ To create separate indices for different device types, update the Fluentd config
 </match>
 ```
 
-Install the required plugin:
+The `fluent-plugin-rewrite-tag-filter` plugin is required for the example
+above. On an air-gapped server it must be staged from `.gem`s, not pulled
+from rubygems.org:
+
 ```bash
-sudo gem install fluent-plugin-rewrite-tag-filter --no-document
+# On a build host with internet:
+/opt/fluent/bin/fluent-gem fetch fluent-plugin-rewrite-tag-filter
+# (also fetch any dependency .gem files it reports)
+
+# Then copy the .gem(s) to the target server and install offline:
+sudo /opt/fluent/bin/fluent-gem install --local --ignore-dependencies *.gem
 ```
 
 After any config change:
 ```bash
-sudo systemctl restart fluentd
+sudo systemctl restart supra-log-collector
 ```
 
 ### 7.3 Enable TCP Syslog (in addition to UDP)
@@ -620,14 +736,14 @@ sudo systemctl restart fluentd
 ```xml
 <source>
   @type syslog
-  port 5140
+  port 514
   protocol_type udp
   tag syslog.udp
 </source>
 
 <source>
   @type syslog
-  port 5140
+  port 514
   protocol_type tcp
   tag syslog.tcp
 </source>
@@ -651,7 +767,7 @@ curl -sk -u admin:admin https://localhost:9200/_cat/indices?v&s=index
 
 1. Go to **Menu > Stack Management > Index Patterns**
 2. Click **Create index pattern**
-3. Enter the pattern: `fluentd-*` (or `router-logs-*`, `firewall-logs-*`, etc.)
+3. Enter the pattern: `supra-logs-*` (or `router-logs-*`, `firewall-logs-*`, etc.)
 4. Select `@timestamp` as the time field
 5. Click **Create index pattern**
 
@@ -695,7 +811,7 @@ Create a policy to automatically delete old logs:
     ],
     "ism_template": [
       {
-        "index_patterns": ["fluentd-*"],
+        "index_patterns": ["supra-logs-*"],
         "priority": 100
       }
     ]
@@ -730,7 +846,7 @@ curl -sk -u admin:admin -X PUT \
         }
       ],
       "ism_template": [
-        { "index_patterns": ["fluentd-*"], "priority": 100 }
+        { "index_patterns": ["supra-logs-*"], "priority": 100 }
       ]
     }
   }'
@@ -745,7 +861,7 @@ curl -sk -u admin:admin -X PUT \
   https://localhost:9200/_index_template/syslog-template \
   -H "Content-Type: application/json" \
   -d '{
-    "index_patterns": ["fluentd-*", "router-logs-*", "switch-logs-*", "firewall-logs-*", "ied-logs-*"],
+    "index_patterns": ["supra-logs-*", "router-logs-*", "switch-logs-*", "firewall-logs-*", "ied-logs-*"],
     "template": {
       "settings": {
         "number_of_shards": 1,
@@ -797,11 +913,21 @@ sudo -u supra $OPENSEARCH_JAVA_HOME/bin/java -cp "/opt/supra/opensearch/plugins/
   -key /opt/supra/opensearch/config/kirk-key.pem
 ```
 
-**Step 4:** Update the Fluentd config with the new password:
+**Step 4:** Update the Log Collector config with the new password:
 ```bash
-sudo nano /opt/supra/fluentd/fluent.conf
+sudo nano /opt/supra/log-collector/fluent.conf
 # Change: password admin -> password YOUR_NEW_PASSWORD
-sudo systemctl restart fluentd
+sudo systemctl restart supra-log-collector
+```
+
+**Step 5:** Update the index-template service environment with the new password
+so the one-shot can still authenticate on re-runs:
+```bash
+sudo systemctl edit supra-index-template.service
+# In the override, add:
+#   [Service]
+#   Environment=OS_PASS=YOUR_NEW_PASSWORD
+sudo systemctl daemon-reload
 ```
 
 ### 9.2 Create a New Role
@@ -816,7 +942,7 @@ sudo systemctl restart fluentd
 |-------|---------------------------|
 | Role name | `soc_analyst` |
 | Cluster permissions | `cluster_monitor` |
-| Index patterns | `fluentd-*`, `firewall-logs-*`, `router-logs-*` |
+| Index patterns | `supra-logs-*`, `firewall-logs-*`, `router-logs-*` |
 | Index permissions | `read`, `search` |
 | Tenant permissions | Global (Read Only) |
 
@@ -831,7 +957,7 @@ curl -sk -u admin:admin -X PUT \
     "cluster_permissions": ["cluster_monitor"],
     "index_permissions": [
       {
-        "index_patterns": ["fluentd-*", "firewall-logs-*", "router-logs-*", "switch-logs-*", "ied-logs-*"],
+        "index_patterns": ["supra-logs-*", "firewall-logs-*", "router-logs-*", "switch-logs-*", "ied-logs-*"],
         "allowed_actions": ["read", "search"]
       }
     ],
@@ -923,27 +1049,27 @@ curl -sk -u admin:admin -X PUT \
 
 **Example 1: Log Volume Over Time (Area Chart)**
 - Type: **Area**
-- Index pattern: `fluentd-*`
+- Index pattern: `supra-logs-*`
 - Y-axis: Count
 - X-axis: Date Histogram on `@timestamp` (interval: hourly)
 - Save as: "Log Volume Over Time"
 
 **Example 2: Top Log Sources (Pie Chart)**
 - Type: **Pie**
-- Index pattern: `fluentd-*`
+- Index pattern: `supra-logs-*`
 - Slice: Terms aggregation on `host` (size: 10)
 - Save as: "Top Log Sources"
 
 **Example 3: Severity Distribution (Bar Chart)**
 - Type: **Vertical Bar**
-- Index pattern: `fluentd-*`
+- Index pattern: `supra-logs-*`
 - Y-axis: Count
 - X-axis: Terms on `severity` or `priority`
 - Save as: "Log Severity Distribution"
 
 **Example 4: Recent Logs Table**
 - Type: **Data Table**
-- Index pattern: `fluentd-*`
+- Index pattern: `supra-logs-*`
 - Columns: `@timestamp`, `host`, `ident`, `severity`, `message`
 - Save as: "Recent Log Events"
 
@@ -1009,7 +1135,7 @@ Before creating alerts, set up where notifications should be sent:
 **Example 1: High Volume Alert (DDoS/Log Storm)**
 - Name: `High Log Volume Alert`
 - Method: Visual editor
-- Index: `fluentd-*`
+- Index: `supra-logs-*`
 - Time field: `@timestamp`
 - Frequency: Every 5 minutes
 - Condition: Count is ABOVE `10000` in the last `5 minutes`
@@ -1051,7 +1177,7 @@ Before creating alerts, set up where notifications should be sent:
 **Example 5: Device Offline (No Logs Received)**
 - Name: `Device Offline Detection`
 - Method: Visual editor
-- Index: `fluentd-*`
+- Index: `supra-logs-*`
 - Condition: Count from a specific host is BELOW `1` in the last `15 minutes`
 - Action: Send notification to `SOC-Email`
 
@@ -1106,7 +1232,7 @@ The Security Analytics plugin provides threat detection using pre-built and cust
 2. Click **Create detector**
 3. Configure:
    - **Name:** `Network Threat Detector`
-   - **Data source:** `fluentd-*` (or `firewall-logs-*`)
+   - **Data source:** `supra-logs-*` (or `firewall-logs-*`)
    - **Log type:** Select appropriate type (e.g., `network`, `linux`, `windows`)
    - **Detection rules:** Select from pre-built rules or add custom ones
    - **Schedule:** Run every 1 minute
@@ -1163,52 +1289,76 @@ tags:
 
 ```bash
 # All services
-sudo systemctl start opensearch opensearch-dashboards fluentd
-sudo systemctl stop opensearch-dashboards fluentd opensearch
-sudo systemctl restart opensearch opensearch-dashboards fluentd
+sudo systemctl start supra-search supra-dashboards supra-log-collector
+sudo systemctl stop supra-dashboards supra-log-collector supra-search
+sudo systemctl restart supra-search supra-dashboards supra-log-collector
 
 # Individual services
-sudo systemctl start opensearch
-sudo systemctl stop opensearch
-sudo systemctl restart opensearch
+sudo systemctl start supra-search
+sudo systemctl stop supra-search
+sudo systemctl restart supra-search
 
-sudo systemctl start opensearch-dashboards
-sudo systemctl stop opensearch-dashboards
+sudo systemctl start supra-dashboards
+sudo systemctl stop supra-dashboards
 
-sudo systemctl start fluentd
-sudo systemctl stop fluentd
+sudo systemctl start supra-log-collector
+sudo systemctl stop supra-log-collector
 ```
 
 ### Check Service Status
 
 ```bash
-sudo systemctl status opensearch opensearch-dashboards fluentd
+sudo systemctl status supra-search supra-dashboards supra-log-collector supra-index-template
+```
+
+### The `supra-index-template` One-shot
+
+`supra-index-template.service` is a `Type=oneshot` unit that fires whenever
+`supra-search` is started. It polls `:9200/_cluster/health` for up to ~5 min,
+then PUTs the `supra-logs` index template. Re-runs are idempotent, so it is
+safe to restart manually:
+
+```bash
+sudo systemctl restart supra-index-template
+journalctl -u supra-index-template --no-pager | tail -30
+```
+
+Timeout / credentials can be tuned via a systemd override:
+
+```bash
+sudo systemctl edit supra-index-template.service
+# Example override:
+#   [Service]
+#   Environment=OS_BOOT_RETRIES=40
+#   Environment=OS_BOOT_SLEEP=15
+#   Environment=OS_PASS=YOUR_NEW_PASSWORD
+sudo systemctl daemon-reload
 ```
 
 ### View Logs
 
 ```bash
 # OpenSearch logs
-journalctl -u opensearch -f
+journalctl -u supra-search -f
 
 # Dashboards logs
-journalctl -u opensearch-dashboards -f
+journalctl -u supra-dashboards -f
 
-# Fluentd logs
-journalctl -u fluentd -f
+# Log Collector logs
+journalctl -u supra-log-collector -f
 
 # All Supra logs
-journalctl -u opensearch -u opensearch-dashboards -u fluentd --since "1 hour ago"
+journalctl -u supra-search -u supra-dashboards -u supra-log-collector -u supra-index-template --since "1 hour ago"
 ```
 
 ### Enable/Disable Auto-Start on Boot
 
 ```bash
 # Enable auto-start
-sudo systemctl enable opensearch opensearch-dashboards fluentd
+sudo systemctl enable supra-search supra-dashboards supra-log-collector
 
 # Disable auto-start
-sudo systemctl disable opensearch opensearch-dashboards fluentd
+sudo systemctl disable supra-search supra-dashboards supra-log-collector
 ```
 
 ---
@@ -1245,7 +1395,7 @@ curl -sk -u admin:admin -X PUT \
 curl -sk -u admin:admin -X POST \
   https://localhost:9200/_snapshot/supra_backup/snapshot_20260306/_restore \
   -H "Content-Type: application/json" \
-  -d '{ "indices": "fluentd-*" }'
+  -d '{ "indices": "supra-logs-*" }'
 ```
 
 ### 15.4 Automated Daily Backup (Cron)
@@ -1263,7 +1413,7 @@ curl -sk -u admin:admin -X POST \
 
 ```bash
 # Check logs
-journalctl -u opensearch --no-pager -n 50
+journalctl -u supra-search --no-pager -n 50
 
 # Common fix: increase vm.max_map_count
 sudo sysctl -w vm.max_map_count=262144
@@ -1285,19 +1435,71 @@ curl -sk -u admin:admin https://localhost:9200
 cat /opt/supra/dashboards/config/opensearch_dashboards.yml | grep opensearch.hosts
 
 # Restart dashboards
-sudo systemctl restart opensearch-dashboards
+sudo systemctl restart supra-dashboards
+```
+
+### Installer fails with "Unsupported OS"
+
+The installer is built for **Ubuntu 22.04 LTS (jammy), amd64 only**. The
+bundled `fluent-package` `.deb`s link against jammy library ABIs and would
+either fail to install or downgrade host libraries on other releases.
+
+```bash
+# Confirm the host is jammy:
+cat /etc/os-release | grep -E '^(ID|VERSION_CODENAME)='
+# Should show:  ID=ubuntu  and  VERSION_CODENAME=jammy
+```
+
+If you are on 20.04 (focal) or 24.04 (noble), redeploy on a jammy host. The
+installer will refuse to proceed by design — running it past the OS guard
+would corrupt the system library set.
+
+### Log Collector fails to bind UDP/514
+
+UDP/514 is a privileged port. The `supra-log-collector.service` unit grants
+`CAP_NET_BIND_SERVICE` to the `supra` user so this works, but a stock
+`fluentd.service` (the one bundled with fluent-package) does not — and if it
+is still enabled it will race for the port.
+
+```bash
+# Confirm the stock fluentd unit is disabled:
+sudo systemctl is-enabled fluentd      # expected: disabled / masked
+sudo systemctl disable --now fluentd 2>/dev/null
+
+# Check who currently holds :514:
+sudo ss -lupn | grep ':514 '
+```
+
+### `supra-index-template` failed or did not run
+
+```bash
+journalctl -u supra-index-template --no-pager | tail -50
+```
+
+Common causes:
+- `supra-search` is not healthy yet — the one-shot waits up to ~5 min by
+  default. If startup is slow, extend `OS_BOOT_RETRIES` / `OS_BOOT_SLEEP`
+  via `systemctl edit supra-index-template.service`.
+- Admin password was changed but the override was not added (Section 9.1
+  Step 5).
+- License has not been installed yet — the search engine may be up on
+  `:9200` but reject mutating requests until a valid license is present.
+
+After fixing the underlying issue, re-run the one-shot:
+```bash
+sudo systemctl restart supra-index-template
 ```
 
 ### No logs appearing in Dashboards
 
-1. **Check Fluentd is running:**
+1. **Check Log Collector is running:**
    ```bash
-   sudo systemctl status fluentd
+   sudo systemctl status supra-log-collector
    ```
 
-2. **Test syslog reception:**
+2. **Test syslog reception (UDP/514 is privileged):**
    ```bash
-   logger -n 127.0.0.1 -P 5140 -d "Test message"
+   sudo logger -n 127.0.0.1 -P 514 -d "Test message"
    ```
 
 3. **Check if indices exist:**
@@ -1306,11 +1508,11 @@ sudo systemctl restart opensearch-dashboards
    ```
 
 4. **Verify index pattern exists in Dashboards:**
-   Go to **Stack Management > Index Patterns** and ensure `fluentd-*` is created.
+   Go to **Stack Management > Index Patterns** and ensure `supra-logs-*` is created.
 
-5. **Check Fluentd logs for errors:**
+5. **Check Log Collector logs for errors:**
    ```bash
-   journalctl -u fluentd --no-pager -n 50
+   journalctl -u supra-log-collector --no-pager -n 50
    ```
 
 ### Device syslog not reaching Supra
@@ -1318,18 +1520,17 @@ sudo systemctl restart opensearch-dashboards
 1. **Verify network connectivity:**
    ```bash
    # From the device (or a machine on the same network)
-   nc -vuz <SUPRA_SERVER_IP> 5140
+   nc -vuz <SUPRA_SERVER_IP> 514
    ```
 
 2. **Check firewall on Supra server:**
    ```bash
-   sudo ufw status         # Ubuntu
-   sudo firewall-cmd --list-ports  # RHEL
+   sudo ufw status
    ```
 
 3. **Test with tcpdump:**
    ```bash
-   sudo tcpdump -i any port 5140 -nn
+   sudo tcpdump -i any port 514 -nn
    ```
 
 4. **Verify device syslog config:** Refer to [Section 6](#6-syslog-configuration-on-devices).
@@ -1341,7 +1542,7 @@ sudo systemctl restart opensearch-dashboards
 curl -sk -u admin:admin "https://localhost:9200/_cat/indices?v&s=store.size:desc"
 
 # Delete old indices manually
-curl -sk -u admin:admin -X DELETE "https://localhost:9200/fluentd-2025.01.*"
+curl -sk -u admin:admin -X DELETE "https://localhost:9200/supra-logs-2025.01.*"
 
 # Set up automatic cleanup - see Section 8.3
 ```
@@ -1354,24 +1555,30 @@ curl -sk -u admin:admin -X DELETE "https://localhost:9200/fluentd-2025.01.*"
 
 | Port | Service | Protocol |
 |------|---------|----------|
-| 5140 | Fluentd syslog input | UDP/TCP |
-| 24224 | Fluentd forward input | TCP |
-| 9200 | OpenSearch API | HTTPS |
-| 5601 | Dashboards Web UI | HTTP |
+| 514 | Supra Log Collector syslog input | UDP |
+| 24224 | Supra Log Collector forward input | TCP |
+| 9200 | Supra Search Engine API | HTTPS |
+| 5601 | Supra Dashboards Web UI | HTTP |
 
 ### B. File Locations
 
-| File/Directory | Purpose |
-|---------------|---------|
-| `/opt/supra/opensearch/` | OpenSearch installation |
-| `/opt/supra/opensearch/config/opensearch.yml` | OpenSearch configuration |
+| File / Directory | Purpose |
+|---|---|
+| `/opt/supra/opensearch/` | Supra Search Engine installation |
+| `/opt/supra/opensearch/config/opensearch.yml` | Search engine configuration |
 | `/opt/supra/opensearch/config/opensearch-security/` | Security plugin configs |
-| `/opt/supra/dashboards/` | Dashboards installation |
+| `/opt/supra/opensearch/config/supra-license/` | License key + public key + fingerprint tool |
+| `/opt/supra/dashboards/` | Supra Dashboards installation |
 | `/opt/supra/dashboards/config/opensearch_dashboards.yml` | Dashboards configuration |
-| `/opt/supra/fluentd/fluent.conf` | Fluentd configuration |
-| `/etc/systemd/system/opensearch.service` | OpenSearch service file |
-| `/etc/systemd/system/opensearch-dashboards.service` | Dashboards service file |
-| `/etc/systemd/system/fluentd.service` | Fluentd service file |
+| `/opt/supra/log-collector/fluent.conf` | Log Collector configuration |
+| `/opt/supra/index-template/supra-index-template.sh` | Index template bootstrap script |
+| `/opt/fluent/bin/fluentd` | Log Collector binary (fluent-package embedded Ruby) |
+| `/opt/fluent/bin/fluent-gem` | Offline gem installer used for fluent plugins |
+| `/etc/systemd/system/supra-search.service` | Search engine service unit |
+| `/etc/systemd/system/supra-dashboards.service` | Dashboards service unit |
+| `/etc/systemd/system/supra-log-collector.service` | Log Collector service unit |
+| `/etc/systemd/system/supra-index-template.service` | Index template one-shot unit |
+| `/etc/sysctl.d/99-supra.conf` | `vm.max_map_count=262144` tuning |
 
 ### C. Useful API Commands
 
@@ -1386,12 +1593,12 @@ curl -sk -u admin:admin https://localhost:9200/_cat/indices?v
 curl -sk -u admin:admin https://localhost:9200/_nodes/stats?pretty
 
 # Search logs
-curl -sk -u admin:admin https://localhost:9200/fluentd-*/_search?pretty \
+curl -sk -u admin:admin https://localhost:9200/supra-logs-*/_search?pretty \
   -H "Content-Type: application/json" \
   -d '{ "query": { "match": { "message": "error" } }, "size": 10 }'
 
 # Count documents in an index
-curl -sk -u admin:admin https://localhost:9200/fluentd-*/_count
+curl -sk -u admin:admin https://localhost:9200/supra-logs-*/_count
 
 # List all users
 curl -sk -u admin:admin https://localhost:9200/_plugins/_security/api/internalusers?pretty
@@ -1415,22 +1622,30 @@ curl -sk -u admin:admin https://localhost:9200/_plugins/_security/api/roles?pret
 
 ### E. Uninstallation
 
-To completely remove Supra:
+To completely remove Supra (preferred — also purges fluent-package):
 
 ```bash
-sudo bash /opt/supra/uninstall.sh
+sudo bash /tmp/supra-installer/uninstall.sh
 ```
 
 Or manually:
 ```bash
-sudo systemctl stop opensearch opensearch-dashboards fluentd
-sudo systemctl disable opensearch opensearch-dashboards fluentd
-sudo rm -f /etc/systemd/system/{opensearch,opensearch-dashboards,fluentd}.service
+sudo systemctl stop supra-search supra-dashboards supra-log-collector supra-index-template
+sudo systemctl disable supra-search supra-dashboards supra-log-collector supra-index-template
+sudo rm -f /etc/systemd/system/{supra-search,supra-dashboards,supra-log-collector,supra-index-template}.service
 sudo systemctl daemon-reload
+
+# Purge the offline-installed fluent-package
+sudo dpkg --purge --force-all fluent-package
+
 sudo rm -rf /opt/supra
 sudo rm -f /etc/sysctl.d/99-supra.conf
 sudo sysctl --system
 ```
+
+> The jammy dependency libraries (`libssl3`, `libffi8`, etc.) installed by
+> the bundled `.deb`s are left in place — they are standard Ubuntu packages
+> and are typically required by other system software.
 
 ---
 
