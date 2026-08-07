@@ -1,0 +1,1318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Supra SIEM Platform - Product Document</title>
+    <style>
+        @page {
+            size: A4;
+            margin: 20mm;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 960px;
+            margin: 0 auto;
+            padding: 20px 40px;
+            background: #fff;
+        }
+        h1 {
+            color: #1a237e;
+            border-bottom: 3px solid #1a237e;
+            padding-bottom: 10px;
+            font-size: 2em;
+        }
+        h2 {
+            color: #283593;
+            border-bottom: 2px solid #c5cae9;
+            padding-bottom: 8px;
+            margin-top: 40px;
+            font-size: 1.5em;
+            page-break-after: avoid;
+        }
+        h3 {
+            color: #3949ab;
+            margin-top: 25px;
+            font-size: 1.2em;
+            page-break-after: avoid;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 15px 0;
+            font-size: 0.9em;
+            page-break-inside: avoid;
+        }
+        th {
+            background-color: #1a237e;
+            color: white;
+            padding: 10px 12px;
+            text-align: left;
+            font-weight: 600;
+        }
+        td {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+        }
+        tr:nth-child(even) {
+            background-color: #f5f5f5;
+        }
+        tr:hover {
+            background-color: #e8eaf6;
+        }
+        code {
+            background-color: #f5f5f5;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+            font-size: 0.9em;
+            color: #c62828;
+        }
+        pre {
+            background-color: #263238;
+            color: #eeffff;
+            padding: 16px 20px;
+            border-radius: 6px;
+            overflow-x: auto;
+            font-size: 0.85em;
+            line-height: 1.5;
+            page-break-inside: avoid;
+        }
+        pre code {
+            background: none;
+            color: #eeffff;
+            padding: 0;
+            font-size: 1em;
+        }
+        blockquote {
+            border-left: 4px solid #ff6f00;
+            margin: 15px 0;
+            padding: 10px 20px;
+            background-color: #fff8e1;
+            color: #e65100;
+            font-weight: 500;
+        }
+        blockquote strong {
+            color: #bf360c;
+        }
+        a {
+            color: #1565c0;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        hr {
+            border: none;
+            border-top: 2px solid #e0e0e0;
+            margin: 30px 0;
+        }
+        ul, ol {
+            padding-left: 25px;
+        }
+        li {
+            margin-bottom: 4px;
+        }
+        .header-bar {
+            background: linear-gradient(135deg, #1a237e, #283593);
+            color: white;
+            padding: 30px 40px;
+            margin: -20px -40px 30px -40px;
+            text-align: center;
+        }
+        .header-bar h1 {
+            color: white;
+            border: none;
+            margin: 0;
+            font-size: 2.2em;
+        }
+        .header-bar p {
+            color: #c5cae9;
+            margin: 5px 0 0 0;
+            font-size: 1.1em;
+        }
+        .toc {
+            background: #f5f5f5;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            padding: 20px 30px;
+            margin: 20px 0;
+        }
+        .toc a {
+            color: #1a237e;
+        }
+        @media print {
+            body {
+                padding: 0;
+                max-width: none;
+            }
+            .header-bar {
+                margin: 0 0 30px 0;
+            }
+            pre {
+                white-space: pre-wrap;
+                word-wrap: break-word;
+            }
+            h2 {
+                page-break-before: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header-bar">
+        <h1>Supra SIEM Platform</h1>
+        <p>Product Document &nbsp;|&nbsp; Release 3.6.0 &nbsp;|&nbsp; SUPRA-PD-001 Rev 1.0</p>
+    </div>
+    <h1 id="supra-siem-platform-product-document">Supra SIEM Platform — Product Document</h1>
+<p><strong>Product:</strong> Supra SIEM Platform<br />
+<strong>Release:</strong> 3.6.0<br />
+<strong>Document reference:</strong> SUPRA-PD-001<br />
+<strong>Revision:</strong> 1.0<br />
+<strong>Date:</strong> 2026-08-07</p>
+<hr />
+<h2 id="table-of-contents">Table of Contents</h2>
+<ol>
+<li><a href="#1-introduction">Introduction</a></li>
+<li><a href="#2-key-capabilities">Key Capabilities</a></li>
+<li><a href="#3-architecture">Architecture</a></li>
+<li><a href="#4-supported-log-sources">Supported Log Sources</a></li>
+<li><a href="#5-product-composition">Product Composition</a></li>
+<li><a href="#6-system-requirements">System Requirements</a></li>
+<li><a href="#7-deployment">Deployment</a></li>
+<li><a href="#8-licensing">Licensing</a></li>
+<li><a href="#9-functional-description">Functional Description</a></li>
+<li><a href="#10-security-and-access-control">Security and Access Control</a></li>
+<li><a href="#11-operations-and-administration">Operations and Administration</a></li>
+<li><a href="#12-quality-assurance-and-release">Quality Assurance and Release</a></li>
+<li><a href="#13-documentation-and-support">Documentation and Support</a></li>
+<li><a href="#14-appendices">Appendices</a></li>
+</ol>
+<hr />
+<h2 id="1-introduction">1. Introduction</h2>
+<h3 id="11-what-supra-siem-is">1.1 What Supra SIEM is</h3>
+<p>Supra SIEM is a centralised log management and security analytics platform. It<br />
+collects log data from across an organisation's IT and operational-technology<br />
+estate, stores and indexes it in a search engine, and presents it through a web<br />
+interface offering search, dashboards, alerting, scheduled reporting and threat<br />
+detection.</p>
+<p>It is delivered as a single, self-contained, on-premises product that installs<br />
+onto one server without any internet connection at any stage.</p>
+<h3 id="12-at-a-glance">1.2 At a glance</h3>
+<table>
+<thead>
+<tr>
+<th>Attribute</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Product name</td>
+<td>Supra SIEM Platform</td>
+</tr>
+<tr>
+<td>Release</td>
+<td>3.6.0</td>
+</tr>
+<tr>
+<td>Category</td>
+<td>Log management and security analytics (SIEM)</td>
+</tr>
+<tr>
+<td>Deployment</td>
+<td>On-premises, single server, fully offline installation</td>
+</tr>
+<tr>
+<td>Interfaces</td>
+<td>Syslog (UDP/TCP), Fluentd forward protocol, HTTPS REST API, web UI</td>
+</tr>
+<tr>
+<td>Server platform (Linux)</td>
+<td>Ubuntu 22.04 LTS (jammy), x86_64</td>
+</tr>
+<tr>
+<td>Server platform (Windows)</td>
+<td>Windows x64, services managed via NSSM</td>
+</tr>
+<tr>
+<td>Licensing</td>
+<td>RSA-signed, hardware-locked; perpetual or time-limited</td>
+</tr>
+<tr>
+<td>Delivered as</td>
+<td><code>supra-installer-3.6.0-linux-x64.tar.gz</code> / <code>supra-installer-3.6.0-windows-x64.zip</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="13-designed-for-isolated-networks">1.3 Designed for isolated networks</h3>
+<p>The defining characteristic of the product is that it requires <strong>no internet<br />
+access</strong>. Every dependency — the search engine, the web interface, all user<br />
+interface plugins, the log collector runtime with its own embedded Ruby, and all<br />
+of the collector's plugin dependencies — is contained in the installer archive.<br />
+Nothing is downloaded at install time.</p>
+<p>This is a deliberate design response to the environments the product is deployed<br />
+into: substation, operational-technology and other air-gapped networks where an<br />
+installer that reaches out to a package repository simply cannot work.</p>
+<h3 id="14-who-uses-it">1.4 Who uses it</h3>
+<table>
+<thead>
+<tr>
+<th>User</th>
+<th>How they use the product</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Installation engineer</td>
+<td>Runs the offline installer, activates the licence, performs handover verification</td>
+</tr>
+<tr>
+<td>Platform administrator</td>
+<td>Manages services, user accounts and roles, retention policies, backups</td>
+</tr>
+<tr>
+<td>Security analyst</td>
+<td>Searches logs, builds and reads dashboards, investigates alerts and detections</td>
+</tr>
+<tr>
+<td>Operations / SOC team</td>
+<td>Receives alert notifications and scheduled reports</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="2-key-capabilities">2. Key Capabilities</h2>
+<table>
+<thead>
+<tr>
+<th>Capability</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Centralised log collection</strong></td>
+<td>Receives syslog over UDP and TCP on port 514 from network devices, servers and industrial equipment, plus forwarded streams over the Fluentd forward protocol on TCP/24224.</td>
+</tr>
+<tr>
+<td><strong>Indexing and full-text search</strong></td>
+<td>Stores records in time-based indices under the <code>supra-*</code> pattern with a controlled field mapping, giving fast full-text and structured search across the whole estate.</td>
+</tr>
+<tr>
+<td><strong>Dashboards and visualisation</strong></td>
+<td>A web interface for building visualisations and dashboards over collected log data, with import and export of dashboard definitions.</td>
+</tr>
+<tr>
+<td><strong>Alerting and notification</strong></td>
+<td>Monitors evaluate queries on a schedule and raise alerts, delivered to email or to webhook endpoints such as Slack or Microsoft Teams.</td>
+</tr>
+<tr>
+<td><strong>Scheduled and on-demand reporting</strong></td>
+<td>Any dashboard or visualisation can be exported as PDF, PNG or CSV, on demand or on a recurring schedule with email delivery.</td>
+</tr>
+<tr>
+<td><strong>Security analytics</strong></td>
+<td>Threat detection using Sigma-format rules — a pre-built rule set plus custom rules — evaluated on a schedule against selected indices, producing security findings.</td>
+</tr>
+<tr>
+<td><strong>Automated retention</strong></td>
+<td>Index lifecycle policies age out and delete old indices automatically, so the platform manages its own disk footprint.</td>
+</tr>
+<tr>
+<td><strong>Role-based access control</strong></td>
+<td>Users, roles and role mappings restrict what each account can see and do, at both cluster and index level.</td>
+</tr>
+<tr>
+<td><strong>Backup and restore</strong></td>
+<td>Snapshot-based backup of indices to a registered repository, with documented restore and scheduled-snapshot procedures.</td>
+</tr>
+<tr>
+<td><strong>Licence self-inspection</strong></td>
+<td>Customers can read their own licence terms at any time through a REST endpoint or a command-line tool, with no vendor involvement.</td>
+</tr>
+<tr>
+<td><strong>Offline installation</strong></td>
+<td>The complete platform installs from one archive with no network access.</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="3-architecture">3. Architecture</h2>
+<h3 id="31-components">3.1 Components</h3>
+<p>The product consists of four managed components, each installed as a system<br />
+service.</p>
+<table>
+<thead>
+<tr>
+<th>Component</th>
+<th>Service unit</th>
+<th>Function</th>
+<th>Ports</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Supra Search Engine</strong></td>
+<td><code>supra-search</code></td>
+<td>Log storage, indexing, search, licence enforcement</td>
+<td>9200 (HTTPS)</td>
+</tr>
+<tr>
+<td><strong>Supra Dashboards</strong></td>
+<td><code>supra-dashboards</code></td>
+<td>Web interface: search, visualisation, alerting, reporting, security analytics</td>
+<td>5601 (HTTP)</td>
+</tr>
+<tr>
+<td><strong>Supra Log Collector</strong></td>
+<td><code>supra-log-collector</code></td>
+<td>Syslog reception, tagging and enrichment, forwarding to the search engine</td>
+<td>514/UDP, 24224/TCP</td>
+</tr>
+<tr>
+<td><strong>Supra Index Template</strong></td>
+<td><code>supra-index-template</code></td>
+<td>One-shot bootstrap that applies the <code>supra-*</code> index template once the search engine is healthy</td>
+<td>—</td>
+</tr>
+</tbody>
+</table>
+<h3 id="32-data-flow">3.2 Data flow</h3>
+<div class="code"><pre><span></span><code><span class="nb">+------------------+</span><span class="c">   </span><span class="nb">+------------------+</span><span class="c">   </span><span class="nb">+------------------+</span>
+<span class="c">|  Network Devices |   |   Servers/Apps   |   |   IED Devices    |</span>
+<span class="c">|  (Routers</span><span class="nt">,</span><span class="c"> FW</span><span class="nt">,</span><span class="c">   |   |  (Linux</span><span class="nt">,</span><span class="c"> Windows)|   |  (IEC 61850)     |</span>
+<span class="c">|   Switches)      |   |                  |   |                  |</span>
+<span class="nb">+--------+---------+</span><span class="c">   </span><span class="nb">+--------+---------+</span><span class="c">   </span><span class="nb">+--------+---------+</span>
+<span class="c">         |                      |                      |</span>
+<span class="c">         |   Syslog UDP/TCP 514 |  Syslog UDP/TCP 514  |</span>
+<span class="c">         </span><span class="nb">+----------+-----------+----------+-----------+</span>
+<span class="c">                    |                      |</span>
+<span class="c">                    v                      v</span>
+<span class="c">           </span><span class="nb">+--------+----------------------+--------+</span>
+<span class="c">           |          Supra Log Collector           |</span>
+<span class="c">           |  </span><span class="nb">-</span><span class="c"> receives syslog on UDP/514          |</span>
+<span class="c">           |  </span><span class="nb">-</span><span class="c"> receives forwarded logs on TCP/24224|</span>
+<span class="c">           |  </span><span class="nb">-</span><span class="c"> tags</span><span class="nt">,</span><span class="c"> enriches</span><span class="nt">,</span><span class="c"> ships onward        |</span>
+<span class="c">           </span><span class="nb">+-------------------+--------------------+</span>
+<span class="c">                               |</span>
+<span class="c">                               | HTTPS 9200</span>
+<span class="c">                               v</span>
+<span class="c">           </span><span class="nb">+-------------------+--------------------+</span>
+<span class="c">           |          Supra Search Engine           |</span>
+<span class="c">           |  </span><span class="nb">-</span><span class="c"> indexes and stores log records      |</span>
+<span class="c">           |  </span><span class="nb">-</span><span class="c"> applies the supra</span><span class="nb">-</span><span class="c">* index template  |</span>
+<span class="c">           |  </span><span class="nb">-</span><span class="c"> validates the licence at start</span><span class="nb">-</span><span class="c">up   |</span>
+<span class="c">           </span><span class="nb">+-------------------+--------------------+</span>
+<span class="c">                               |</span>
+<span class="c">                               v</span>
+<span class="c">           </span><span class="nb">+-------------------+--------------------+</span>
+<span class="c">           |           Supra Dashboards             |</span>
+<span class="c">           |  </span><span class="nb">-</span><span class="c"> web UI on 5601                      |</span>
+<span class="c">           |  </span><span class="nb">-</span><span class="c"> dashboards</span><span class="nt">,</span><span class="c"> alerts</span><span class="nt">,</span><span class="c"> reports</span><span class="nt">,</span><span class="c"> SIEM   |</span>
+<span class="c">           </span><span class="nb">+----------------------------------------+</span>
+</code></pre></div>
+
+<h3 id="33-start-up-sequence">3.3 Start-up sequence</h3>
+<p>The components start in a defined order, enforced by their service definitions:</p>
+<ol>
+<li><strong><code>supra-search</code></strong> starts first. It validates the licence before the node<br />
+   becomes available; if validation fails, the node does not start.</li>
+<li><strong><code>supra-index-template</code></strong> fires once the search engine reports healthy on<br />
+   port 9200, applies the <code>supra-*</code> index template, and exits. Its retry<br />
+   behaviour is configurable through the <code>OS_BOOT_RETRIES</code> and <code>OS_BOOT_SLEEP</code><br />
+   environment settings.</li>
+<li><strong><code>supra-dashboards</code></strong> and <strong><code>supra-log-collector</code></strong> start once the search<br />
+   engine is available.</li>
+</ol>
+<p>This ordering guarantees that no log record is indexed before the correct field<br />
+mappings are in place — without it, the first records to arrive would define<br />
+their own mappings and later records could be rejected or mis-typed.</p>
+<h3 id="34-network-ports">3.4 Network ports</h3>
+<table>
+<thead>
+<tr>
+<th>Port</th>
+<th>Protocol</th>
+<th>Direction</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>514</td>
+<td>UDP</td>
+<td>Inbound</td>
+<td>Syslog reception from devices</td>
+</tr>
+<tr>
+<td>24224</td>
+<td>TCP</td>
+<td>Inbound</td>
+<td>Fluentd forward protocol</td>
+</tr>
+<tr>
+<td>9200</td>
+<td>TCP (HTTPS)</td>
+<td>Localhost</td>
+<td>Search engine REST API</td>
+</tr>
+<tr>
+<td>5601</td>
+<td>TCP (HTTP)</td>
+<td>Inbound</td>
+<td>Web user interface</td>
+</tr>
+</tbody>
+</table>
+<p>Firewall rules for the inbound ports are documented in the Installation and User<br />
+Guide for the supported platform.</p>
+<hr />
+<h2 id="4-supported-log-sources">4. Supported Log Sources</h2>
+<p>The product ingests standard syslog, so it accepts data from any device capable<br />
+of emitting it. The following source types are explicitly covered, with<br />
+device-side configuration instructions, in the Installation and User Guide.</p>
+<table>
+<thead>
+<tr>
+<th>Category</th>
+<th>Sources</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Routers and switches</td>
+<td>Cisco IOS / IOS-XE, Cisco Nexus (NX-OS), Juniper Junos, HP/Aruba</td>
+</tr>
+<tr>
+<td>Firewalls</td>
+<td>Palo Alto Networks (PAN-OS), Fortinet FortiGate</td>
+</tr>
+<tr>
+<td>Linux servers</td>
+<td>rsyslog, syslog-ng</td>
+</tr>
+<tr>
+<td>Windows servers</td>
+<td>NXLog agent forwarding Windows Event Log</td>
+</tr>
+<tr>
+<td>Virtualisation</td>
+<td>VMware ESXi</td>
+</tr>
+<tr>
+<td>Industrial / OT</td>
+<td>IED devices per IEC 61850</td>
+</tr>
+</tbody>
+</table>
+<p>Collected records can be routed into separate indices per device type — for<br />
+example distinct router, switch, firewall and IED indices — by extending the log<br />
+collector configuration. Both the default single-index configuration and the<br />
+per-device-type configuration are documented.</p>
+<hr />
+<h2 id="5-product-composition">5. Product Composition</h2>
+<h3 id="51-developed-by-supra-controls">5.1 Developed by Supra Controls</h3>
+<table>
+<thead>
+<tr>
+<th>Item</th>
+<th>Version</th>
+<th>Technology</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Supra Licence Validator plugin</td>
+<td>1.0.0</td>
+<td>Java 17</td>
+</tr>
+<tr>
+<td>Licence generation and inspection tooling</td>
+<td>—</td>
+<td>Java 17, Bash, PowerShell</td>
+</tr>
+<tr>
+<td>Log collector configuration</td>
+<td>—</td>
+<td>Fluentd configuration</td>
+</tr>
+<tr>
+<td>Windows agent configuration</td>
+<td>—</td>
+<td>NXLog configuration</td>
+</tr>
+<tr>
+<td>Index template bootstrap</td>
+<td>—</td>
+<td>Bash</td>
+</tr>
+<tr>
+<td>Service definitions</td>
+<td>—</td>
+<td>systemd units / NSSM service wrappers</td>
+</tr>
+<tr>
+<td>Offline installers and setup scripts</td>
+<td>—</td>
+<td>Bash (Linux), PowerShell (Windows)</td>
+</tr>
+<tr>
+<td>Offline test harness</td>
+<td>—</td>
+<td>Bash, Docker</td>
+</tr>
+</tbody>
+</table>
+<h3 id="52-incorporated-third-party-components">5.2 Incorporated third-party components</h3>
+<table>
+<thead>
+<tr>
+<th>Component</th>
+<th>Version</th>
+<th>Role</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>OpenSearch</td>
+<td>3.6.0</td>
+<td>Search and storage engine</td>
+</tr>
+<tr>
+<td>OpenSearch Dashboards</td>
+<td>3.6.0</td>
+<td>Web user interface</td>
+</tr>
+<tr>
+<td>Bundled JDK</td>
+<td>as distributed</td>
+<td>Java runtime for the search engine</td>
+</tr>
+<tr>
+<td>fluent-package (Fluentd)</td>
+<td>5.0.9</td>
+<td>Log collector runtime, with embedded Ruby</td>
+</tr>
+<tr>
+<td>fluent-plugin-opensearch and dependencies</td>
+<td>as bundled</td>
+<td>Ships collected records into the search engine</td>
+</tr>
+<tr>
+<td>NXLog</td>
+<td>as distributed</td>
+<td>Windows log-source agent</td>
+</tr>
+<tr>
+<td>NSSM</td>
+<td>2.24</td>
+<td>Windows service wrapper</td>
+</tr>
+</tbody>
+</table>
+<p><strong>User interface plugins bundled at 3.6.0:</strong> alerting, anomaly detection,<br />
+assistant, custom import map, index management, notifications, observability,<br />
+query insights, reports, search relevance, security analytics, and security.</p>
+<h3 id="53-version-pinning">5.3 Version pinning</h3>
+<p>All third-party components are version-pinned and packaged into the installer<br />
+rather than downloaded at install time. The composition of a given release is<br />
+therefore fixed: the customer receives exactly the binaries that were tested, and<br />
+an upstream change cannot alter a released product retrospectively.</p>
+<hr />
+<h2 id="6-system-requirements">6. System Requirements</h2>
+<h3 id="61-hardware">6.1 Hardware</h3>
+<table>
+<thead>
+<tr>
+<th>Resource</th>
+<th>Minimum</th>
+<th>Recommended</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>CPU</td>
+<td>4 cores</td>
+<td>8 or more cores</td>
+</tr>
+<tr>
+<td>RAM</td>
+<td>8 GB</td>
+<td>16 GB or more</td>
+</tr>
+<tr>
+<td>Disk</td>
+<td>100 GB</td>
+<td>500 GB or more, SSD</td>
+</tr>
+<tr>
+<td>Network</td>
+<td>1 Gbps</td>
+<td>1 Gbps</td>
+</tr>
+</tbody>
+</table>
+<p>Disk sizing should be driven by expected daily log volume and the intended<br />
+retention period. The retention policy described in Section 9.6 is the primary<br />
+control over long-term disk growth.</p>
+<h3 id="62-software">6.2 Software</h3>
+<ul>
+<li><strong>Ubuntu 22.04 LTS (jammy), x86_64</strong> for the Linux installer. The bundled log<br />
+  collector packages link against jammy library versions, so the installer<br />
+  validates the target platform and refuses to run on 20.04, 24.04, RHEL/CentOS<br />
+  or non-amd64 hardware rather than producing a broken installation.</li>
+<li><strong>Windows x64</strong> for the Windows installer.</li>
+<li>Root or administrator access on the target server.</li>
+<li><strong>No internet access required</strong>, and no separate Ruby or Java installation<br />
+  required — both are bundled.</li>
+</ul>
+<hr />
+<h2 id="7-deployment">7. Deployment</h2>
+<h3 id="71-installation-sequence">7.1 Installation sequence</h3>
+<ol>
+<li><strong>Transfer</strong> the installer archive to the target server.</li>
+<li><strong>Verify integrity</strong> using the published SHA-256 checksum supplied with the<br />
+   archive.</li>
+<li><strong>Extract</strong> the archive.</li>
+<li><strong>Run the installer</strong> as root or administrator. It validates the platform,<br />
+   creates the service account, applies required kernel tuning, lays down all<br />
+   four components and registers their services.</li>
+<li><strong>Activate the licence</strong> — see Section 8.</li>
+<li><strong>Start the services</strong> in the defined order and verify.</li>
+</ol>
+<h3 id="72-post-installation-verification">7.2 Post-installation verification</h3>
+<p>The Installation and User Guide defines a verification procedure that the<br />
+installing engineer performs at handover and the customer can witness:</p>
+<ul>
+<li>the web interface is reachable and accepts login;</li>
+<li>the search engine reports healthy cluster status;</li>
+<li>the log collector is running and receives a test syslog message;</li>
+<li>the <code>supra-*</code> index template has been applied;</li>
+<li>log records are visible in the web interface.</li>
+</ul>
+<h3 id="73-installed-layout">7.3 Installed layout</h3>
+<table>
+<thead>
+<tr>
+<th>Path</th>
+<th>Content</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>/opt/supra/opensearch/</code></td>
+<td>Search engine, including its bundled JDK</td>
+</tr>
+<tr>
+<td><code>/opt/supra/opensearch/config/supra-license/</code></td>
+<td>Licence file, public key, fingerprint tool</td>
+</tr>
+<tr>
+<td><code>/opt/supra/dashboards/</code></td>
+<td>Web user interface</td>
+</tr>
+<tr>
+<td><code>/opt/supra/log-collector/fluent.conf</code></td>
+<td>Log collector configuration</td>
+</tr>
+<tr>
+<td><code>/opt/supra/index-template/</code></td>
+<td>Index template bootstrap</td>
+</tr>
+<tr>
+<td><code>/opt/fluent/</code></td>
+<td>Log collector runtime and embedded Ruby</td>
+</tr>
+<tr>
+<td><code>/etc/systemd/system/supra-*.service</code></td>
+<td>The four service definitions</td>
+</tr>
+<tr>
+<td><code>/etc/sysctl.d/99-supra.conf</code></td>
+<td>Kernel tuning required by the search engine</td>
+</tr>
+</tbody>
+</table>
+<h3 id="74-removal">7.4 Removal</h3>
+<p>An uninstall script is delivered with the installer, providing a controlled<br />
+removal of the product, its service definitions and its service account.</p>
+<hr />
+<h2 id="8-licensing">8. Licensing</h2>
+<h3 id="81-licence-model">8.1 Licence model</h3>
+<p>Each installation is licensed by a signed licence file bound to the machine it<br />
+runs on. A licence records the customer, the bound machine fingerprint, the issue<br />
+and expiry dates, the tier, the node limit and, where applicable, a device limit.<br />
+Licences may be <strong>perpetual</strong> (no expiry) or <strong>time-limited</strong>.</p>
+<h3 id="82-activation">8.2 Activation</h3>
+<ol>
+<li>The installing engineer runs the fingerprint tool on the target machine to<br />
+   obtain its machine fingerprint.</li>
+<li>The fingerprint is sent to Supra Controls, which issues a signed licence file<br />
+   for that specific machine.</li>
+<li>The licence file is placed in the search engine configuration directory.</li>
+<li>The search engine is started.</li>
+</ol>
+<h3 id="83-enforcement">8.3 Enforcement</h3>
+<p>At start-up the search engine:</p>
+<ol>
+<li>reads the licence file;</li>
+<li>verifies its RSA signature against the bundled public key;</li>
+<li>computes this machine's fingerprint and compares it with the licensed one;</li>
+<li>checks the expiry date;</li>
+<li>refuses to start if any check fails, logging both the reason and this<br />
+   machine's own fingerprint so the fault can be diagnosed immediately.</li>
+</ol>
+<h3 id="84-reading-a-licence">8.4 Reading a licence</h3>
+<p>The licence payload is signed but not encrypted. This is deliberate: the customer<br />
+can always see exactly what they hold, while the signature prevents alteration.<br />
+Licence terms can be read through three routes, all producing the same result:</p>
+<table>
+<thead>
+<tr>
+<th>Route</th>
+<th>Used by</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>GET /_supra/license</code></td>
+<td>Customer, from the web interface's Dev Tools console</td>
+<td>Returns the licence as JSON, together with live device usage over the preceding 24 hours</td>
+</tr>
+<tr>
+<td><code>supra-license-info.sh</code></td>
+<td>Operator, on the server</td>
+<td>Prints a formatted summary and, where the public key and OpenSSL are present, verifies the signature</td>
+</tr>
+<tr>
+<td><code>LicenseGenerator --inspect</code></td>
+<td>Supra Controls, when issuing</td>
+<td>Confirms issued terms before despatch; requires no private key</td>
+</tr>
+</tbody>
+</table>
+<p>The REST endpoint reports the licence only after signature, fingerprint and<br />
+expiry checks have passed at start-up, so any response it returns describes an<br />
+authentic licence bound to that machine.</p>
+<hr />
+<h2 id="9-functional-description">9. Functional Description</h2>
+<h3 id="91-log-collection">9.1 Log collection</h3>
+<p>The log collector receives syslog on UDP/514 and, when configured, TCP/514, and<br />
+accepts forwarded streams from other collectors or agents on TCP/24224. Received<br />
+records are tagged with the collector identity, may be enriched or classified —<br />
+for example by source IP, to route each device type to its own index — and are<br />
+then shipped over HTTPS to the search engine.</p>
+<h3 id="92-storage-and-indexing">9.2 Storage and indexing</h3>
+<p>Records are written to time-based indices matching <code>supra-*</code>. Field mappings are<br />
+governed by the index template applied at bootstrap, which ensures consistent<br />
+field types across all indices and therefore reliable searching, aggregation and<br />
+visualisation.</p>
+<h3 id="93-search-and-discovery">9.3 Search and discovery</h3>
+<p>The web interface provides interactive search across selected indices with time<br />
+range filtering, field-level filtering and free-text query. A REST API is<br />
+available for scripted queries, cluster health checks, index listings and<br />
+administrative operations.</p>
+<h3 id="94-dashboards-and-visualisation">9.4 Dashboards and visualisation</h3>
+<p>Users build visualisations over log data and assemble them into dashboards.<br />
+Dashboard definitions can be exported and imported, so a standard dashboard set<br />
+can be developed once and deployed to multiple sites. Dashboards commonly built<br />
+on this platform include:</p>
+<table>
+<thead>
+<tr>
+<th>Dashboard</th>
+<th>Typical content</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>SIEM Overview</td>
+<td>Log volume over time, top sources, severity distribution, recent events</td>
+</tr>
+<tr>
+<td>Firewall</td>
+<td>Firewall log volume, top blocked addresses, allowed versus denied traffic, most-triggered rules</td>
+</tr>
+<tr>
+<td>Network Devices</td>
+<td>Router and switch log volume, interface up/down events, top devices by log count</td>
+</tr>
+<tr>
+<td>IED Monitoring</td>
+<td>IED event timeline, protection trip events, communication failures</td>
+</tr>
+<tr>
+<td>Authentication</td>
+<td>Failed logins over time, top failed usernames, login sources, brute-force patterns</td>
+</tr>
+</tbody>
+</table>
+<h3 id="95-alerting-and-notification">9.5 Alerting and notification</h3>
+<p>Alert monitors run a query on a defined schedule and trigger when the result<br />
+meets a configured condition — for example an unusual spike in log volume, or<br />
+repeated authentication failures from one source. Triggered alerts are delivered<br />
+through notification channels:</p>
+<table>
+<thead>
+<tr>
+<th>Channel type</th>
+<th>Configuration</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Email</td>
+<td>SMTP host, port, sender and recipient list</td>
+</tr>
+<tr>
+<td>Webhook</td>
+<td>Endpoint URL, for delivery into Slack, Microsoft Teams or any webhook receiver</td>
+</tr>
+</tbody>
+</table>
+<p>Alert history is retained and reviewable in the web interface.</p>
+<h3 id="96-index-management-and-retention">9.6 Index management and retention</h3>
+<p>Index lifecycle policies transition and delete indices automatically according to<br />
+age. A policy is attached to an index pattern and applies to every matching index<br />
+as it is created. A typical policy deletes <code>supra-logs-*</code> indices once they reach<br />
+a defined age; the retention period itself is the customer's decision, taken<br />
+against their own operational and regulatory requirements. Policies can be<br />
+created either through the web interface or through the REST API.</p>
+<h3 id="97-reporting">9.7 Reporting</h3>
+<p>Any dashboard or visualisation can be exported as <strong>PDF</strong>, <strong>PNG</strong> or <strong>CSV</strong>,<br />
+either on demand or on a recurring schedule with email delivery. Typical<br />
+scheduled reports include a daily operational summary, weekly per-domain reports<br />
+and a monthly management security report.</p>
+<h3 id="98-security-analytics">9.8 Security analytics</h3>
+<p>The security analytics function provides threat detection over collected logs.<br />
+Detectors are configured against a data source and log type, run on a schedule,<br />
+and evaluate detection rules written in <strong>Sigma</strong> format. A pre-built rule set is<br />
+included covering, among others:</p>
+<ul>
+<li>brute-force attacks</li>
+<li>port scanning</li>
+<li>privilege escalation</li>
+<li>malware indicators</li>
+<li>suspicious network connections</li>
+<li>lateral movement</li>
+<li>data exfiltration patterns</li>
+</ul>
+<p>Custom Sigma rules can be authored for site-specific detections. Matches produce<br />
+security findings, which can be reviewed in the interface and can trigger alerts.</p>
+<hr />
+<h2 id="10-security-and-access-control">10. Security and Access Control</h2>
+<h3 id="101-authenticated-access">10.1 Authenticated access</h3>
+<p>All access to the search engine and the web interface is authenticated. The<br />
+search engine API is served over HTTPS.</p>
+<h3 id="102-users-roles-and-role-mapping">10.2 Users, roles and role mapping</h3>
+<p>Access control is role-based and applies at both cluster and index level. Roles<br />
+define cluster permissions and index permissions; users are mapped to roles.<br />
+Representative roles for a typical deployment:</p>
+<table>
+<thead>
+<tr>
+<th>Role</th>
+<th>Cluster permissions</th>
+<th>Index permissions</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>soc_analyst</code></td>
+<td>monitor</td>
+<td>read, search on log indices</td>
+<td>Read-only log analysis</td>
+</tr>
+<tr>
+<td><code>soc_manager</code></td>
+<td>monitor</td>
+<td>read, search, create/update/delete on log indices</td>
+<td>Analysis plus management of saved objects</td>
+</tr>
+<tr>
+<td><code>report_viewer</code></td>
+<td>monitor</td>
+<td>read on log indices</td>
+<td>Dashboards and reports only</td>
+</tr>
+<tr>
+<td><code>device_admin</code></td>
+<td>monitor</td>
+<td>read, search on specific device indices</td>
+<td>Access scoped to one device type</td>
+</tr>
+<tr>
+<td><code>admin_full</code></td>
+<td>all</td>
+<td>all</td>
+<td>Full administration</td>
+</tr>
+</tbody>
+</table>
+<p>Scoping a role to specific index patterns is the mechanism for restricting a team<br />
+to only the device types it is responsible for.</p>
+<h3 id="103-credential-management">10.3 Credential management</h3>
+<p>The product ships with a default administrative account. <strong>Changing the default<br />
+credentials is a required post-installation step</strong> and is documented in the<br />
+Installation and User Guide, including the corresponding update to the service<br />
+configuration so that the index template bootstrap continues to authenticate<br />
+correctly.</p>
+<h3 id="104-licence-key-material">10.4 Licence key material</h3>
+<p>The licence signing private key is held solely by Supra Controls, is excluded<br />
+from distribution, and is never shipped with the product. Only the corresponding<br />
+public key — which can verify but not create licences — is installed on customer<br />
+systems.</p>
+<hr />
+<h2 id="11-operations-and-administration">11. Operations and Administration</h2>
+<h3 id="111-service-management">11.1 Service management</h3>
+<p>Each component is a standard system service and is managed with the platform's<br />
+normal service tooling: start, stop, restart and status for each of<br />
+<code>supra-search</code>, <code>supra-dashboards</code>, <code>supra-log-collector</code>, and the<br />
+<code>supra-index-template</code> one-shot. Services can be enabled or disabled for<br />
+automatic start at boot.</p>
+<h3 id="112-logs-and-diagnostics">11.2 Logs and diagnostics</h3>
+<p>Each service writes to the system journal and can be followed live per service or<br />
+across the whole product. The Installation and User Guide documents diagnostic<br />
+procedures for the common failure modes, each with the specific commands to<br />
+identify and correct the cause:</p>
+<table>
+<thead>
+<tr>
+<th>Symptom</th>
+<th>Documented cause and correction</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Search engine will not start</td>
+<td>Kernel tuning, disk space, JVM heap, licence validation</td>
+</tr>
+<tr>
+<td>Web interface reports the search engine unavailable</td>
+<td>Engine not running, or configuration mismatch</td>
+</tr>
+<tr>
+<td>Installer rejects the host</td>
+<td>Unsupported operating system or architecture</td>
+</tr>
+<tr>
+<td>Log collector cannot bind UDP/514</td>
+<td>Port already held, commonly by a stock collector service</td>
+</tr>
+<tr>
+<td>Index template did not apply</td>
+<td>One-shot ordering or authentication</td>
+</tr>
+<tr>
+<td>No log records appearing</td>
+<td>Collector, network path, or device-side configuration</td>
+</tr>
+<tr>
+<td>Device logs not arriving</td>
+<td>Device configuration, firewall, or network routing</td>
+</tr>
+<tr>
+<td>High disk usage</td>
+<td>Missing or mis-scoped retention policy</td>
+</tr>
+</tbody>
+</table>
+<h3 id="113-backup-and-restore">11.3 Backup and restore</h3>
+<p>The product supports snapshot-based backup of indices to a registered snapshot<br />
+repository. Documented procedures cover repository registration, taking a<br />
+snapshot, restoring from a snapshot, and automating a daily snapshot on a<br />
+schedule.</p>
+<h3 id="114-corrective-updates">11.4 Corrective updates</h3>
+<p>Where a defect is identified after delivery, Supra Controls issues a targeted<br />
+offline patch package rather than requiring a full reinstall — consistent with<br />
+the offline constraint of the deployment environments.</p>
+<hr />
+<h2 id="12-quality-assurance-and-release">12. Quality Assurance and Release</h2>
+<h3 id="121-automated-installation-testing">12.1 Automated installation testing</h3>
+<p>Supra Controls maintains an automated test harness that performs a complete<br />
+<strong>reset → install → verify → report</strong> cycle against each built installer. It<br />
+returns a host to a clean state, installs the product, asserts that the<br />
+installation is correct, and writes a timestamped report.</p>
+<p>Testing runs both on a local host and across a container matrix covering Ubuntu<br />
+20.04, 22.04 and 24.04, with an aggregated summary across the matrix.</p>
+<h3 id="122-offline-behaviour-is-enforced-not-assumed">12.2 Offline behaviour is enforced, not assumed</h3>
+<p>Because "installs without internet" is the product's defining requirement, it is<br />
+verified structurally rather than by observation:</p>
+<ul>
+<li>in local testing, the installer runs inside a private network namespace where<br />
+  only loopback exists;</li>
+<li>in container testing, the container is started with no network interface at<br />
+  all.</li>
+</ul>
+<p>If the installer were to require a package update, a dependency fetch or any<br />
+other download, the test fails outright rather than passing quietly on a<br />
+connected build machine.</p>
+<h3 id="123-what-is-verified">12.3 What is verified</h3>
+<p>Installation-level checks assert creation of the service account, application of<br />
+kernel tuning, presence and correct ownership of the search engine and its<br />
+bundled JDK, presence of the licence public key, presence of the web interface<br />
+and its configuration, correct installation of the log collector package with its<br />
+binary, configuration and output plugin, presence of the index template<br />
+bootstrap, and the presence and enabled state of all four services.</p>
+<p>An optional runtime tier additionally starts the services under a real licence<br />
+and confirms that the search engine, web interface and log collector all become<br />
+active and that the syslog and forward ports are listening.</p>
+<h3 id="124-release-integrity">12.4 Release integrity</h3>
+<p>Each release is published with a SHA-256 checksum, which the receiving engineer<br />
+verifies before extraction. Because the archive is self-contained, there is no<br />
+possibility of a partially-delivered or differently-composed installation<br />
+resulting from network conditions at the customer site.</p>
+<hr />
+<h2 id="13-documentation-and-support">13. Documentation and Support</h2>
+<h3 id="131-documentation-delivered-with-the-product">13.1 Documentation delivered with the product</h3>
+<table>
+<thead>
+<tr>
+<th>Document</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Installation and User Guide</td>
+<td>Complete installation, configuration, administration and troubleshooting reference</td>
+</tr>
+<tr>
+<td>Windows Installation Guide</td>
+<td>Windows-specific installation procedure</td>
+</tr>
+<tr>
+<td>Linux Installation Guide</td>
+<td>Linux-specific installation procedure</td>
+</tr>
+<tr>
+<td>Licensing Guide</td>
+<td>Licence activation and management</td>
+</tr>
+<tr>
+<td>Licence Inspection Guide</td>
+<td>Reading licence terms by REST endpoint, script or vendor tool</td>
+</tr>
+<tr>
+<td>Dashboard Setup Guide</td>
+<td>Building the standard dashboard set</td>
+</tr>
+<tr>
+<td>Corrective runbooks</td>
+<td>Step-by-step procedures for specific known issues</td>
+</tr>
+</tbody>
+</table>
+<p>Guides are generated from a single controlled source into HTML and PDF, so the<br />
+distributed renderings cannot diverge from the original.</p>
+<h3 id="132-self-service-diagnosis">13.2 Self-service diagnosis</h3>
+<p>The product is designed so that a customer can diagnose most conditions without<br />
+contacting the vendor: service status and logs are accessible through standard<br />
+tooling, the troubleshooting section covers the common failure modes with their<br />
+corrections, and licence terms can be read directly on the server or through the<br />
+web interface.</p>
+<hr />
+<h2 id="14-appendices">14. Appendices</h2>
+<h3 id="appendix-a-port-summary">Appendix A — Port summary</h3>
+<table>
+<thead>
+<tr>
+<th>Port</th>
+<th>Protocol</th>
+<th>Service</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>514</td>
+<td>UDP</td>
+<td>Log collector, syslog input</td>
+</tr>
+<tr>
+<td>24224</td>
+<td>TCP</td>
+<td>Log collector, forward protocol input</td>
+</tr>
+<tr>
+<td>9200</td>
+<td>HTTPS</td>
+<td>Search engine API</td>
+</tr>
+<tr>
+<td>5601</td>
+<td>HTTP</td>
+<td>Web user interface</td>
+</tr>
+</tbody>
+</table>
+<h3 id="appendix-b-key-file-locations">Appendix B — Key file locations</h3>
+<table>
+<thead>
+<tr>
+<th>Path</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>/opt/supra/opensearch/</code></td>
+<td>Search engine installation</td>
+</tr>
+<tr>
+<td><code>/opt/supra/opensearch/config/opensearch.yml</code></td>
+<td>Search engine configuration</td>
+</tr>
+<tr>
+<td><code>/opt/supra/opensearch/config/supra-license/</code></td>
+<td>Licence file, public key, fingerprint tool</td>
+</tr>
+<tr>
+<td><code>/opt/supra/dashboards/</code></td>
+<td>Web interface installation</td>
+</tr>
+<tr>
+<td><code>/opt/supra/dashboards/config/opensearch_dashboards.yml</code></td>
+<td>Web interface configuration</td>
+</tr>
+<tr>
+<td><code>/opt/supra/log-collector/fluent.conf</code></td>
+<td>Log collector configuration</td>
+</tr>
+<tr>
+<td><code>/opt/supra/index-template/supra-index-template.sh</code></td>
+<td>Index template bootstrap</td>
+</tr>
+<tr>
+<td><code>/opt/fluent/bin/fluentd</code></td>
+<td>Log collector binary</td>
+</tr>
+<tr>
+<td><code>/etc/systemd/system/supra-*.service</code></td>
+<td>Service definitions</td>
+</tr>
+<tr>
+<td><code>/etc/sysctl.d/99-supra.conf</code></td>
+<td>Kernel tuning</td>
+</tr>
+</tbody>
+</table>
+<h3 id="appendix-c-syslog-severity-levels">Appendix C — Syslog severity levels</h3>
+<table>
+<thead>
+<tr>
+<th>Level</th>
+<th>Severity</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0</td>
+<td>Emergency</td>
+<td>System is unusable</td>
+</tr>
+<tr>
+<td>1</td>
+<td>Alert</td>
+<td>Immediate action required</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Critical</td>
+<td>Critical condition</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Error</td>
+<td>Error condition</td>
+</tr>
+<tr>
+<td>4</td>
+<td>Warning</td>
+<td>Warning condition</td>
+</tr>
+<tr>
+<td>5</td>
+<td>Notice</td>
+<td>Normal but significant</td>
+</tr>
+<tr>
+<td>6</td>
+<td>Informational</td>
+<td>Informational message</td>
+</tr>
+<tr>
+<td>7</td>
+<td>Debug</td>
+<td>Debug-level message</td>
+</tr>
+</tbody>
+</table>
+<h3 id="appendix-d-glossary">Appendix D — Glossary</h3>
+<table>
+<thead>
+<tr>
+<th>Term</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Detector</strong></td>
+<td>A scheduled security analytics job that evaluates detection rules against an index and produces findings</td>
+</tr>
+<tr>
+<td><strong>Fingerprint</strong></td>
+<td>A hash derived from the host's hardware identifiers, used to bind a licence to one machine</td>
+</tr>
+<tr>
+<td><strong>Forward protocol</strong></td>
+<td>The Fluentd-native protocol used to relay records between collectors, on TCP/24224</td>
+</tr>
+<tr>
+<td><strong>IED</strong></td>
+<td>Intelligent Electronic Device — protection and control equipment in a substation, per IEC 61850</td>
+</tr>
+<tr>
+<td><strong>Index</strong></td>
+<td>The unit of storage in the search engine; this product uses time-based indices under <code>supra-*</code></td>
+</tr>
+<tr>
+<td><strong>Index template</strong></td>
+<td>Definition applied to new indices, fixing field mappings and settings</td>
+</tr>
+<tr>
+<td><strong>ISM policy</strong></td>
+<td>Index State Management policy — automates transitions and deletion of indices by age</td>
+</tr>
+<tr>
+<td><strong>Monitor</strong></td>
+<td>A scheduled alerting job that runs a query and triggers when a condition is met</td>
+</tr>
+<tr>
+<td><strong>NXLog</strong></td>
+<td>Agent used to forward Windows Event Log data as syslog</td>
+</tr>
+<tr>
+<td><strong>Sigma</strong></td>
+<td>An open, vendor-neutral rule format for expressing log-based detections</td>
+</tr>
+<tr>
+<td><strong>SIEM</strong></td>
+<td>Security Information and Event Management</td>
+</tr>
+<tr>
+<td><strong>Snapshot</strong></td>
+<td>A point-in-time backup of indices to a registered repository</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<p><em>End of document — SUPRA-PD-001 Rev 1.0</em></p>
+</body>
+</html>
