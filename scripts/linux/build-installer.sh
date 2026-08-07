@@ -339,6 +339,10 @@ if [ -d "$LICENSE_VALIDATOR_DIR" ]; then
         cp "$LICENSE_VALIDATOR_DIR/get-fingerprint.sh" "$STAGING/license-validator/"
         echo "    Fingerprint script staged."
     fi
+    if [ -f "$LICENSE_VALIDATOR_DIR/supra-license-info.sh" ]; then
+        cp "$LICENSE_VALIDATOR_DIR/supra-license-info.sh" "$STAGING/license-validator/"
+        echo "    License inspector staged."
+    fi
 fi
 
 # ---------------------------------------------------------------------------

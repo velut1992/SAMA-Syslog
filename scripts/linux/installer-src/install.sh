@@ -189,6 +189,11 @@ if [ -f "$SCRIPT_DIR/license-validator/get-fingerprint.sh" ]; then
     chmod 600 "$INSTALL_DIR/opensearch/config/supra-license/get-fingerprint.sh"
     log "  Fingerprint tool installed."
 fi
+if [ -f "$SCRIPT_DIR/license-validator/supra-license-info.sh" ]; then
+    cp "$SCRIPT_DIR/license-validator/supra-license-info.sh" "$INSTALL_DIR/opensearch/config/supra-license/"
+    chmod 600 "$INSTALL_DIR/opensearch/config/supra-license/supra-license-info.sh"
+    log "  License inspector installed."
+fi
 chown -R "$SUPRA_USER:$SUPRA_GROUP" "$INSTALL_DIR/opensearch/config/supra-license"
 chmod 700 "$INSTALL_DIR/opensearch/config/supra-license"
 

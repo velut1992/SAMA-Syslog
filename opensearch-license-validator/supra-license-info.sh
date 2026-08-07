@@ -25,6 +25,7 @@ PUBLIC_KEY="${2:-}"
 # --- locate the license file ---------------------------------------------------
 if [ -z "$LICENSE_FILE" ]; then
     for c in "./license.key" "config/supra-license/license.key" \
+             "/opt/supra/opensearch/config/supra-license/license.key" \
              "/etc/supra-search/config/supra-license/license.key"; do
         if [ -f "$c" ]; then LICENSE_FILE="$c"; break; fi
     done
