@@ -2,11 +2,17 @@ opensearch-3.6.0/
 *.tar.gz
 *.tar.gz.bak
 *.zip
+*.msi
 .claude/settings.local.json
 
 # Java build artifacts
 *.class
 **/target/
 
-# Private keys
+# Private keys and customer licenses
 opensearch-license-validator/keys/private.key
+opensearch-license-validator/keys/*.key
+opensearch-license-validator/keys/license-info.txt
+
+# Independent clones checked out inside this repo
+dashboards-reporting/
