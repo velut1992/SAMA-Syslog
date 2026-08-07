@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Supra SIEM Platform - Installation and User Guide</title>
+    <title>Supra SIEM Platform - Installation and User Guide (Linux)</title>
     <style>
         @page {
             size: A4;
@@ -164,12 +164,16 @@
 <body>
     <div class="header-bar">
         <h1>Supra SIEM Platform</h1>
-        <p>Installation and User Guide | Version 3.6.0 | March 2026</p>
+        <p>Installation and User Guide (Linux) | Version 3.6.0 | Rev. August 2026</p>
     </div>
-    <h1 id="supra-siem-platform-installation-and-user-guide">Supra SIEM Platform - Installation and User Guide</h1>
+    <h1 id="supra-siem-platform-installation-and-user-guide-linux">Supra SIEM Platform - Installation and User Guide (Linux)</h1>
 <p><strong>Version:</strong> 3.6.0<br />
-<strong>Date:</strong> June 2026<br />
+<strong>Date:</strong> August 2026<br />
 <strong>Platform:</strong> Ubuntu 22.04 LTS (jammy), x86_64 — fully offline installer</p>
+<blockquote>
+<p>For a Windows deployment, see the <em>Windows Installation Guide</em><br />
+(<code>windows-installation-guide.md</code>) instead.</p>
+</blockquote>
 <hr />
 <h2 id="table-of-contents">Table of Contents</h2>
 <ol>
@@ -207,7 +211,7 @@
 <tr>
 <td><strong>Supra Search Engine</strong> (OpenSearch 3.6.0 + Supra License Validator + Index Management)</td>
 <td><code>supra-search</code></td>
-<td>Log storage, indexing, search engine, license enforcement</td>
+<td>Log storage, indexing, search engine, license enforcement and reporting</td>
 <td>9200 (HTTPS)</td>
 </tr>
 <tr>
@@ -419,8 +423,17 @@ sudo<span class="w"> </span>bash<span class="w"> </span>/opt/supra/opensearch/co
 sudo<span class="w"> </span>cp<span class="w"> </span>license.key<span class="w"> </span>/opt/supra/opensearch/config/supra-license/
 sudo<span class="w"> </span>chown<span class="w"> </span>supra:supra<span class="w"> </span>/opt/supra/opensearch/config/supra-license/license.key
 sudo<span class="w"> </span>chmod<span class="w"> </span><span class="m">600</span><span class="w"> </span>/opt/supra/opensearch/config/supra-license/license.key
+
+<span class="c1"># 4. Confirm the license reads back as expected BEFORE starting the service:</span>
+sudo<span class="w"> </span>bash<span class="w"> </span>/opt/supra/opensearch/config/supra-license/supra-license-info.sh
 </code></pre></div>
 
+<p>Step 4 decodes the license you were sent and prints who it is for, whether it is<br />
+permanent or temporary, how long it is valid, and which machine it is bound to.<br />
+Check that <strong>Bound to machine</strong> matches the fingerprint from step 1 — if it does<br />
+not, the search engine will refuse to start, and catching that here is faster<br />
+than diagnosing a failed start-up. See <a href="#56-verify-the-license">Section 5.6</a> for<br />
+the full output and the other ways to read a license.</p>
 <h3 id="step-5-start-services-and-verify">Step 5: Start Services and Verify</h3>
 <div class="code"><pre><span></span><code><span class="c1"># Start the search engine first</span>
 sudo<span class="w"> </span>systemctl<span class="w"> </span>start<span class="w"> </span>supra-search
@@ -495,6 +508,95 @@ curl<span class="w"> </span>-sk<span class="w"> </span>-u<span class="w"> </span
 </code></pre></div>
 
 <p>You should see indices like <code>supra-logs-YYYY.MM.DD</code>.</p>
+<h3 id="56-verify-the-license">5.6 Verify the License</h3>
+<p>A Supra license is <strong>not encrypted</strong> — it is a base64-encoded JSON payload plus<br />
+an RSA signature (<code>&lt;payload&gt;.&lt;signature&gt;</code>). The signature makes it tamper-proof;<br />
+it does not hide the contents. So the licensed terms can be read at any time,<br />
+without the vendor's private key. There are three ways to read them, and all<br />
+three report identical details.</p>
+<h4 id="on-the-server-supra-license-infosh">On the server — <code>supra-license-info.sh</code></h4>
+<div class="code"><pre><span></span><code><span class="c1"># auto-detects the installed license</span>
+sudo<span class="w"> </span>bash<span class="w"> </span>/opt/supra/opensearch/config/supra-license/supra-license-info.sh
+
+<span class="c1"># or point at explicit files</span>
+sudo<span class="w"> </span>bash<span class="w"> </span>/opt/supra/opensearch/config/supra-license/supra-license-info.sh<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>/opt/supra/opensearch/config/supra-license/license.key<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>/opt/supra/opensearch/config/supra-license/public.key
+</code></pre></div>
+
+<div class="code"><pre><span></span><code><span class="o">==============================================</span>
+<span class="w">          </span><span class="nx">Supra</span><span class="w"> </span><span class="nx">License</span><span class="w"> </span><span class="nx">Information</span>
+<span class="o">==============================================</span>
+<span class="w">  </span><span class="nx">Customer</span><span class="w">        </span><span class="p">:</span><span class="w"> </span><span class="nx">PowerGrid</span><span class="w"> </span><span class="nx">KPS</span><span class="o">-</span><span class="mi">3</span>
+<span class="w">  </span><span class="nx">License</span><span class="w"> </span><span class="k">type</span><span class="w">    </span><span class="p">:</span><span class="w"> </span><span class="nx">Permanent</span><span class="w"> </span><span class="p">(</span><span class="nx">perpetual</span><span class="p">)</span>
+<span class="w">  </span><span class="nx">Validity</span><span class="w">        </span><span class="p">:</span><span class="w"> </span><span class="nx">No</span><span class="w"> </span><span class="nx">expiry</span>
+<span class="w">  </span><span class="nx">Issued</span><span class="w"> </span><span class="nx">on</span><span class="w">       </span><span class="p">:</span><span class="w"> </span><span class="mi">2026</span><span class="o">-</span><span class="mi">06</span><span class="o">-</span><span class="mi">16</span>
+<span class="w">  </span><span class="nx">Expires</span><span class="w"> </span><span class="nx">on</span><span class="w">      </span><span class="p">:</span><span class="w"> </span><span class="mi">9999</span><span class="o">-</span><span class="mi">12</span><span class="o">-</span><span class="mi">31</span>
+<span class="w">  </span><span class="nx">Tier</span><span class="w">            </span><span class="p">:</span><span class="w"> </span><span class="nx">standard</span>
+<span class="w">  </span><span class="nx">Max</span><span class="w"> </span><span class="nx">nodes</span><span class="w">       </span><span class="p">:</span><span class="w"> </span><span class="mi">1</span>
+<span class="w">  </span><span class="nx">Max</span><span class="w"> </span><span class="nx">devices</span><span class="w">     </span><span class="p">:</span><span class="w"> </span><span class="k">not</span><span class="w"> </span><span class="nx">specified</span>
+<span class="w">  </span><span class="nx">Bound</span><span class="w"> </span><span class="nx">to</span><span class="w"> </span><span class="nx">machine</span><span class="p">:</span><span class="w"> </span><span class="mi">6</span><span class="nx">f719b0350eaaa44abddd</span><span class="o">...</span>
+<span class="w">  </span><span class="nx">Signature</span><span class="w">       </span><span class="p">:</span><span class="w"> </span><span class="nx">VALID</span><span class="w"> </span><span class="p">(</span><span class="nx">signature</span><span class="w"> </span><span class="nx">authentic</span><span class="p">,</span><span class="w"> </span><span class="k">not</span><span class="w"> </span><span class="nx">tampered</span><span class="p">)</span>
+<span class="w">  </span><span class="nx">Overall</span><span class="w"> </span><span class="nx">status</span><span class="w">  </span><span class="p">:</span><span class="w"> </span><span class="nx">ACTIVE</span>
+<span class="o">==============================================</span>
+</code></pre></div>
+
+<ul>
+<li><strong>License type</strong> — <code>Permanent (perpetual)</code> for a lifetime license (expiry<br />
+<code>9999-12-31</code>), otherwise <code>Temporary</code> with days remaining or days expired.</li>
+<li><strong>Signature</strong> — verified with <code>public.key</code> and <code>openssl</code>, both of which are<br />
+  present on an installed server. <code>VALID</code> means the file is authentic and has<br />
+  not been altered.</li>
+<li><strong>Bound to machine</strong> — must match the output of <code>get-fingerprint.sh</code> on this<br />
+  host, or the search engine will not start.</li>
+<li><strong>Exit code</strong> — <code>0</code> active, <code>2</code> expired or untrusted, <code>1</code> unreadable. Useful<br />
+  for monitoring: a cron job can alert before a temporary license lapses.</li>
+</ul>
+<h4 id="from-dashboards-get-_supralicense">From Dashboards — <code>GET /_supra/license</code></h4>
+<p>No shell access needed. Open <strong>Menu &gt; Dev Tools</strong> in Dashboards and run:</p>
+<div class="code"><pre><span></span><code><span class="err">GET /_supra/license</span>
+</code></pre></div>
+
+<div class="code"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;customer&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;PowerGrid KPS-3&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;license_type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Permanent (perpetual)&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;validity&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;No expiry&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;status&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;ACTIVE&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;issued_at&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2026-06-16&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;expires_at&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;9999-12-31&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;tier&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;standard&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;max_nodes&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;max_devices&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;not specified&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;device_window&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;last 24h&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;active_devices&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">37</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;bound_to_machine&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;6f719b0350eaaa44abddd...&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;signature_verified&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span>
+<span class="p">}</span>
+</code></pre></div>
+
+<p>Alongside the licensed terms this reports <strong>live device usage</strong> — a distinct<br />
+count of the <code>host</code> field across the <code>supra-*</code> indices over the last 24 hours,<br />
+i.e. devices that have actually sent data recently. Where the license sets a<br />
+device limit, <code>devices_remaining</code> and <code>over_limit</code> are reported too. This is a<br />
+soft check for visibility; it does not block ingestion.</p>
+<p>The endpoint only responds after the plugin has verified the signature, the<br />
+machine fingerprint and the expiry at start-up — so any response describes an<br />
+authentic license bound to this machine. (If it were invalid, the node would not<br />
+have started.) If the usage query cannot run — on a fresh install with no<br />
+indices yet, for example — the license is still reported and<br />
+<code>device_usage_error</code> explains why usage is unavailable.</p>
+<blockquote>
+<p><strong>Version note:</strong> <code>GET /_supra/license</code> and <code>supra-license-info.sh</code> require the<br />
+license validator plugin built on or after 2026-06-25. Installers built before<br />
+that date have the validator but not the reporting endpoint or the inspector<br />
+script; on those systems, use <code>get-fingerprint.sh</code> and the vendor-side<br />
+<code>LicenseGenerator --inspect</code> instead. See <a href="#16-troubleshooting">Section 16</a>.</p>
+</blockquote>
+<h4 id="vendor-side-licensegenerator-inspect">Vendor side — <code>LicenseGenerator --inspect</code></h4>
+<p>Supra Controls verifies the terms of a license before sending it:</p>
+<div class="code"><pre><span></span><code>java<span class="w"> </span>LicenseGenerator<span class="w"> </span>--inspect<span class="w"> </span>--license<span class="w"> </span>powergrid-kps-3-lifetime.key
+</code></pre></div>
+
 <hr />
 <h2 id="6-syslog-configuration-on-devices">6. Syslog Configuration on Devices</h2>
 <p>Configure your network devices, servers, and applications to send syslog to the Supra server on <strong>port 514 (UDP)</strong>.</p>
@@ -1609,6 +1711,44 @@ df<span class="w"> </span>-h<span class="w"> </span>/opt/supra
 cat<span class="w"> </span>/opt/supra/opensearch/config/jvm.options<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>-E<span class="w"> </span><span class="s2">&quot;^-Xm&quot;</span>
 </code></pre></div>
 
+<h3 id="license-errors-on-start-up">License errors on start-up</h3>
+<p>The search engine validates the license before the node becomes available. If any<br />
+check fails it refuses to start and logs the reason, so <code>journalctl</code> is always the<br />
+first place to look:</p>
+<div class="code"><pre><span></span><code>journalctl<span class="w"> </span>-u<span class="w"> </span>supra-search<span class="w"> </span>--no-pager<span class="w"> </span>-n<span class="w"> </span><span class="m">50</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>-i<span class="w"> </span>license
+</code></pre></div>
+
+<p><strong><code>License fingerprint mismatch!</code></strong></p>
+<p>The license was issued for a different machine. The log prints both fingerprints —<br />
+the licensed one and this machine's. Confirm which is which:</p>
+<div class="code"><pre><span></span><code><span class="c1"># what this machine reports</span>
+sudo<span class="w"> </span>bash<span class="w"> </span>/opt/supra/opensearch/config/supra-license/get-fingerprint.sh
+
+<span class="c1"># what the license was issued for</span>
+sudo<span class="w"> </span>bash<span class="w"> </span>/opt/supra/opensearch/config/supra-license/supra-license-info.sh
+</code></pre></div>
+
+<p>If <strong>Bound to machine</strong> does not match, the license must be reissued for this<br />
+host — send the current fingerprint to your Supra vendor. A license cannot be<br />
+moved between machines.</p>
+<p><strong><code>License has expired</code></strong></p>
+<p>The license was temporary and its expiry date has passed. Confirm with<br />
+<code>supra-license-info.sh</code>, which reports how long ago it lapsed, and contact your<br />
+vendor to renew. To avoid this, monitor the exit code — <code>0</code> active, <code>2</code> expired<br />
+or untrusted — on a schedule:</p>
+<div class="code"><pre><span></span><code><span class="c1"># alert 30 days out; runs daily from cron</span>
+sudo<span class="w"> </span>bash<span class="w"> </span>/opt/supra/opensearch/config/supra-license/supra-license-info.sh<span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Supra license needs attention&quot;</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>mail<span class="w"> </span>-s<span class="w"> </span><span class="s2">&quot;Supra license&quot;</span><span class="w"> </span>soc@yourcompany.com
+</code></pre></div>
+
+<p><strong><code>Signature : INVALID</code></strong></p>
+<p>The license file does not match <code>public.key</code>. Either the file was altered or<br />
+truncated in transit, or it was issued against a different key pair. Re-copy the<br />
+original file from the vendor; if it still fails, request a fresh license.</p>
+<p><strong><code>GET /_supra/license</code> returns 404 / no such handler</strong></p>
+<p>The installed validator plugin predates the reporting endpoint (see the version<br />
+note in <a href="#56-verify-the-license">Section 5.6</a>). Use <code>get-fingerprint.sh</code> on the<br />
+server, or upgrade to an installer built on or after 2026-06-25.</p>
 <h3 id="dashboards-shows-opensearch-unavailable">Dashboards shows "OpenSearch unavailable"</h3>
 <div class="code"><pre><span></span><code><span class="c1"># Verify OpenSearch is running</span>
 curl<span class="w"> </span>-sk<span class="w"> </span>-u<span class="w"> </span>admin:admin<span class="w"> </span>https://localhost:9200
@@ -1777,7 +1917,15 @@ curl<span class="w"> </span>-sk<span class="w"> </span>-u<span class="w"> </span
 </tr>
 <tr>
 <td><code>/opt/supra/opensearch/config/supra-license/</code></td>
-<td>License key + public key + fingerprint tool</td>
+<td>License key + public key + fingerprint tool + license inspector</td>
+</tr>
+<tr>
+<td><code>/opt/supra/opensearch/config/supra-license/get-fingerprint.sh</code></td>
+<td>Prints this machine's fingerprint (MFP)</td>
+</tr>
+<tr>
+<td><code>/opt/supra/opensearch/config/supra-license/supra-license-info.sh</code></td>
+<td>Decodes and verifies the installed license</td>
 </tr>
 <tr>
 <td><code>/opt/supra/dashboards/</code></td>
@@ -1848,6 +1996,9 @@ curl<span class="w"> </span>-sk<span class="w"> </span>-u<span class="w"> </span
 
 <span class="c1"># List all roles</span>
 curl<span class="w"> </span>-sk<span class="w"> </span>-u<span class="w"> </span>admin:admin<span class="w"> </span>https://localhost:9200/_plugins/_security/api/roles?pretty
+
+<span class="c1"># License details + live device usage</span>
+curl<span class="w"> </span>-sk<span class="w"> </span>-u<span class="w"> </span>admin:admin<span class="w"> </span>https://localhost:9200/_supra/license?pretty
 </code></pre></div>
 
 <h3 id="d-syslog-severity-levels">D. Syslog Severity Levels</h3>

@@ -1,8 +1,11 @@
-# Supra SIEM Platform - Installation and User Guide
+# Supra SIEM Platform - Installation and User Guide (Linux)
 
 **Version:** 3.6.0
-**Date:** June 2026
+**Date:** August 2026
 **Platform:** Ubuntu 22.04 LTS (jammy), x86_64 — fully offline installer
+
+> For a Windows deployment, see the *Windows Installation Guide*
+> (`windows-installation-guide.md`) instead.
 
 ---
 
@@ -34,7 +37,7 @@ Supra SIEM is a centralized log management and security analytics platform built
 
 | Component | systemd service | Purpose | Port |
 |-----------|-----------------|---------|------|
-| **Supra Search Engine** (OpenSearch 3.6.0 + Supra License Validator + Index Management) | `supra-search` | Log storage, indexing, search engine, license enforcement | 9200 (HTTPS) |
+| **Supra Search Engine** (OpenSearch 3.6.0 + Supra License Validator + Index Management) | `supra-search` | Log storage, indexing, search engine, license enforcement and reporting | 9200 (HTTPS) |
 | **Supra Dashboards** (OpenSearch Dashboards + SIEM plugins) | `supra-dashboards` | Web UI for visualization, dashboards, alerts | 5601 (HTTP) |
 | **Supra Log Collector** (fluent-package 5.0.9 + fluent-plugin-opensearch) | `supra-log-collector` | Receives syslog from devices and forwards to the search engine | 514 (syslog), 24224 (forward) |
 | **Supra Index Template** (one-shot) | `supra-index-template` | Auto-applies the `supra-*` index template once the search engine is healthy | — |
@@ -198,7 +201,17 @@ sudo bash /opt/supra/opensearch/config/supra-license/get-fingerprint.sh
 sudo cp license.key /opt/supra/opensearch/config/supra-license/
 sudo chown supra:supra /opt/supra/opensearch/config/supra-license/license.key
 sudo chmod 600 /opt/supra/opensearch/config/supra-license/license.key
+
+# 4. Confirm the license reads back as expected BEFORE starting the service:
+sudo bash /opt/supra/opensearch/config/supra-license/supra-license-info.sh
 ```
+
+Step 4 decodes the license you were sent and prints who it is for, whether it is
+permanent or temporary, how long it is valid, and which machine it is bound to.
+Check that **Bound to machine** matches the fingerprint from step 1 — if it does
+not, the search engine will refuse to start, and catching that here is faster
+than diagnosing a failed start-up. See [Section 5.6](#56-verify-the-license) for
+the full output and the other ways to read a license.
 
 ### Step 5: Start Services and Verify
 
@@ -280,6 +293,107 @@ curl -sk -u admin:admin https://localhost:9200/_cat/indices?v
 ```
 
 You should see indices like `supra-logs-YYYY.MM.DD`.
+
+### 5.6 Verify the License
+
+A Supra license is **not encrypted** — it is a base64-encoded JSON payload plus
+an RSA signature (`<payload>.<signature>`). The signature makes it tamper-proof;
+it does not hide the contents. So the licensed terms can be read at any time,
+without the vendor's private key. There are three ways to read them, and all
+three report identical details.
+
+#### On the server — `supra-license-info.sh`
+
+```bash
+# auto-detects the installed license
+sudo bash /opt/supra/opensearch/config/supra-license/supra-license-info.sh
+
+# or point at explicit files
+sudo bash /opt/supra/opensearch/config/supra-license/supra-license-info.sh \
+    /opt/supra/opensearch/config/supra-license/license.key \
+    /opt/supra/opensearch/config/supra-license/public.key
+```
+
+```
+==============================================
+          Supra License Information
+==============================================
+  Customer        : PowerGrid KPS-3
+  License type    : Permanent (perpetual)
+  Validity        : No expiry
+  Issued on       : 2026-06-16
+  Expires on      : 9999-12-31
+  Tier            : standard
+  Max nodes       : 1
+  Max devices     : not specified
+  Bound to machine: 6f719b0350eaaa44abddd...
+  Signature       : VALID (signature authentic, not tampered)
+  Overall status  : ACTIVE
+==============================================
+```
+
+- **License type** — `Permanent (perpetual)` for a lifetime license (expiry
+  `9999-12-31`), otherwise `Temporary` with days remaining or days expired.
+- **Signature** — verified with `public.key` and `openssl`, both of which are
+  present on an installed server. `VALID` means the file is authentic and has
+  not been altered.
+- **Bound to machine** — must match the output of `get-fingerprint.sh` on this
+  host, or the search engine will not start.
+- **Exit code** — `0` active, `2` expired or untrusted, `1` unreadable. Useful
+  for monitoring: a cron job can alert before a temporary license lapses.
+
+#### From Dashboards — `GET /_supra/license`
+
+No shell access needed. Open **Menu > Dev Tools** in Dashboards and run:
+
+```
+GET /_supra/license
+```
+
+```json
+{
+  "customer": "PowerGrid KPS-3",
+  "license_type": "Permanent (perpetual)",
+  "validity": "No expiry",
+  "status": "ACTIVE",
+  "issued_at": "2026-06-16",
+  "expires_at": "9999-12-31",
+  "tier": "standard",
+  "max_nodes": 1,
+  "max_devices": "not specified",
+  "device_window": "last 24h",
+  "active_devices": 37,
+  "bound_to_machine": "6f719b0350eaaa44abddd...",
+  "signature_verified": true
+}
+```
+
+Alongside the licensed terms this reports **live device usage** — a distinct
+count of the `host` field across the `supra-*` indices over the last 24 hours,
+i.e. devices that have actually sent data recently. Where the license sets a
+device limit, `devices_remaining` and `over_limit` are reported too. This is a
+soft check for visibility; it does not block ingestion.
+
+The endpoint only responds after the plugin has verified the signature, the
+machine fingerprint and the expiry at start-up — so any response describes an
+authentic license bound to this machine. (If it were invalid, the node would not
+have started.) If the usage query cannot run — on a fresh install with no
+indices yet, for example — the license is still reported and
+`device_usage_error` explains why usage is unavailable.
+
+> **Version note:** `GET /_supra/license` and `supra-license-info.sh` require the
+> license validator plugin built on or after 2026-06-25. Installers built before
+> that date have the validator but not the reporting endpoint or the inspector
+> script; on those systems, use `get-fingerprint.sh` and the vendor-side
+> `LicenseGenerator --inspect` instead. See [Section 16](#16-troubleshooting).
+
+#### Vendor side — `LicenseGenerator --inspect`
+
+Supra Controls verifies the terms of a license before sending it:
+
+```bash
+java LicenseGenerator --inspect --license powergrid-kps-3-lifetime.key
+```
 
 ---
 
@@ -1425,6 +1539,58 @@ df -h /opt/supra
 cat /opt/supra/opensearch/config/jvm.options | grep -E "^-Xm"
 ```
 
+### License errors on start-up
+
+The search engine validates the license before the node becomes available. If any
+check fails it refuses to start and logs the reason, so `journalctl` is always the
+first place to look:
+
+```bash
+journalctl -u supra-search --no-pager -n 50 | grep -i license
+```
+
+**`License fingerprint mismatch!`**
+
+The license was issued for a different machine. The log prints both fingerprints —
+the licensed one and this machine's. Confirm which is which:
+
+```bash
+# what this machine reports
+sudo bash /opt/supra/opensearch/config/supra-license/get-fingerprint.sh
+
+# what the license was issued for
+sudo bash /opt/supra/opensearch/config/supra-license/supra-license-info.sh
+```
+
+If **Bound to machine** does not match, the license must be reissued for this
+host — send the current fingerprint to your Supra vendor. A license cannot be
+moved between machines.
+
+**`License has expired`**
+
+The license was temporary and its expiry date has passed. Confirm with
+`supra-license-info.sh`, which reports how long ago it lapsed, and contact your
+vendor to renew. To avoid this, monitor the exit code — `0` active, `2` expired
+or untrusted — on a schedule:
+
+```bash
+# alert 30 days out; runs daily from cron
+sudo bash /opt/supra/opensearch/config/supra-license/supra-license-info.sh || \
+    echo "Supra license needs attention" | mail -s "Supra license" soc@yourcompany.com
+```
+
+**`Signature : INVALID`**
+
+The license file does not match `public.key`. Either the file was altered or
+truncated in transit, or it was issued against a different key pair. Re-copy the
+original file from the vendor; if it still fails, request a fresh license.
+
+**`GET /_supra/license` returns 404 / no such handler**
+
+The installed validator plugin predates the reporting endpoint (see the version
+note in [Section 5.6](#56-verify-the-license)). Use `get-fingerprint.sh` on the
+server, or upgrade to an installer built on or after 2026-06-25.
+
 ### Dashboards shows "OpenSearch unavailable"
 
 ```bash
@@ -1567,7 +1733,9 @@ curl -sk -u admin:admin -X DELETE "https://localhost:9200/supra-logs-2025.01.*"
 | `/opt/supra/opensearch/` | Supra Search Engine installation |
 | `/opt/supra/opensearch/config/opensearch.yml` | Search engine configuration |
 | `/opt/supra/opensearch/config/opensearch-security/` | Security plugin configs |
-| `/opt/supra/opensearch/config/supra-license/` | License key + public key + fingerprint tool |
+| `/opt/supra/opensearch/config/supra-license/` | License key + public key + fingerprint tool + license inspector |
+| `/opt/supra/opensearch/config/supra-license/get-fingerprint.sh` | Prints this machine's fingerprint (MFP) |
+| `/opt/supra/opensearch/config/supra-license/supra-license-info.sh` | Decodes and verifies the installed license |
 | `/opt/supra/dashboards/` | Supra Dashboards installation |
 | `/opt/supra/dashboards/config/opensearch_dashboards.yml` | Dashboards configuration |
 | `/opt/supra/log-collector/fluent.conf` | Log Collector configuration |
@@ -1605,6 +1773,9 @@ curl -sk -u admin:admin https://localhost:9200/_plugins/_security/api/internalus
 
 # List all roles
 curl -sk -u admin:admin https://localhost:9200/_plugins/_security/api/roles?pretty
+
+# License details + live device usage
+curl -sk -u admin:admin https://localhost:9200/_supra/license?pretty
 ```
 
 ### D. Syslog Severity Levels

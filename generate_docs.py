@@ -1,14 +1,18 @@
 #!/usr/bin/env python3
-"""Generate HTML and PDF from the Supra SIEM Installation Guide markdown."""
+"""Generate HTML and PDF from the Supra SIEM Linux Installation Guide markdown."""
 
 import markdown
 import os
 import subprocess
 
-BASE_DIR = "/home/velu/Hitachi"
-MD_FILE = os.path.join(BASE_DIR, "Supra_SIEM_Installation_and_User_Guide.md")
-HTML_FILE = os.path.join(BASE_DIR, "Supra_SIEM_Installation_and_User_Guide.html")
-PDF_FILE = os.path.join(BASE_DIR, "Supra_SIEM_Installation_and_User_Guide.pdf")
+# Resolve relative to this file so the script works from any checkout.
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+DOCS_DIR = os.path.join(BASE_DIR, "docs")
+STEM = "supra-siem-installation-and-user-guide-linux"
+
+MD_FILE = os.path.join(DOCS_DIR, f"{STEM}.md")
+HTML_FILE = os.path.join(DOCS_DIR, f"{STEM}.html")
+PDF_FILE = os.path.join(DOCS_DIR, f"{STEM}.pdf")
 
 # Read markdown
 with open(MD_FILE, "r") as f:
@@ -30,7 +34,7 @@ html_full = f"""<!DOCTYPE html>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Supra SIEM Platform - Installation and User Guide</title>
+    <title>Supra SIEM Platform - Installation and User Guide (Linux)</title>
     <style>
         @page {{
             size: A4;
@@ -191,7 +195,7 @@ html_full = f"""<!DOCTYPE html>
 <body>
     <div class="header-bar">
         <h1>Supra SIEM Platform</h1>
-        <p>Installation and User Guide | Version 3.6.0 | March 2026</p>
+        <p>Installation and User Guide (Linux) | Version 3.6.0 | Rev. August 2026</p>
     </div>
     {html_body}
 </body>
