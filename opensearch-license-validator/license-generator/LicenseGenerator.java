@@ -27,9 +27,88 @@ public class LicenseGenerator {
             generateKeys(args);
         } else if ("--create-license".equals(mode)) {
             createLicense(args);
+        } else if ("--inspect".equals(mode)) {
+            inspectLicense(args);
         } else {
             printUsage();
         }
+    }
+
+    // Decode and print a license in human-readable form. Needs no private key:
+    // the payload is only base64-encoded (and RSA-signed), not encrypted. Mirrors
+    // supra-license-info.sh so vendor and customer see identical details.
+    private static void inspectLicense(String[] args) throws Exception {
+        String licenseFile = "license.key";
+        for (int i = 1; i < args.length; i++) {
+            if ("--license".equals(args[i]) && i + 1 < args.length) {
+                licenseFile = args[++i];
+            }
+        }
+
+        String content = Files.readString(Paths.get(licenseFile)).trim();
+        String[] parts = content.split("\\.");
+        if (parts.length != 2) {
+            System.err.println("ERROR: invalid license format (expected <payload>.<signature>).");
+            System.exit(1);
+        }
+        String payload = new String(Base64.getDecoder().decode(parts[0]), "UTF-8");
+
+        String expiresAt = extractJsonValue(payload, "expiresAt");
+        String type = extractJsonValue(payload, "type");
+        String kind;
+        String validity;
+        boolean perpetual = expiresAt != null
+                && (expiresAt.startsWith("9999") || "permanent".equals(type) || "perpetual".equals(type));
+        if (perpetual) {
+            kind = "Permanent (perpetual)";
+            validity = "No expiry";
+        } else {
+            kind = "Temporary";
+            try {
+                LocalDate exp = LocalDate.parse(expiresAt, DateTimeFormatter.ISO_LOCAL_DATE);
+                long daysRemaining = java.time.temporal.ChronoUnit.DAYS.between(LocalDate.now(), exp);
+                validity = daysRemaining < 0
+                        ? "Expired " + (-daysRemaining) + " day(s) ago"
+                        : daysRemaining + " day(s) remaining";
+            } catch (Exception e) {
+                validity = "Expires " + expiresAt;
+            }
+        }
+
+        System.out.println("==============================================");
+        System.out.println("          Supra License Information");
+        System.out.println("==============================================");
+        System.out.println("  Customer        : " + nv(extractJsonValue(payload, "customer")));
+        System.out.println("  License type    : " + kind);
+        System.out.println("  Validity        : " + validity);
+        System.out.println("  Issued on       : " + nv(extractJsonValue(payload, "issuedAt")));
+        System.out.println("  Expires on      : " + nv(expiresAt));
+        System.out.println("  Tier            : " + nv(extractJsonValue(payload, "tier")));
+        System.out.println("  Max nodes       : " + nv(extractJsonValue(payload, "maxNodes")));
+        String maxDevices = extractJsonValue(payload, "maxDevices");
+        System.out.println("  Max devices     : " + (maxDevices == null ? "not specified" : maxDevices));
+        System.out.println("  Bound to machine: " + nv(extractJsonValue(payload, "fingerprint")));
+        System.out.println("==============================================");
+    }
+
+    private static String nv(String v) {
+        return v == null ? "<unknown>" : v;
+    }
+
+    // Extract a flat-JSON value (string or number) by key.
+    private static String extractJsonValue(String json, String key) {
+        String k = "\"" + key + "\":";
+        int start = json.indexOf(k);
+        if (start == -1) return null;
+        start += k.length();
+        if (start < json.length() && json.charAt(start) == '"') {
+            start++;
+            int end = json.indexOf('"', start);
+            return end == -1 ? null : json.substring(start, end);
+        }
+        int end = start;
+        while (end < json.length() && "-0123456789.".indexOf(json.charAt(end)) >= 0) end++;
+        return end == start ? null : json.substring(start, end);
     }
 
     private static void generateKeys(String[] args) throws Exception {
@@ -71,6 +150,7 @@ public class LicenseGenerator {
         String privateKeyPath = null;
         String tier = "standard";
         int maxNodes = 1;
+        Integer maxDevices = null;   // null -> omitted from payload -> shows "not specified"
         String outputFile = "license.key";
 
         for (int i = 1; i < args.length; i++) {
@@ -92,6 +172,9 @@ public class LicenseGenerator {
                     break;
                 case "--max-nodes":
                     maxNodes = Integer.parseInt(args[++i]);
+                    break;
+                case "--max-devices":
+                    maxDevices = Integer.parseInt(args[++i]);
                     break;
                 case "--output":
                     outputFile = args[++i];
@@ -117,6 +200,7 @@ public class LicenseGenerator {
                 + "\"expiresAt\":\"" + expiry + "\","
                 + "\"tier\":\"" + escapeJson(tier) + "\","
                 + "\"maxNodes\":" + maxNodes
+                + (maxDevices == null ? "" : ",\"maxDevices\":" + maxDevices)
                 + "}";
 
         // Load private key
@@ -150,6 +234,7 @@ public class LicenseGenerator {
         System.out.println("  Expires:     " + expiry);
         System.out.println("  Tier:        " + tier);
         System.out.println("  Max Nodes:   " + maxNodes);
+        System.out.println("  Max Devices: " + (maxDevices == null ? "not specified" : maxDevices));
         System.out.println("  Output:      " + outputFile);
     }
 
@@ -170,6 +255,10 @@ public class LicenseGenerator {
         System.out.println("      --private-key <path>       Path to RSA private key (PEM)");
         System.out.println("      [--tier <tier>]            License tier (default: standard)");
         System.out.println("      [--max-nodes <n>]          Max cluster nodes (default: 1)");
+        System.out.println("      [--max-devices <n>]        Max licensed devices (default: not specified)");
         System.out.println("      [--output <path>]          Output file (default: license.key)");
+        System.out.println();
+        System.out.println("  java LicenseGenerator --inspect [--license license.key]");
+        System.out.println("      Decode and print license details (no private key needed).");
     }
 }

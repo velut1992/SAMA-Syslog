@@ -1,5 +1,6 @@
 package com.supra.plugins;
 
+import org.opensearch.plugins.ActionPlugin;
 import org.opensearch.plugins.Plugin;
 
 import java.nio.file.Files;
@@ -11,14 +12,31 @@ import java.security.spec.X509EncodedKeySpec;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Base64;
+import java.util.List;
+import java.util.function.Supplier;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.opensearch.cluster.metadata.IndexNameExpressionResolver;
+import org.opensearch.cluster.node.DiscoveryNodes;
+import org.opensearch.common.settings.ClusterSettings;
+import org.opensearch.common.settings.IndexScopedSettings;
 import org.opensearch.common.settings.Settings;
+import org.opensearch.common.settings.SettingsFilter;
+import org.opensearch.rest.RestController;
+import org.opensearch.rest.RestHandler;
 
-public class LicenseValidatorPlugin extends Plugin {
+public class LicenseValidatorPlugin extends Plugin implements ActionPlugin {
 
     private static final Logger logger = LogManager.getLogger(LicenseValidatorPlugin.class);
+
+    // Snapshot of the validated license, published once startup validation passes.
+    // Read by RestSupraLicenseAction to serve GET /_supra/license.
+    private static volatile LicenseInfo publishedLicense;
+
+    public static LicenseInfo publishedLicense() {
+        return publishedLicense;
+    }
 
     public LicenseValidatorPlugin(Settings settings, Path configPath) {
         try {
@@ -84,6 +102,10 @@ public class LicenseValidatorPlugin extends Plugin {
             String fingerprint = extractJsonString(payload, "fingerprint");
             String expiresAt = extractJsonString(payload, "expiresAt");
             String tier = extractJsonString(payload, "tier");
+            String type = extractJsonString(payload, "type");          // may be null on older licenses
+            String issuedAt = extractJsonString(payload, "issuedAt");
+            Integer maxNodes = extractJsonInt(payload, "maxNodes");
+            Integer maxDevices = extractJsonInt(payload, "maxDevices"); // null when license sets no device limit
 
             // Check fingerprint match
             if (!localFingerprint.equals(fingerprint)) {
@@ -102,6 +124,10 @@ public class LicenseValidatorPlugin extends Plugin {
                         + "  Expired on: " + expiresAt + "\n"
                         + "  Contact your vendor to renew. MFP: " + localFingerprint);
             }
+
+            // Publish the validated snapshot for the GET /_supra/license endpoint.
+            publishedLicense = LicenseInfo.build(
+                    customer, type, issuedAt, expiresAt, tier, maxNodes, maxDevices, fingerprint);
 
             logger.info("Supra license validated successfully:");
             logger.info("  Customer:    {}", customer);
@@ -125,5 +151,34 @@ public class LicenseValidatorPlugin extends Plugin {
         int end = json.indexOf("\"", start);
         if (end == -1) return null;
         return json.substring(start, end);
+    }
+
+    // Extract an unquoted numeric value ("maxNodes":1). Tolerates a quoted number too.
+    private static Integer extractJsonInt(String json, String key) {
+        String searchKey = "\"" + key + "\":";
+        int start = json.indexOf(searchKey);
+        if (start == -1) return null;
+        start += searchKey.length();
+        if (start < json.length() && json.charAt(start) == '"') start++;
+        int end = start;
+        while (end < json.length() && Character.isDigit(json.charAt(end))) end++;
+        if (end == start) return null;
+        try {
+            return Integer.parseInt(json.substring(start, end));
+        } catch (NumberFormatException e) {
+            return null;
+        }
+    }
+
+    @Override
+    public List<RestHandler> getRestHandlers(
+            Settings settings,
+            RestController restController,
+            ClusterSettings clusterSettings,
+            IndexScopedSettings indexScopedSettings,
+            SettingsFilter settingsFilter,
+            IndexNameExpressionResolver indexNameExpressionResolver,
+            Supplier<DiscoveryNodes> nodesInCluster) {
+        return List.of(new RestSupraLicenseAction());
     }
 }
