@@ -1,14 +1,26 @@
 #!/usr/bin/env python3
-"""Generate HTML and PDF from the Supra SIEM Linux Installation Guide markdown."""
+"""Generate HTML and PDF from a Supra SIEM Installation Guide markdown file.
+
+Usage:
+    python generate_docs.py            # linux guide (default)
+    python generate_docs.py windows    # windows guide
+"""
 
 import markdown
 import os
 import subprocess
+import sys
 
 # Resolve relative to this file so the script works from any checkout.
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DOCS_DIR = os.path.join(BASE_DIR, "docs")
-STEM = "supra-siem-installation-and-user-guide-linux"
+
+PLATFORM = (sys.argv[1] if len(sys.argv) > 1 else "linux").lower()
+if PLATFORM not in ("linux", "windows"):
+    sys.exit(f"unknown platform '{PLATFORM}' (expected 'linux' or 'windows')")
+
+PLATFORM_LABEL = "Linux" if PLATFORM == "linux" else "Windows"
+STEM = f"supra-siem-installation-and-user-guide-{PLATFORM}"
 
 MD_FILE = os.path.join(DOCS_DIR, f"{STEM}.md")
 HTML_FILE = os.path.join(DOCS_DIR, f"{STEM}.html")
@@ -34,7 +46,7 @@ html_full = f"""<!DOCTYPE html>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Supra SIEM Platform - Installation and User Guide (Linux)</title>
+    <title>Supra SIEM Platform - Installation and User Guide ({PLATFORM_LABEL})</title>
     <style>
         @page {{
             size: A4;
@@ -195,7 +207,7 @@ html_full = f"""<!DOCTYPE html>
 <body>
     <div class="header-bar">
         <h1>Supra SIEM Platform</h1>
-        <p>Installation and User Guide (Linux) | Version 3.6.0 | Rev. August 2026</p>
+        <p>Installation and User Guide ({PLATFORM_LABEL}) | Version 3.6.0 | Rev. August 2026</p>
     </div>
     {html_body}
 </body>

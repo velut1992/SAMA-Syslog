@@ -1,0 +1,1178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Supra SIEM Platform - Installation and User Guide (Windows)</title>
+    <style>
+        @page {
+            size: A4;
+            margin: 20mm;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 960px;
+            margin: 0 auto;
+            padding: 20px 40px;
+            background: #fff;
+        }
+        h1 {
+            color: #1a237e;
+            border-bottom: 3px solid #1a237e;
+            padding-bottom: 10px;
+            font-size: 2em;
+        }
+        h2 {
+            color: #283593;
+            border-bottom: 2px solid #c5cae9;
+            padding-bottom: 8px;
+            margin-top: 40px;
+            font-size: 1.5em;
+            page-break-after: avoid;
+        }
+        h3 {
+            color: #3949ab;
+            margin-top: 25px;
+            font-size: 1.2em;
+            page-break-after: avoid;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 15px 0;
+            font-size: 0.9em;
+            page-break-inside: avoid;
+        }
+        th {
+            background-color: #1a237e;
+            color: white;
+            padding: 10px 12px;
+            text-align: left;
+            font-weight: 600;
+        }
+        td {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+        }
+        tr:nth-child(even) {
+            background-color: #f5f5f5;
+        }
+        tr:hover {
+            background-color: #e8eaf6;
+        }
+        code {
+            background-color: #f5f5f5;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+            font-size: 0.9em;
+            color: #c62828;
+        }
+        pre {
+            background-color: #263238;
+            color: #eeffff;
+            padding: 16px 20px;
+            border-radius: 6px;
+            overflow-x: auto;
+            font-size: 0.85em;
+            line-height: 1.5;
+            page-break-inside: avoid;
+        }
+        pre code {
+            background: none;
+            color: #eeffff;
+            padding: 0;
+            font-size: 1em;
+        }
+        blockquote {
+            border-left: 4px solid #ff6f00;
+            margin: 15px 0;
+            padding: 10px 20px;
+            background-color: #fff8e1;
+            color: #e65100;
+            font-weight: 500;
+        }
+        blockquote strong {
+            color: #bf360c;
+        }
+        a {
+            color: #1565c0;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        hr {
+            border: none;
+            border-top: 2px solid #e0e0e0;
+            margin: 30px 0;
+        }
+        ul, ol {
+            padding-left: 25px;
+        }
+        li {
+            margin-bottom: 4px;
+        }
+        .header-bar {
+            background: linear-gradient(135deg, #1a237e, #283593);
+            color: white;
+            padding: 30px 40px;
+            margin: -20px -40px 30px -40px;
+            text-align: center;
+        }
+        .header-bar h1 {
+            color: white;
+            border: none;
+            margin: 0;
+            font-size: 2.2em;
+        }
+        .header-bar p {
+            color: #c5cae9;
+            margin: 5px 0 0 0;
+            font-size: 1.1em;
+        }
+        .toc {
+            background: #f5f5f5;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            padding: 20px 30px;
+            margin: 20px 0;
+        }
+        .toc a {
+            color: #1a237e;
+        }
+        @media print {
+            body {
+                padding: 0;
+                max-width: none;
+            }
+            .header-bar {
+                margin: 0 0 30px 0;
+            }
+            pre {
+                white-space: pre-wrap;
+                word-wrap: break-word;
+            }
+            h2 {
+                page-break-before: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header-bar">
+        <h1>Supra SIEM Platform</h1>
+        <p>Installation and User Guide (Windows) | Version 3.6.0 | Rev. August 2026</p>
+    </div>
+    <h1 id="supra-siem-platform-installation-and-user-guide-windows">Supra SIEM Platform - Installation and User Guide (Windows)</h1>
+<p><strong>Version 3.6.0</strong> | Windows Server x64 | Rev. August 2026</p>
+<hr />
+<h2 id="table-of-contents">Table of Contents</h2>
+<ol>
+<li><a href="#1-overview">Overview</a></li>
+<li><a href="#2-architecture">Architecture</a></li>
+<li><a href="#3-prerequisites">Prerequisites</a></li>
+<li><a href="#4-installation">Installation</a></li>
+<li><a href="#5-post-installation-verification">Post-Installation Verification</a></li>
+<li><a href="#6-forwarding-logs-from-devices">Forwarding Logs from Devices</a></li>
+<li><a href="#7-log-collector-configuration">Log Collector Configuration</a></li>
+<li><a href="#8-index-management">Index Management</a></li>
+<li><a href="#9-users-and-roles">Users and Roles</a></li>
+<li><a href="#10-dashboards-setup">Dashboards Setup</a></li>
+<li><a href="#11-alerts-and-notifications">Alerts and Notifications</a></li>
+<li><a href="#12-service-management">Service Management</a></li>
+<li><a href="#13-backup-and-restore">Backup and Restore</a></li>
+<li><a href="#14-troubleshooting">Troubleshooting</a></li>
+<li><a href="#15-appendix">Appendix</a></li>
+</ol>
+<hr />
+<h2 id="1-overview">1. Overview</h2>
+<p>The Supra SIEM platform collects, indexes, searches and alerts on log data from<br />
+network devices, servers and IEDs. On Windows it is delivered as a single<br />
+self-contained zip that installs three Windows Services:</p>
+<table>
+<thead>
+<tr>
+<th>Service</th>
+<th>Display name</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>SupraSearch</code></td>
+<td>Supra Search Engine</td>
+<td>Indexes and stores log data (OpenSearch)</td>
+</tr>
+<tr>
+<td><code>SupraDashboards</code></td>
+<td>Supra Dashboards</td>
+<td>Web UI for search, dashboards, alerting</td>
+</tr>
+<tr>
+<td><code>SupraLogCollector</code></td>
+<td>Supra Log Collector</td>
+<td>Receives syslog/JSON and ships it to the search engine (Fluentd)</td>
+</tr>
+</tbody>
+</table>
+<p>All three run under NSSM (Non-Sucking Service Manager), which is installed to<br />
+<code>C:\supra\nssm</code> and added to the system PATH.</p>
+<p>The installer is <strong>fully offline</strong>. Every component — the search engine, the<br />
+dashboards, all plugins, the Fluentd runtime (fluent-package MSI) and NSSM — is<br />
+bundled inside the zip. The target server needs no internet access.</p>
+<hr />
+<h2 id="2-architecture">2. Architecture</h2>
+<pre class="code"><code>   Network devices          Windows endpoints         Linux servers        IEDs
+   (Cisco, Juniper,          (NXLog agent)             (rsyslog)        (IEC 61850)
+    Palo Alto, Fortinet)
+          |                        |                       |                |
+   syslog | udp+tcp/2514    JSON   | tcp/1514      syslog  | udp+tcp/5140   | udp+tcp/514
+          |                        |                       |                |
+          +------------------------+-----------+-----------+----------------+
+                                               |
+                                   +-----------v-----------+
+                                   |  Supra Log Collector  |   C:\supra\log-collector
+                                   |      (Fluentd)        |   fluent.conf
+                                   +-----------+-----------+
+                                               | https/9200
+                                   +-----------v-----------+
+                                   |  Supra Search Engine  |   C:\supra\opensearch
+                                   |     (OpenSearch)      |   + license validator plugin
+                                   +-----------+-----------+
+                                               | https/9200
+                                   +-----------v-----------+
+                                   |   Supra Dashboards    |   C:\supra\dashboards
+                                   |    (Web UI :5601)     |
+                                   +-----------------------+
+</code></pre>
+
+<p>Each source type lands on its own port and is routed to its own index prefix,<br />
+so a malformed IED message can never corrupt the Windows event mappings:</p>
+<table>
+<thead>
+<tr>
+<th>Source</th>
+<th>Port</th>
+<th>Index prefix</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>IED devices (IEC 61850)</td>
+<td>udp+tcp/514</td>
+<td><code>supra-ied-*</code></td>
+</tr>
+<tr>
+<td>Windows endpoints (NXLog, JSON)</td>
+<td>udp+tcp/1514</td>
+<td><code>supra-windows-*</code></td>
+</tr>
+<tr>
+<td>Network devices (routers, switches, firewalls)</td>
+<td>udp+tcp/2514</td>
+<td><code>supra-network-*</code></td>
+</tr>
+<tr>
+<td>Linux servers (rsyslog)</td>
+<td>udp+tcp/5140</td>
+<td><code>supra-logs-*</code></td>
+</tr>
+<tr>
+<td>Fluentd / Fluent Bit agents</td>
+<td>tcp/24224</td>
+<td>routed by tag</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="3-prerequisites">3. Prerequisites</h2>
+<h3 id="hardware-requirements">Hardware Requirements</h3>
+<table>
+<thead>
+<tr>
+<th>Resource</th>
+<th>Minimum</th>
+<th>Recommended</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>CPU</td>
+<td>4 cores</td>
+<td>8+ cores</td>
+</tr>
+<tr>
+<td>RAM</td>
+<td>8 GB</td>
+<td>16–32 GB</td>
+</tr>
+<tr>
+<td>Disk</td>
+<td>100 GB SSD</td>
+<td>500 GB+ SSD</td>
+</tr>
+<tr>
+<td>Network</td>
+<td>1 Gbps</td>
+<td>1 Gbps</td>
+</tr>
+</tbody>
+</table>
+<p>The installer sets the JVM heap to 50% of physical RAM, capped at 8 GB.</p>
+<h3 id="software-requirements">Software Requirements</h3>
+<ul>
+<li>Windows Server 2019 or 2022 (x64). Windows 10/11 Pro x64 works for testing.</li>
+<li>PowerShell 5.1 or later (ships with Windows Server 2016+).</li>
+<li>Administrator rights.</li>
+<li><strong>No JDK required</strong> — the search engine ships with its own bundled JDK.</li>
+<li><strong>No internet required</strong> on the target server.</li>
+</ul>
+<h3 id="pre-install-checks">Pre-Install Checks</h3>
+<p>Run these on the target server before installing:</p>
+<pre class="code"><code class="language-powershell"># Confirm you are Administrator
+([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
+
+# Confirm nothing already holds the ports the collector needs
+Get-NetTCPConnection -LocalPort 9200,5601,514,1514,2514,5140,24224 -ErrorAction SilentlyContinue
+Get-NetUDPEndpoint  -LocalPort 514,1514,2514,5140 -ErrorAction SilentlyContinue
+
+# Confirm free disk space on the target drive
+Get-PSDrive C | Select-Object Used,Free
+</code></pre>
+
+<blockquote>
+<p><strong>Note on port 514:</strong> unlike Linux, Windows has no privileged-port restriction<br />
+and no rsyslog competing for <code>:514</code>. If something <em>is</em> already bound there it<br />
+is usually a third-party syslog daemon — stop it before installing.</p>
+</blockquote>
+<hr />
+<h2 id="4-installation">4. Installation</h2>
+<h3 id="step-1-transfer-the-installer">Step 1: Transfer the Installer</h3>
+<p>Copy <code>supra-installer-3.6.0-windows-x64.zip</code> to the target server, then verify<br />
+the transfer against the published checksum:</p>
+<pre class="code"><code class="language-powershell">(Get-FileHash .\supra-installer-3.6.0-windows-x64.zip -Algorithm SHA256).Hash.ToLower()
+# Compare with the contents of supra-installer-3.6.0-windows-x64.zip.sha256
+</code></pre>
+
+<h3 id="step-2-extract">Step 2: Extract</h3>
+<pre class="code"><code class="language-powershell">Expand-Archive -Path .\supra-installer-3.6.0-windows-x64.zip -DestinationPath C:\ -Force
+</code></pre>
+
+<p>This produces <code>C:\supra-installer\</code>.</p>
+<h3 id="step-3-run-the-installer">Step 3: Run the Installer</h3>
+<p>Open PowerShell <strong>as Administrator</strong>:</p>
+<pre class="code"><code class="language-powershell">cd C:\supra-installer
+.\install.ps1
+</code></pre>
+
+<p>To install somewhere other than <code>C:\supra</code>:</p>
+<pre class="code"><code class="language-powershell">.\install.ps1 -InstallPath D:\supra
+</code></pre>
+
+<p>The installer will:</p>
+<ol>
+<li>Create the <code>SupraService</code> local account and grant it "Log on as a service".</li>
+<li>Install NSSM to <code>&lt;InstallPath&gt;\nssm</code> and add it to the system PATH.</li>
+<li>Extract the search engine, generate demo TLS certificates, and reset the<br />
+   admin password to the default.</li>
+<li>Install the Supra License Validator plugin and the custom Index Management plugin.</li>
+<li>Extract the dashboards and install all 13 dashboards plugins.</li>
+<li>Install the Fluentd runtime from the bundled fluent-package MSI (to <code>C:\opt\fluent</code>).</li>
+<li>Deploy the hardened <code>fluent.conf</code> and validate it with a dry run.</li>
+<li>Register the three Windows Services and open the firewall ports.</li>
+</ol>
+<p>Expect 10–25 minutes depending on disk speed. The installer prints a timing<br />
+summary when it finishes.</p>
+<blockquote>
+<p>The installer does <strong>not</strong> start the services. Licensing comes first.</p>
+</blockquote>
+<h3 id="step-4-license-activation">Step 4: License Activation</h3>
+<pre class="code"><code class="language-powershell"># 1. Get this machine's fingerprint (MFP)
+powershell -File C:\supra\opensearch\config\supra-license\get-fingerprint.ps1
+
+# 2. Send the MFP to your Supra vendor and receive license.key in return.
+
+# 3. Install the license
+Copy-Item .\license.key -Destination C:\supra\opensearch\config\supra-license\
+
+# 4. Confirm the license reads back as expected BEFORE starting the service
+powershell -File C:\supra\opensearch\config\supra-license\supra-license-info.ps1
+</code></pre>
+
+<p>The inspector prints the customer, license type (Permanent or Temporary),<br />
+validity window, tier, node/device limits, the machine it is bound to, and<br />
+whether the RSA signature is authentic:</p>
+<pre class="code"><code>==============================================
+          Supra License Information
+==============================================
+  Customer        : NTPC Tamilnadu Energy Company Ltd
+  License type    : Permanent (perpetual)
+  Validity        : No expiry
+  Issued on       : 2026-04-04
+  Expires on      : 9999-12-31
+  Tier            : enterprise
+  Max nodes       : 999
+  Bound to machine: 691659e8...460e259
+  Signature       : VALID (signature authentic, not tampered)
+  Overall status  : ACTIVE
+==============================================
+</code></pre>
+
+<p>Exit code <code>0</code> means ACTIVE; <code>2</code> means EXPIRED or UNTRUSTED. <strong>"Bound to machine"<br />
+must match the fingerprint from step 1</strong>, or the search engine will refuse to start.</p>
+<h3 id="step-5-start-services-and-initialize-security">Step 5: Start Services and Initialize Security</h3>
+<p>Open a <strong>new</strong> PowerShell window (so the updated PATH picks up <code>nssm</code>):</p>
+<pre class="code"><code class="language-powershell"># Start the search engine first
+nssm start SupraSearch
+
+# Wait ~30 seconds, then initialize the security index
+&amp; 'C:\supra\opensearch\plugins\opensearch-security\tools\securityadmin.bat' `
+    -cd 'C:\supra\opensearch\config\opensearch-security\' `
+    -icl -nhnv `
+    -cacert 'C:\supra\opensearch\config\root-ca.pem' `
+    -cert   'C:\supra\opensearch\config\kirk.pem' `
+    -key    'C:\supra\opensearch\config\kirk-key.pem'
+
+# Start the dashboards
+nssm start SupraDashboards
+</code></pre>
+
+<h3 id="step-6-apply-the-index-template-required">Step 6: Apply the Index Template (Required)</h3>
+<pre class="code"><code class="language-powershell">powershell -File C:\supra\supra-index-template.ps1
+</code></pre>
+
+<p>This is not optional. It disables date/numeric type-guessing and maps every<br />
+dynamic field as <code>keyword</code>, which makes <code>400 - Rejected by OpenSearch</code> mapping<br />
+conflicts structurally impossible. Run it <strong>before</strong> logs start flowing. It<br />
+retries for up to five minutes while OpenSearch Security finishes initializing,<br />
+and is safe to re-run.</p>
+<p>If you changed the admin password first:</p>
+<pre class="code"><code class="language-powershell">powershell -File C:\supra\supra-index-template.ps1 -OsPass 'YourNewPassword'
+</code></pre>
+
+<h3 id="step-7-start-the-log-collector">Step 7: Start the Log Collector</h3>
+<pre class="code"><code class="language-powershell">nssm start SupraLogCollector
+</code></pre>
+
+<h3 id="default-credentials">Default Credentials</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>URL</td>
+<td><code>http://&lt;server-ip&gt;:5601</code></td>
+</tr>
+<tr>
+<td>Username</td>
+<td><code>admin</code></td>
+</tr>
+<tr>
+<td>Password</td>
+<td><code>admin</code></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Change the password before production use</strong> — see <a href="#91-change-the-default-admin-password">Section 9.1</a>.</p>
+<hr />
+<h2 id="5-post-installation-verification">5. Post-Installation Verification</h2>
+<h3 id="51-check-services-are-running">5.1 Check Services Are Running</h3>
+<pre class="code"><code class="language-powershell">Get-Service SupraSearch, SupraDashboards, SupraLogCollector |
+    Select-Object Name, Status, StartType
+</code></pre>
+
+<p>All three should report <code>Running</code> and <code>Automatic</code>.</p>
+<h3 id="52-verify-search-engine-health">5.2 Verify Search Engine Health</h3>
+<pre class="code"><code class="language-powershell">curl.exe -sk -u admin:admin &quot;https://localhost:9200/_cluster/health?pretty&quot;
+</code></pre>
+
+<blockquote>
+<p><strong>Use <code>curl.exe</code>, not <code>Invoke-RestMethod</code>.</strong> The search engine negotiates<br />
+TLS 1.3. PowerShell 5.1 runs on .NET Framework, which does not support TLS 1.3,<br />
+so <code>Invoke-RestMethod</code> / <code>Invoke-WebRequest</code> fail with <em>"The underlying<br />
+connection was closed"</em> no matter what <code>SecurityProtocol</code> or certificate<br />
+callback you set. <code>curl.exe</code> uses Windows schannel, supports TLS 1.3, and ships<br />
+with Windows Server 2019+ and Windows 10/11. <code>-k</code> skips validation of the<br />
+self-signed demo certificate.</p>
+</blockquote>
+<p>Expect <code>"status" : "green"</code> (or <code>"yellow"</code> on a single node before the template<br />
+sets <code>number_of_replicas: 0</code>).</p>
+<h3 id="53-verify-the-license">5.3 Verify the License</h3>
+<pre class="code"><code class="language-powershell"># From the CLI
+powershell -File C:\supra\opensearch\config\supra-license\supra-license-info.ps1
+
+# Or from the running node, via the plugin's REST endpoint
+curl.exe -sk -u admin:admin &quot;https://localhost:9200/_supra/license?pretty&quot;
+</code></pre>
+
+<p>The <code>GET /_supra/license</code> endpoint is new in this build — it returns the same<br />
+license details plus live device usage, and can be read from the Dashboards<br />
+Dev Tools console.</p>
+<h3 id="54-verify-the-index-template-was-applied">5.4 Verify the Index Template Was Applied</h3>
+<pre class="code"><code class="language-powershell">curl.exe -sk -u admin:admin &quot;https://localhost:9200/_index_template/supra-logs?pretty&quot;
+</code></pre>
+
+<p>Confirm <code>date_detection: false</code> and the <code>everything_else_as_keyword</code> dynamic<br />
+template are present.</p>
+<h3 id="55-verify-the-collector-is-listening">5.5 Verify the Collector Is Listening</h3>
+<pre class="code"><code class="language-powershell">Get-NetUDPEndpoint -LocalPort 514,1514,2514,5140 | Select-Object LocalAddress,LocalPort
+Get-NetTCPConnection -LocalPort 1514,2514,5140,24224 -State Listen | Select-Object LocalAddress,LocalPort
+</code></pre>
+
+<p>Send a test message and confirm it is indexed:</p>
+<pre class="code"><code class="language-powershell"># Send a test syslog datagram to the network-device port
+$udp = New-Object System.Net.Sockets.UdpClient
+$msg = [Text.Encoding]::ASCII.GetBytes(&quot;&lt;14&gt;Supra test message from $env:COMPUTERNAME&quot;)
+$udp.Send($msg, $msg.Length, &quot;127.0.0.1&quot;, 2514) | Out-Null
+$udp.Close()
+
+Start-Sleep -Seconds 15
+curl.exe -sk -u admin:admin &quot;https://localhost:9200/supra-network-*/_search?q=Supra+test&amp;pretty&quot;
+</code></pre>
+
+<h3 id="56-verify-logs-are-being-indexed">5.6 Verify Logs Are Being Indexed</h3>
+<pre class="code"><code class="language-powershell">curl.exe -sk -u admin:admin &quot;https://localhost:9200/_cat/indices/supra-*?v&quot;
+</code></pre>
+
+<p>You should see <code>supra-ied-*</code>, <code>supra-windows-*</code>, <code>supra-network-*</code> or<br />
+<code>supra-logs-*</code> indices appear as sources start reporting.</p>
+<h3 id="57-access-the-web-ui">5.7 Access the Web UI</h3>
+<p>Browse to <code>http://&lt;server-ip&gt;:5601</code> and log in as <code>admin</code> / <code>admin</code>.</p>
+<hr />
+<h2 id="6-forwarding-logs-from-devices">6. Forwarding Logs from Devices</h2>
+<p>Replace <code>&lt;SUPRA_IP&gt;</code> with the Supra server's address throughout.</p>
+<h3 id="61-windows-endpoints-nxlog">6.1 Windows Endpoints (NXLog)</h3>
+<p>The installer bundles a self-contained endpoint kit at<br />
+<code>C:\supra-installer\nxlog-agent\</code>. Copy that folder to each Windows endpoint<br />
+and run, <strong>as Administrator</strong>:</p>
+<pre class="code"><code class="language-powershell">.\install-nxlog.ps1 -SupraServerIP &lt;SUPRA_IP&gt;
+</code></pre>
+
+<p>This installs NXLog CE offline from the bundled MSI, rewrites <code>nxlog.conf</code> to<br />
+point at your server, and starts the service. It forwards Security, System,<br />
+Application and PowerShell event logs as JSON over <strong>TCP/1514</strong>.</p>
+<blockquote>
+<p>The kit ships without an MSI unless one was placed at <code>nxlog\nxlog-ce-*.msi</code><br />
+at build time. Download NXLog CE from<br />
+<a href="https://nxlog.co/products/nxlog-community-edition/download">https://nxlog.co/products/nxlog-community-edition/download</a> and re-run the<br />
+build if <code>install-nxlog.ps1</code> reports the MSI is missing.</p>
+</blockquote>
+<p>Verify on the endpoint:</p>
+<pre class="code"><code class="language-powershell">Get-Service nxlog
+Get-Content 'C:\Program Files\nxlog\data\nxlog.log' -Tail 50
+</code></pre>
+
+<h3 id="62-cisco-ios-ios-xe">6.2 Cisco IOS / IOS-XE</h3>
+<pre class="code"><code>configure terminal
+ logging host &lt;SUPRA_IP&gt; transport udp port 2514
+ logging trap informational
+ logging source-interface GigabitEthernet0/0
+ service timestamps log datetime msec localtime show-timezone
+end
+write memory
+</code></pre>
+
+<h3 id="63-cisco-nexus-nx-os">6.3 Cisco Nexus (NX-OS)</h3>
+<pre class="code"><code>configure terminal
+ logging server &lt;SUPRA_IP&gt; 6 port 2514
+ logging timestamp milliseconds
+end
+copy running-config startup-config
+</code></pre>
+
+<h3 id="64-juniper-junos">6.4 Juniper (Junos)</h3>
+<pre class="code"><code>set system syslog host &lt;SUPRA_IP&gt; any info
+set system syslog host &lt;SUPRA_IP&gt; port 2514
+set system syslog host &lt;SUPRA_IP&gt; source-address &lt;DEVICE_IP&gt;
+commit
+</code></pre>
+
+<h3 id="65-palo-alto-pan-os">6.5 Palo Alto (PAN-OS)</h3>
+<p>Device → Server Profiles → Syslog → Add:<br />
+- Name <code>Supra</code>, Server <code>&lt;SUPRA_IP&gt;</code>, Transport <code>UDP</code>, Port <code>2514</code>, Format <code>BSD</code></p>
+<p>Then attach the profile under Device → Log Settings for System, Config and<br />
+Threat logs.</p>
+<h3 id="66-fortinet-fortigate">6.6 Fortinet FortiGate</h3>
+<pre class="code"><code>config log syslogd setting
+    set status enable
+    set server &quot;&lt;SUPRA_IP&gt;&quot;
+    set port 2514
+    set facility local7
+    set format default
+end
+</code></pre>
+
+<h3 id="67-linux-servers-rsyslog">6.7 Linux Servers (rsyslog)</h3>
+<pre class="code"><code class="language-bash"># /etc/rsyslog.d/60-supra-forward.conf
+*.*  @&lt;SUPRA_IP&gt;:5140      # UDP
+# *.* @@&lt;SUPRA_IP&gt;:5140    # TCP - more reliable
+</code></pre>
+
+<pre class="code"><code class="language-bash">sudo systemctl restart rsyslog
+</code></pre>
+
+<h3 id="68-ied-devices-iec-61850">6.8 IED Devices (IEC 61850)</h3>
+<p>Point the device's syslog target at <code>&lt;SUPRA_IP&gt;</code> port <strong>514</strong>. Configuration<br />
+varies by vendor — consult the device manual. IED traffic is parsed by the<br />
+dedicated pipeline and lands in <code>supra-ied-*</code>.</p>
+<h3 id="69-vmware-esxi">6.9 VMware ESXi</h3>
+<pre class="code"><code>esxcli system syslog config set --loghost='udp://&lt;SUPRA_IP&gt;:2514'
+esxcli system syslog reload
+esxcli network firewall ruleset set --ruleset-id=syslog --enabled=true
+</code></pre>
+
+<hr />
+<h2 id="7-log-collector-configuration">7. Log Collector Configuration</h2>
+<h3 id="71-configuration-file">7.1 Configuration File</h3>
+<p><code>C:\supra\log-collector\fluent.conf</code> — deployed verbatim from the packaged<br />
+hardened config. It defines a dedicated source per device class, tags each<br />
+stream, normalizes timestamps to IST (+05:30), and routes to a matching index<br />
+prefix with an on-disk buffer.</p>
+<p>After editing, always validate before restarting:</p>
+<pre class="code"><code class="language-powershell">&amp; C:\opt\fluent\bin\fluentd.bat --dry-run -c C:\supra\log-collector\fluent.conf
+nssm restart SupraLogCollector
+</code></pre>
+
+<p>The installer runs this same dry run automatically and warns if the config is<br />
+rejected.</p>
+<h3 id="72-changing-the-search-engine-password">7.2 Changing the Search Engine Password</h3>
+<p>The collector authenticates to the search engine with the credentials embedded<br />
+in <code>fluent.conf</code>. If you change the admin password, update all four <code>&lt;match&gt;</code><br />
+blocks:</p>
+<pre class="code"><code class="language-powershell">(Get-Content C:\supra\log-collector\fluent.conf -Raw) `
+    -replace '(?m)^(\s*password\s+).*$', '${1}YOUR_NEW_PASSWORD' |
+    Set-Content C:\supra\log-collector\fluent.conf -Encoding UTF8
+
+nssm restart SupraLogCollector
+</code></pre>
+
+<h3 id="73-collector-logs">7.3 Collector Logs</h3>
+<pre class="code"><code class="language-powershell">Get-Content C:\supra\log-collector\log-collector-stdout.log -Tail 50 -Wait
+Get-Content C:\supra\log-collector\log-collector-stderr.log -Tail 50
+</code></pre>
+
+<hr />
+<h2 id="8-index-management">8. Index Management</h2>
+<h3 id="81-view-indices">8.1 View Indices</h3>
+<pre class="code"><code class="language-powershell">curl.exe -sk -u admin:admin &quot;https://localhost:9200/_cat/indices/supra-*?v&amp;s=index&quot;
+</code></pre>
+
+<h3 id="82-create-an-index-pattern-required-for-dashboards">8.2 Create an Index Pattern (Required for Dashboards)</h3>
+<p>In the web UI: <strong>Management → Dashboards Management → Index Patterns → Create</strong>.</p>
+<p>Create one per source type, using <code>@timestamp</code> as the time field:</p>
+<ul>
+<li><code>supra-ied-*</code></li>
+<li><code>supra-windows-*</code></li>
+<li><code>supra-network-*</code></li>
+<li><code>supra-logs-*</code></li>
+</ul>
+<h3 id="83-retention-policy-automatic-cleanup">8.3 Retention Policy (Automatic Cleanup)</h3>
+<p><strong>Index Management → State Management Policies → Create policy</strong>. A typical<br />
+90-day retention:</p>
+<pre class="code"><code class="language-json">{
+  &quot;policy&quot;: {
+    &quot;description&quot;: &quot;Supra 90-day retention&quot;,
+    &quot;default_state&quot;: &quot;hot&quot;,
+    &quot;states&quot;: [
+      { &quot;name&quot;: &quot;hot&quot;,
+        &quot;actions&quot;: [],
+        &quot;transitions&quot;: [{ &quot;state_name&quot;: &quot;delete&quot;, &quot;conditions&quot;: { &quot;min_index_age&quot;: &quot;90d&quot; } }] },
+      { &quot;name&quot;: &quot;delete&quot;, &quot;actions&quot;: [{ &quot;delete&quot;: {} }], &quot;transitions&quot;: [] }
+    ],
+    &quot;ism_template&quot;: [{ &quot;index_patterns&quot;: [&quot;supra-*&quot;], &quot;priority&quot;: 100 }]
+  }
+}
+</code></pre>
+
+<h3 id="84-re-applying-the-index-template">8.4 Re-applying the Index Template</h3>
+<p>The template only affects indices created <strong>after</strong> it is applied. Existing<br />
+badly-mapped indices keep their old mappings until they roll over (daily, with<br />
+<code>logstash_format</code>). To force it for today:</p>
+<pre class="code"><code class="language-powershell"># WARNING: deletes today's data for that source
+curl.exe -sk -u admin:admin -X DELETE &quot;https://localhost:9200/supra-windows-$(Get-Date -Format 'yyyy.MM.dd')&quot;
+</code></pre>
+
+<hr />
+<h2 id="9-users-and-roles">9. Users and Roles</h2>
+<h3 id="91-change-the-default-admin-password">9.1 Change the Default Admin Password</h3>
+<ol>
+<li>Generate a new hash:</li>
+</ol>
+<pre class="code"><code class="language-powershell">&amp; C:\supra\opensearch\plugins\opensearch-security\tools\hash.bat -p 'YourNewPassword'
+</code></pre>
+
+<ol>
+<li>
+<p>Put the hash in <code>C:\supra\opensearch\config\opensearch-security\internal_users.yml</code><br />
+   under <code>admin: hash:</code>.</p>
+</li>
+<li>
+<p>Re-apply the security configuration:</p>
+</li>
+</ol>
+<pre class="code"><code class="language-powershell">&amp; 'C:\supra\opensearch\plugins\opensearch-security\tools\securityadmin.bat' `
+    -cd 'C:\supra\opensearch\config\opensearch-security\' -icl -nhnv `
+    -cacert 'C:\supra\opensearch\config\root-ca.pem' `
+    -cert   'C:\supra\opensearch\config\kirk.pem' `
+    -key    'C:\supra\opensearch\config\kirk-key.pem'
+</code></pre>
+
+<ol>
+<li>Update <code>fluent.conf</code> (<a href="#72-changing-the-search-engine-password">Section 7.2</a>)<br />
+   and restart the collector.</li>
+</ol>
+<h3 id="92-create-roles-and-users">9.2 Create Roles and Users</h3>
+<p>Use <strong>Security → Roles / Internal Users / Role Mappings</strong> in the web UI.<br />
+Recommended baseline:</p>
+<table>
+<thead>
+<tr>
+<th>Role</th>
+<th>Index permissions</th>
+<th>Use</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>supra_readonly</code></td>
+<td><code>read</code>, <code>search</code> on <code>supra-*</code></td>
+<td>Analysts</td>
+</tr>
+<tr>
+<td><code>supra_operator</code></td>
+<td><code>read</code>, <code>write</code> on <code>supra-*</code></td>
+<td>Operations</td>
+</tr>
+<tr>
+<td><code>all_access</code></td>
+<td>everything</td>
+<td>Administrators only</td>
+</tr>
+</tbody>
+</table>
+<p>Map every non-admin user to <code>opensearch_dashboards_user</code> as well, or the UI<br />
+will not load for them.</p>
+<hr />
+<h2 id="10-dashboards-setup">10. Dashboards Setup</h2>
+<ol>
+<li><strong>Discover</strong> — ad-hoc search across an index pattern.</li>
+<li><strong>Visualize</strong> — build charts (top talkers, severity over time, event counts).</li>
+<li><strong>Dashboard</strong> — combine visualizations into a single view.</li>
+</ol>
+<p>Recommended starting dashboards:</p>
+<ul>
+<li><strong>Security Overview</strong> — failed logons, privilege escalation, account changes (<code>supra-windows-*</code>)</li>
+<li><strong>Network Operations</strong> — interface flaps, BGP/OSPF events, config changes (<code>supra-network-*</code>)</li>
+<li><strong>IED Health</strong> — protection events, communication loss (<code>supra-ied-*</code>)</li>
+<li><strong>Infrastructure</strong> — service failures, disk and auth errors (<code>supra-logs-*</code>)</li>
+</ul>
+<p>Export/import via <strong>Dashboards Management → Saved Objects</strong>.</p>
+<hr />
+<h2 id="11-alerts-and-notifications">11. Alerts and Notifications</h2>
+<ol>
+<li><strong>Notifications → Channels</strong> — add an SMTP, Slack, or webhook channel.</li>
+<li><strong>Alerting → Monitors → Create monitor</strong> — define an extraction query or<br />
+   visual definition over a <code>supra-*</code> index pattern.</li>
+<li><strong>Add trigger</strong> — set the condition and severity, and attach the channel.</li>
+</ol>
+<p>Useful starting monitors:</p>
+<table>
+<thead>
+<tr>
+<th>Monitor</th>
+<th>Condition</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Brute force</td>
+<td>&gt; 10 failed logons from one source in 5 min</td>
+</tr>
+<tr>
+<td>Collector down</td>
+<td>0 documents indexed in 15 min</td>
+</tr>
+<tr>
+<td>Disk pressure</td>
+<td>cluster health not <code>green</code></td>
+</tr>
+<tr>
+<td>IED comms loss</td>
+<td>no events from an IED in 30 min</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="12-service-management">12. Service Management</h2>
+<h3 id="start-stop-restart">Start / Stop / Restart</h3>
+<pre class="code"><code class="language-powershell">nssm start   SupraSearch
+nssm stop    SupraLogCollector
+nssm restart SupraDashboards
+
+# Native equivalents also work
+Restart-Service SupraDashboards
+</code></pre>
+
+<p>Start order matters: <code>SupraSearch</code> first, then the other two (both declare a<br />
+service dependency on it, so Windows enforces this on boot).</p>
+<h3 id="status-and-logs">Status and Logs</h3>
+<pre class="code"><code class="language-powershell">Get-Service Supra* | Format-Table Name, Status, StartType
+
+Get-Content C:\supra\opensearch\logs\search-stderr.log -Tail 50
+Get-Content C:\supra\dashboards\logs\dashboards-stderr.log -Tail 50
+Get-Content C:\supra\log-collector\log-collector-stderr.log -Tail 50
+</code></pre>
+
+<p>The search engine also writes its own rotating logs to<br />
+<code>C:\supra\opensearch\logs\supra*.log</code>.</p>
+<h3 id="auto-start-on-boot">Auto-Start on Boot</h3>
+<p>All three services are registered <code>SERVICE_AUTO_START</code>. To disable one:</p>
+<pre class="code"><code class="language-powershell">nssm set SupraLogCollector Start SERVICE_DEMAND_START
+</code></pre>
+
+<hr />
+<h2 id="13-backup-and-restore">13. Backup and Restore</h2>
+<h3 id="131-register-a-snapshot-repository">13.1 Register a Snapshot Repository</h3>
+<p>Add the backup path to <code>C:\supra\opensearch\config\opensearch.yml</code>:</p>
+<pre class="code"><code class="language-yaml">path.repo: [&quot;D:\\supra-backups&quot;]
+</code></pre>
+
+<p>Restart <code>SupraSearch</code>, then register it:</p>
+<pre class="code"><code class="language-powershell">$body = '{&quot;type&quot;:&quot;fs&quot;,&quot;settings&quot;:{&quot;location&quot;:&quot;D:\\supra-backups&quot;,&quot;compress&quot;:true}}'
+$body | Out-File -Encoding ascii repo.json
+curl.exe -sk -u admin:admin -X PUT &quot;https://localhost:9200/_snapshot/supra_backup&quot; `
+    -H &quot;Content-Type: application/json&quot; -d &quot;@repo.json&quot;
+</code></pre>
+
+<h3 id="132-take-a-snapshot">13.2 Take a Snapshot</h3>
+<pre class="code"><code class="language-powershell">$name = &quot;snapshot-$(Get-Date -Format 'yyyy.MM.dd')&quot;
+curl.exe -sk -u admin:admin -X PUT &quot;https://localhost:9200/_snapshot/supra_backup/${name}?wait_for_completion=true&quot;
+</code></pre>
+
+<h3 id="133-restore">13.3 Restore</h3>
+<pre class="code"><code class="language-powershell">curl.exe -sk -u admin:admin -X POST &quot;https://localhost:9200/_snapshot/supra_backup/snapshot-2026.08.07/_restore&quot;
+</code></pre>
+
+<h3 id="134-schedule-a-nightly-snapshot">13.4 Schedule a Nightly Snapshot</h3>
+<pre class="code"><code class="language-powershell">$action  = New-ScheduledTaskAction -Execute 'powershell.exe' `
+             -Argument '-NoProfile -File C:\supra\backup-snapshot.ps1'
+$trigger = New-ScheduledTaskTrigger -Daily -At 2am
+Register-ScheduledTask -TaskName 'Supra Nightly Snapshot' -Action $action `
+    -Trigger $trigger -User 'SYSTEM' -RunLevel Highest
+</code></pre>
+
+<p>Also back up <code>C:\supra\opensearch\config\</code> (including <code>supra-license\</code>) and<br />
+<code>C:\supra\log-collector\fluent.conf</code>.</p>
+<hr />
+<h2 id="14-troubleshooting">14. Troubleshooting</h2>
+<h3 id="suprasearch-will-not-start">SupraSearch will not start</h3>
+<pre class="code"><code class="language-powershell">Get-Content C:\supra\opensearch\logs\search-stderr.log -Tail 80
+Get-ChildItem C:\supra\opensearch\logs\*.log | Sort-Object LastWriteTime | Select-Object -Last 1 | Get-Content -Tail 80
+</code></pre>
+
+<p>Common causes:</p>
+<table>
+<thead>
+<tr>
+<th>Symptom in log</th>
+<th>Cause</th>
+<th>Fix</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>License validation failed</code></td>
+<td>Missing/expired/wrong-machine license</td>
+<td>Run <code>supra-license-info.ps1</code>; compare "Bound to machine" against <code>get-fingerprint.ps1</code></td>
+</tr>
+<tr>
+<td><code>bind address already in use</code></td>
+<td>Something else on :9200</td>
+<td><code>Get-NetTCPConnection -LocalPort 9200</code></td>
+</tr>
+<tr>
+<td><code>Could not reserve enough space</code></td>
+<td>Heap larger than free RAM</td>
+<td>Lower <code>-Xmx</code> in <code>config\jvm.options</code></td>
+</tr>
+<tr>
+<td>Service starts then stops</td>
+<td><code>AppDirectory</code> wrong</td>
+<td><code>nssm dump SupraSearch</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="license-errors-on-start-up">License errors on start-up</h3>
+<pre class="code"><code class="language-powershell"># What this machine reports
+powershell -File C:\supra\opensearch\config\supra-license\get-fingerprint.ps1
+
+# What the license was issued for
+powershell -File C:\supra\opensearch\config\supra-license\supra-license-info.ps1
+</code></pre>
+
+<p>The two fingerprints must match exactly. They will differ if the server's<br />
+motherboard, CPU or first disk changed — request a re-issued license.</p>
+<p>A <code>Signature : INVALID</code> result means the file was modified in transit or a<br />
+different public key is installed. Re-request the file; do not hand-edit it.</p>
+<h3 id="dashboards-shows-opensearch-unavailable">Dashboards shows "OpenSearch unavailable"</h3>
+<pre class="code"><code class="language-powershell">Get-Service SupraSearch
+curl.exe -sk -u admin:admin &quot;https://localhost:9200&quot;
+nssm restart SupraDashboards
+</code></pre>
+
+<p>If the search engine is healthy, the usual cause is a password mismatch between<br />
+<code>opensearch_dashboards.yml</code> and the security config.</p>
+<h3 id="log-collector-will-not-start-dies-immediately">Log Collector will not start / dies immediately</h3>
+<pre class="code"><code class="language-powershell">&amp; C:\opt\fluent\bin\fluentd.bat --dry-run -c C:\supra\log-collector\fluent.conf
+Get-Content C:\supra\log-collector\log-collector-stderr.log -Tail 50
+</code></pre>
+
+<p>A dry run that fails prints the offending line number. If it passes but the<br />
+service still dies, check that <code>C:\opt\fluent\bin\fluentd.bat</code> exists — a<br />
+failed MSI install leaves the folder present but empty.</p>
+<h3 id="400-rejected-by-opensearch-in-the-collector-log">"400 - Rejected by OpenSearch" in the collector log</h3>
+<p>The index template was not applied, or was applied after the current index was<br />
+created. Run <code>C:\supra\supra-index-template.ps1</code>, then delete the affected<br />
+index (see <a href="#84-re-applying-the-index-template">Section 8.4</a>).</p>
+<h3 id="no-logs-appearing">No logs appearing</h3>
+<p>Work outward from the collector:</p>
+<pre class="code"><code class="language-powershell"># 1. Is the collector listening?
+Get-NetUDPEndpoint -LocalPort 514,1514,2514,5140
+
+# 2. Is the firewall open?
+Get-NetFirewallRule -DisplayName 'Supra Log Collector*' | Select-Object DisplayName, Enabled
+
+# 3. Are packets arriving? (install Wireshark, or check the collector log)
+Get-Content C:\supra\log-collector\log-collector-stdout.log -Tail 50 -Wait
+
+# 4. Are documents being indexed?
+curl.exe -sk -u admin:admin &quot;https://localhost:9200/_cat/indices/supra-*?v&quot;
+</code></pre>
+
+<p>If packets arrive but nothing indexes, the collector cannot authenticate to the<br />
+search engine — check the credentials in <code>fluent.conf</code>.</p>
+<h3 id="services-disappear-after-deleting-the-installer-folder">Services disappear after deleting the installer folder</h3>
+<p>This was a bug in builds before 3.6.0, where NSSM registered services pointing<br />
+at the extracted installer folder. Current builds copy <code>nssm.exe</code> to<br />
+<code>C:\supra\nssm</code> first. If you hit it on an older install, run<br />
+<code>scripts\windows\fix-nssm-imagepath.ps1</code> or <code>repair-services.ps1</code>.</p>
+<h3 id="high-disk-usage">High disk usage</h3>
+<pre class="code"><code class="language-powershell">curl.exe -sk -u admin:admin &quot;https://localhost:9200/_cat/indices/supra-*?v&amp;s=store.size:desc&quot;
+</code></pre>
+
+<p>Set up a retention policy (<a href="#83-retention-policy-automatic-cleanup">Section 8.3</a>)<br />
+rather than deleting indices by hand.</p>
+<hr />
+<h2 id="15-appendix">15. Appendix</h2>
+<h3 id="a-default-ports">A. Default Ports</h3>
+<table>
+<thead>
+<tr>
+<th>Port</th>
+<th>Protocol</th>
+<th>Service</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>9200</td>
+<td>TCP</td>
+<td>Supra Search Engine</td>
+<td>REST API (HTTPS)</td>
+</tr>
+<tr>
+<td>5601</td>
+<td>TCP</td>
+<td>Supra Dashboards</td>
+<td>Web UI (HTTP)</td>
+</tr>
+<tr>
+<td>514</td>
+<td>UDP + TCP</td>
+<td>Supra Log Collector</td>
+<td>IED syslog</td>
+</tr>
+<tr>
+<td>1514</td>
+<td>UDP + TCP</td>
+<td>Supra Log Collector</td>
+<td>Windows JSON (NXLog)</td>
+</tr>
+<tr>
+<td>2514</td>
+<td>UDP + TCP</td>
+<td>Supra Log Collector</td>
+<td>Network device syslog</td>
+</tr>
+<tr>
+<td>5140</td>
+<td>UDP + TCP</td>
+<td>Supra Log Collector</td>
+<td>Linux rsyslog</td>
+</tr>
+<tr>
+<td>24224</td>
+<td>TCP</td>
+<td>Supra Log Collector</td>
+<td>Fluentd forward</td>
+</tr>
+</tbody>
+</table>
+<h3 id="b-file-locations">B. File Locations</h3>
+<table>
+<thead>
+<tr>
+<th>Path</th>
+<th>Contents</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>C:\supra\opensearch\</code></td>
+<td>Search engine install</td>
+</tr>
+<tr>
+<td><code>C:\supra\opensearch\config\opensearch.yml</code></td>
+<td>Search engine config</td>
+</tr>
+<tr>
+<td><code>C:\supra\opensearch\config\jvm.options</code></td>
+<td>JVM heap settings</td>
+</tr>
+<tr>
+<td><code>C:\supra\opensearch\config\supra-license\</code></td>
+<td>License, public key, fingerprint + inspector tools</td>
+</tr>
+<tr>
+<td><code>C:\supra\opensearch\logs\</code></td>
+<td>Search engine logs</td>
+</tr>
+<tr>
+<td><code>C:\supra\dashboards\</code></td>
+<td>Dashboards install</td>
+</tr>
+<tr>
+<td><code>C:\supra\log-collector\fluent.conf</code></td>
+<td>Collector config</td>
+</tr>
+<tr>
+<td><code>C:\supra\supra-index-template.ps1</code></td>
+<td>Index template installer</td>
+</tr>
+<tr>
+<td><code>C:\supra\nssm\nssm.exe</code></td>
+<td>Service manager</td>
+</tr>
+<tr>
+<td><code>C:\opt\fluent\</code></td>
+<td>Fluentd runtime</td>
+</tr>
+</tbody>
+</table>
+<h3 id="c-useful-api-commands">C. Useful API Commands</h3>
+<p>All use <code>curl.exe</code> — see the note in <a href="#52-verify-search-engine-health">Section 5.2</a><br />
+for why <code>Invoke-RestMethod</code> cannot be used against this endpoint on PowerShell 5.1.<br />
+Replace <code>admin:admin</code> if you changed the password.</p>
+<pre class="code"><code class="language-powershell"># Cluster health
+curl.exe -sk -u admin:admin &quot;https://localhost:9200/_cluster/health?pretty&quot;
+
+# List indices by size
+curl.exe -sk -u admin:admin &quot;https://localhost:9200/_cat/indices/supra-*?v&amp;s=store.size:desc&quot;
+
+# Document count for one source
+curl.exe -sk -u admin:admin &quot;https://localhost:9200/supra-windows-*/_count?pretty&quot;
+
+# Search
+curl.exe -sk -u admin:admin &quot;https://localhost:9200/supra-*/_search?q=error&amp;size=5&amp;pretty&quot;
+
+# License details + live device usage
+curl.exe -sk -u admin:admin &quot;https://localhost:9200/_supra/license?pretty&quot;
+
+# Installed plugins
+curl.exe -sk -u admin:admin &quot;https://localhost:9200/_cat/plugins?v&quot;
+</code></pre>
+
+<h3 id="d-syslog-severity-levels">D. Syslog Severity Levels</h3>
+<table>
+<thead>
+<tr>
+<th>Level</th>
+<th>Name</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0</td>
+<td>Emergency</td>
+<td>System unusable</td>
+</tr>
+<tr>
+<td>1</td>
+<td>Alert</td>
+<td>Immediate action required</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Critical</td>
+<td>Critical condition</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Error</td>
+<td>Error condition</td>
+</tr>
+<tr>
+<td>4</td>
+<td>Warning</td>
+<td>Warning condition</td>
+</tr>
+<tr>
+<td>5</td>
+<td>Notice</td>
+<td>Normal but significant</td>
+</tr>
+<tr>
+<td>6</td>
+<td>Informational</td>
+<td>Informational message</td>
+</tr>
+<tr>
+<td>7</td>
+<td>Debug</td>
+<td>Debug-level message</td>
+</tr>
+</tbody>
+</table>
+<h3 id="e-uninstallation">E. Uninstallation</h3>
+<pre class="code"><code class="language-powershell">cd C:\supra-installer
+.\uninstall.ps1
+</code></pre>
+
+<p>This stops and removes the three services, removes the firewall rules,<br />
+uninstalls the Fluentd runtime, removes NSSM from the PATH, and clears the install<br />
+directory contents.</p>
+<p>Not removed automatically:</p>
+<pre class="code"><code class="language-powershell"># The service account
+Remove-LocalUser -Name SupraService
+
+# The install directory itself
+Remove-Item -Recurse -Force C:\supra
+</code></pre>
+
+<p>NXLog agents on remote endpoints are <strong>not</strong> touched. Uninstall each one there:</p>
+<pre class="code"><code class="language-powershell">msiexec /x nxlog-ce-&lt;version&gt;.msi /quiet
+</code></pre>
+
+<hr />
+<p><em>Supra SIEM Platform | Installation and User Guide (Windows) | Version 3.6.0 | Rev. August 2026</em></p>
+</body>
+</html>
