@@ -32,6 +32,7 @@ $ExtraPluginsDir = Join-Path $BaseDir "dashboards-plugins"
 $FluentdConf = Join-Path $BaseDir "fluent\fluent.conf"
 $LicenseValidatorDir = Join-Path $BaseDir "opensearch-license-validator"
 $IndexManagementDir = Join-Path $BaseDir "index-management"
+$IndexTemplateScript = Join-Path $BaseDir "supra-index-template.ps1"
 $DashboardsReportingSrc = Join-Path $BaseDir "dashboards-reporting"
 $DashboardsSrc = Join-Path $BaseDir "OpenSearch-Dashboards"
 
@@ -39,14 +40,22 @@ $DashboardsSrc = Join-Path $BaseDir "OpenSearch-Dashboards"
 $NssmUrl = "https://nssm.cc/release/nssm-2.24.zip"
 $NssmZip = Join-Path $BaseDir "nssm-2.24.zip"
 
-# Fluentd (td-agent) offline bundle.
+# Fluentd (fluent-package) offline bundle.
 # The MSI is fetched at BUILD time (needs internet on the build host) and then staged
 # inside the installer zip so the TARGET machine can install it without internet.
-# td-agent 4.5.2 ships fluent-plugin-opensearch + opensearch-ruby pre-installed, so no
-# separate gem download is required.
-$TdAgentMsiUrl  = "https://s3.amazonaws.com/packages.treasuredata.com/4/windows/td-agent-4.5.2-x64.msi"
-$TdAgentMsiName = "td-agent-4.5.2-x64.msi"
-$TdAgentMsi     = Join-Path $BaseDir $TdAgentMsiName
+#
+# fluent-package 5.0.9 is the SAME runtime the Linux installer deploys, and it is
+# what makes the OpenSearch output work at all:
+#   * Ruby 3.2 - the older td-agent 4.5.2 shipped Ruby 2.7, on which the
+#     faraday 2.x / opensearch-ruby stack cannot even be installed.
+#   * fluent-plugin-opensearch 1.1.4 + opensearch-ruby/-transport/-api built in,
+#     so no gem closure has to be shipped or installed offline.
+# td-agent 4.5.2 shipped fluent-plugin-ELASTICsearch only, so every
+# "<match> @type opensearch" block in fluent.conf failed to load and the
+# collector died at first start without ever indexing a document.
+$FluentPkgMsiUrl  = "https://s3.amazonaws.com/packages.treasuredata.com/lts/5/windows/fluent-package-5.0.9-x64.msi"
+$FluentPkgMsiName = "fluent-package-5.0.9-x64.msi"
+$FluentPkgMsi     = Join-Path $BaseDir $FluentPkgMsiName
 
 # NXLog endpoint agent kit (bundled inside the installer zip for deployment to Windows endpoints)
 # Place a NXLog CE MSI manually at $NxlogDir\nxlog-ce-*.msi; the endpoint config is already in the repo.
@@ -139,6 +148,14 @@ if (-not (Test-Path $FluentdConf)) {
 }
 Write-Host "  Log Collector config: OK"
 
+if (-not (Test-Path $IndexTemplateScript)) {
+    Write-Host "ERROR: Index template script not found at $IndexTemplateScript" -ForegroundColor Red
+    Write-Host "       Without it, supra-* indices get guessed mappings and Fluentd hits" -ForegroundColor Red
+    Write-Host "       '400 - Rejected by OpenSearch' on type conflicts." -ForegroundColor Red
+    exit 1
+}
+Write-Host "  Index template script: OK"
+
 # Download NSSM if not present
 if (-not (Test-Path $NssmZip)) {
     Write-Host "  Downloading NSSM service manager..."
@@ -150,28 +167,29 @@ if (-not (Test-Path $NssmZip)) {
     }
 }
 
-# Download td-agent MSI if not present (target machine will install this offline)
-if (-not (Test-Path $TdAgentMsi)) {
-    Write-Host "  Downloading td-agent (Fluentd) MSI..."
+# Download fluent-package MSI if not present (target machine will install this offline)
+if (-not (Test-Path $FluentPkgMsi)) {
+    Write-Host "  Downloading fluent-package (Fluentd) MSI..."
     try {
         [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
-        Invoke-WebRequest -Uri $TdAgentMsiUrl -OutFile $TdAgentMsi -UseBasicParsing
-        $sizeMB = [math]::Round((Get-Item $TdAgentMsi).Length / 1MB, 1)
-        Write-Host "    td-agent MSI downloaded (${sizeMB} MB)."
+        Invoke-WebRequest -Uri $FluentPkgMsiUrl -OutFile $FluentPkgMsi -UseBasicParsing
+        $sizeMB = [math]::Round((Get-Item $FluentPkgMsi).Length / 1MB, 1)
+        Write-Host "    fluent-package MSI downloaded (${sizeMB} MB)."
     } catch {
-        Write-Host "ERROR: Failed to download td-agent MSI." -ForegroundColor Red
-        Write-Host "       URL: $TdAgentMsiUrl" -ForegroundColor Red
-        Write-Host "       Please download manually and place at: $TdAgentMsi" -ForegroundColor Red
-        Remove-Item -Path $TdAgentMsi -ErrorAction SilentlyContinue
+        Write-Host "ERROR: Failed to download fluent-package MSI." -ForegroundColor Red
+        Write-Host "       URL: $FluentPkgMsiUrl" -ForegroundColor Red
+        Write-Host "       Please download manually and place at: $FluentPkgMsi" -ForegroundColor Red
+        Remove-Item -Path $FluentPkgMsi -ErrorAction SilentlyContinue
         exit 1
     }
 } else {
-    $sizeMB = [math]::Round((Get-Item $TdAgentMsi).Length / 1MB, 1)
-    Write-Host "  td-agent MSI:         OK (${sizeMB} MB)"
+    $sizeMB = [math]::Round((Get-Item $FluentPkgMsi).Length / 1MB, 1)
+    Write-Host "  fluent-package MSI:   OK (${sizeMB} MB)"
 }
 
-# Note: td-agent 4.5.2 ships with fluent-plugin-opensearch (and opensearch-ruby)
-# pre-installed. No gem fetch is needed — the MSI is self-contained.
+# fluent-package 5.0.9 bundles fluent-plugin-opensearch, opensearch-ruby,
+# opensearch-transport and the faraday/aws-sigv4 chain they depend on, so the
+# MSI is self-contained and no gem closure has to be staged.
 
 # Check for an optional NXLog CE MSI (for Windows endpoints that forward logs to this server).
 # Direct download links from nxlog.co are not stable, so we don't auto-download — the user
@@ -326,16 +344,19 @@ $dashboardsYml | Out-File -FilePath (Join-Path $Staging "dashboards\opensearch_d
 Write-Host "  Branding and config staged."
 
 # ---------------------------------------------------------------------------
-# Package Supra Log Collector config + Fluentd (td-agent) offline bundle
+# Package Supra Log Collector config + Fluentd (fluent-package) offline bundle
 # ---------------------------------------------------------------------------
 Write-Host ""
 Write-Host "[5/8] Packaging Supra Log Collector (Fluentd) offline bundle..."
 Copy-Item $FluentdConf -Destination (Join-Path $Staging "log-collector\")
 Write-Host "  fluent.conf staged."
 
-# Stage td-agent MSI (includes fluent-plugin-opensearch pre-installed)
-Copy-Item $TdAgentMsi -Destination (Join-Path $Staging "log-collector\")
-Write-Host "  td-agent MSI staged: $TdAgentMsiName"
+Copy-Item $IndexTemplateScript -Destination $Staging
+Write-Host "  supra-index-template.ps1 staged."
+
+# Stage fluent-package MSI (includes fluent-plugin-opensearch pre-installed)
+Copy-Item $FluentPkgMsi -Destination (Join-Path $Staging "log-collector\")
+Write-Host "  fluent-package MSI staged: $FluentPkgMsiName"
 
 # ---------------------------------------------------------------------------
 # Package NXLog endpoint agent kit (for Windows endpoints forwarding to this server)
@@ -371,7 +392,9 @@ param(
     [Parameter(Mandatory=$true)]
     [string]$SupraServerIP,
 
-    [int]$SupraPort = 5140
+    # nxlog.conf forwards JSON over om_tcp, which the collector reads on its
+    # Windows source (tcp/1514). 5140 is the Linux rsyslog source - not this.
+    [int]$SupraPort = 1514
 )
 
 $ErrorActionPreference = "Stop"
@@ -418,10 +441,20 @@ if (-not (Test-Path $nxlogConfSrc)) {
     exit 1
 }
 $conf = Get-Content $nxlogConfSrc -Raw
-$conf = $conf -replace '(?m)^define\s+SUPRA_SERVER_IP\s+.*$', "define SUPRA_SERVER_IP   $SupraServerIP"
-$conf = $conf -replace '(?m)^define\s+SUPRA_PORT\s+.*$',      "define SUPRA_PORT        $SupraPort"
+# nxlog.conf sets the destination with literal `Host` / `Port` directives inside
+# its om_tcp output block (there are no define placeholders), so rewrite those
+# directly and keep the original indentation.
+$conf = $conf -replace '(?m)^(\s*Host\s+).*$', "`${1}$SupraServerIP"
+$conf = $conf -replace '(?m)^(\s*Port\s+).*$', "`${1}$SupraPort"
+
+# Fail loudly rather than shipping a config still pointing at the build-time host.
+if ($conf -notmatch "(?m)^\s*Host\s+$([regex]::Escape($SupraServerIP))\s*$") {
+    Err "Could not set the destination Host in nxlog.conf."
+    Err "Edit $nxlogConfDest manually and set Host to $SupraServerIP."
+    exit 1
+}
 [System.IO.File]::WriteAllText($nxlogConfDest, $conf, [System.Text.UTF8Encoding]::new($false))
-Log "  nxlog.conf written to $nxlogConfDest (SUPRA_SERVER_IP=$SupraServerIP)"
+Log "  nxlog.conf written to $nxlogConfDest (Host=$SupraServerIP, Port=$SupraPort)"
 
 # ---- Restart service ----
 Log "Restarting nxlog service..."
@@ -435,7 +468,7 @@ try {
 }
 
 Write-Host ""
-Write-Host "Done. This endpoint will forward Windows event logs to ${SupraServerIP}:${SupraPort} (UDP)."
+Write-Host "Done. This endpoint will forward Windows event logs as JSON to ${SupraServerIP}:${SupraPort} (TCP)."
 '@
 $nxlogEndpointScript | Out-File -FilePath (Join-Path $nxlogStaging "install-nxlog.ps1") -Encoding UTF8
 
@@ -458,8 +491,8 @@ Deployment (on each endpoint, as Administrator):
   2. Open PowerShell as Administrator
   3. Run:
        .\install-nxlog.ps1 -SupraServerIP <your-supra-server-ip>
-     Optional:
-       .\install-nxlog.ps1 -SupraServerIP 10.0.0.5 -SupraPort 5140
+     Optional (only if the collector was moved off its default port):
+       .\install-nxlog.ps1 -SupraServerIP 10.0.0.5 -SupraPort 1514
 
 Verifying:
   Get-Service nxlog
@@ -478,8 +511,22 @@ Write-Host "    Endpoint install script + README staged."
 if (Test-Path $LicenseValidatorDir) {
     Write-Host "  Packaging license validator..."
     $pluginZip = Get-ChildItem -Path (Join-Path $LicenseValidatorDir "license-validator\target\releases") -Filter "supra-license-validator-*.zip" -ErrorAction SilentlyContinue | Select-Object -First 1
+
+    # Rebuild when any .java source is newer than the packaged zip. Without this
+    # check a stale zip is shipped silently and features added to the plugin
+    # (e.g. the /_supra/license REST endpoint) never reach the target machine.
+    if ($pluginZip) {
+        $srcDir = Join-Path $LicenseValidatorDir "license-validator\src"
+        $newestSrc = Get-ChildItem -Path $srcDir -Recurse -Filter "*.java" -ErrorAction SilentlyContinue |
+            Sort-Object LastWriteTime -Descending | Select-Object -First 1
+        if ($newestSrc -and $newestSrc.LastWriteTime -gt $pluginZip.LastWriteTime) {
+            Write-Host "    Plugin zip is older than $($newestSrc.Name) - rebuilding." -ForegroundColor Yellow
+            $pluginZip = $null
+        }
+    }
+
     if (-not $pluginZip) {
-        Write-Host "    Plugin zip not found - building with Maven..."
+        Write-Host "    Building license validator plugin with Maven..."
         # Locate mvn
         $mvnCmd = Get-Command mvn -ErrorAction SilentlyContinue
         if (-not $mvnCmd) {
@@ -522,6 +569,14 @@ if (Test-Path $LicenseValidatorDir) {
     if (Test-Path $fpScript) {
         Copy-Item $fpScript -Destination (Join-Path $Staging "license-validator\")
         Write-Host "    Fingerprint script staged."
+    }
+    # License inspector (Windows counterpart of supra-license-info.sh)
+    $infoScript = Join-Path $LicenseValidatorDir "supra-license-info.ps1"
+    if (Test-Path $infoScript) {
+        Copy-Item $infoScript -Destination (Join-Path $Staging "license-validator\")
+        Write-Host "    License inspector staged."
+    } else {
+        Write-Host "    WARNING: supra-license-info.ps1 not found. Operators will have no license inspector." -ForegroundColor Yellow
     }
 }
 
@@ -641,8 +696,6 @@ Write-Host "============================================"
 Write-Host ""
 Write-Host "Install directory: $InstallDir"
 Write-Host ""
-
-$AdminPassword = "admin"
 
 # ---- Create local service account ----
 Log "Creating local service account '$SupraUser'..."
@@ -832,6 +885,11 @@ if (Test-Path $fpScriptSrc) {
     Copy-Item $fpScriptSrc -Destination $licenseConfigDir
     Log "  Fingerprint tool installed."
 }
+$infoScriptSrc = Join-Path $ScriptDir "license-validator\supra-license-info.ps1"
+if (Test-Path $infoScriptSrc) {
+    Copy-Item $infoScriptSrc -Destination $licenseConfigDir
+    Log "  License inspector installed."
+}
 
 # ---- Install Index Management Plugin (custom build replaces the bundled one) ----
 Log "Installing Index Management plugin..."
@@ -952,82 +1010,161 @@ $acl.SetAccessRule($rule)
 Set-Acl -Path $osdInstallDir -AclObject $acl -ErrorAction SilentlyContinue
 Log "  Supra Dashboards installed to $osdInstallDir"
 
-# ---- Install Supra Log Collector (Fluentd / td-agent) ----
-# Fully offline: uses the bundled td-agent MSI. td-agent 4.5.2 already ships
-# fluent-plugin-opensearch + opensearch-ruby, so no gem install is needed on
-# the target machine.
+# ---- Install Supra Log Collector (Fluentd / fluent-package) ----
+# Fully offline: uses the bundled fluent-package MSI. fluent-package 5.0.9 runs
+# on Ruby 3.2 and ships fluent-plugin-opensearch + opensearch-ruby, so no gem
+# install is needed on the target machine. This is the same runtime the Linux
+# installer deploys.
 Log "Installing Supra Log Collector..."
 $logCollectorDir = Join-Path $InstallDir "log-collector"
 if (-not (Test-Path $logCollectorDir)) { New-Item -ItemType Directory -Path $logCollectorDir -Force | Out-Null }
 
-$tdAgentPath = "C:\opt\td-agent"
+$fluentPath  = "C:\opt\fluent"
 $fluentdExe  = $null
-$fluentdCandidate = Join-Path $tdAgentPath "bin\fluentd.bat"
+$fluentdCandidate = Join-Path $fluentPath "bin\fluentd.bat"
 
 if (Test-Path $fluentdCandidate) {
     $fluentdExe = $fluentdCandidate
-    Log "  Log Collector runtime already present at $tdAgentPath"
+    Log "  Log Collector runtime already present at $fluentPath"
 } else {
     # Folder may exist as empty leftover from a previous uninstall — clean it up
     # so msiexec can do a fresh install.
-    if (Test-Path $tdAgentPath) {
-        Log "  Stale td-agent folder found (no fluentd.bat). Removing before reinstall..."
-        Remove-Item -Recurse -Force $tdAgentPath -ErrorAction SilentlyContinue
+    if (Test-Path $fluentPath) {
+        Log "  Stale fluent folder found (no fluentd.bat). Removing before reinstall..."
+        Remove-Item -Recurse -Force $fluentPath -ErrorAction SilentlyContinue
     }
-    $bundledMsi = Get-ChildItem -Path (Join-Path $ScriptDir "log-collector") -Filter "td-agent-*.msi" -ErrorAction SilentlyContinue | Select-Object -First 1
+    $bundledMsi = Get-ChildItem -Path (Join-Path $ScriptDir "log-collector") -Filter "fluent-package-*.msi" -ErrorAction SilentlyContinue | Select-Object -First 1
     if (-not $bundledMsi) {
-        Err "  Bundled td-agent MSI not found in $ScriptDir\log-collector\."
+        Err "  Bundled fluent-package MSI not found in $ScriptDir\log-collector\."
         Err "  The installer package is incomplete. Re-build with build-installer.ps1."
         exit 1
     }
-    Log "  Installing td-agent from bundled MSI: $($bundledMsi.Name)"
+    Log "  Installing fluent-package from bundled MSI: $($bundledMsi.Name)"
     $proc = Start-Process -FilePath "msiexec.exe" -ArgumentList "/i `"$($bundledMsi.FullName)`" /quiet /norestart" -Wait -PassThru
     if ($proc.ExitCode -ne 0) {
-        Err "  td-agent MSI install failed (exit $($proc.ExitCode))."
+        Err "  fluent-package MSI install failed (exit $($proc.ExitCode))."
         exit 1
     }
-    $fluentdExe = Join-Path $tdAgentPath "bin\fluentd.bat"
-    Log "  td-agent installed to $tdAgentPath (fluent-plugin-opensearch already included)."
+    $fluentdExe = Join-Path $fluentPath "bin\fluentd.bat"
+    # Marker so uninstall.ps1 knows this runtime is ours and may be removed.
+    # Without it, an uninstall would delete a Fluentd the operator installed
+    # themselves before Supra was ever on the machine.
+    "Installed by Supra installer $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')" |
+        Out-File -FilePath (Join-Path $fluentPath ".supra-installed") -Encoding ascii
+    Log "  fluent-package installed to $fluentPath (fluent-plugin-opensearch included)."
 }
 
-# Write log collector config
-$logCollectorConf = @"
-## Supra Log Collector configuration
+# The MSI registers its own 'fluentdwinsvc' service, which would race
+# SupraLogCollector for ports 514 / 1514 / 2514 / 5140 / 24224. Disable it, the
+# same way the Linux installer disables the packaged fluentd.service.
+$stockSvc = Get-Service -Name 'fluentdwinsvc' -ErrorAction SilentlyContinue
+if ($stockSvc) {
+    Stop-Service -Name 'fluentdwinsvc' -Force -ErrorAction SilentlyContinue
+    Set-Service  -Name 'fluentdwinsvc' -StartupType Disabled -ErrorAction SilentlyContinue
+    Log "  Stock 'fluentdwinsvc' service stopped and disabled (it would fight for the syslog ports)."
+}
 
-# Syslog input
-<source>
-  @type syslog
-  port 514
-  tag system
-</source>
+if (-not (Test-Path $fluentdExe)) {
+    Err "  fluentd launcher not found at $fluentdExe after install."
+    Err "  The fluent-package install did not complete correctly."
+    exit 1
+}
 
-# Forward input (for other log collection agents)
-<source>
-  @type forward
-  port 24224
-</source>
+# ---- Deploy the packaged log collector config ----
+# The hardened, IED-aware fluent.conf ships inside the installer (built from
+# fluent\fluent.conf in the repo). It defines dedicated ports per source type:
+#   514  udp+tcp  IED syslog        -> supra-ied-*
+#   1514 udp+tcp  Windows JSON      -> supra-windows-*
+#   2514 udp+tcp  Network syslog    -> supra-network-*
+#   5140 udp+tcp  Linux rsyslog     -> supra-logs-*
+#   24224 tcp     Fluentd forward
+# Do NOT hand-write a config here - it would silently drop the parsing and
+# routing rules the collectors depend on.
+$packagedConf = Join-Path $ScriptDir "log-collector\fluent.conf"
+if (-not (Test-Path $packagedConf)) {
+    Err "  Packaged fluent.conf missing from $packagedConf - bundle is incomplete."
+    Err "  Re-build the installer with build-installer.ps1."
+    exit 1
+}
+$fluentConfPath = Join-Path $logCollectorDir "fluent.conf"
+Copy-Item $packagedConf -Destination $fluentConfPath -Force
+Log "  Packaged fluent.conf deployed."
 
-# Supra Search Engine output
-<match **>
-  @type opensearch
-  host localhost
-  port 9200
-  scheme https
-  ssl_verify false
-  user admin
-  password $AdminPassword
-  logstash_format true
-  logstash_prefix fluentd
-  flush_interval 10s
-</match>
-"@
-$logCollectorConf | Out-File -FilePath (Join-Path $logCollectorDir "fluent.conf") -Encoding UTF8
+# ---- Translate the Linux buffer paths to this install ----
+# The shared fluent.conf declares POSIX buffer paths (/opt/supra/log-collector/
+# buffer/*). On Windows those are DRIVE-RELATIVE: they resolve to C:\opt\supra\...
+# regardless of -InstallPath. That puts up to 32 GB of buffer (4 x total_limit_size
+# 8GB) outside the install tree, outside the ACL grant below, and outside anything
+# uninstall.ps1 removes. Rewrite them to sit under the real install directory.
+$bufferRoot = (Join-Path $logCollectorDir "buffer")
+$bufferRootFwd = $bufferRoot -replace '\\', '/'
+$confText = [System.IO.File]::ReadAllText($fluentConfPath, [System.Text.UTF8Encoding]::new($false))
+$confText = [regex]::Replace(
+    $confText,
+    '(?m)^(\s*path\s+)/opt/supra/log-collector/buffer/',
+    { param($m) $m.Groups[1].Value + $bufferRootFwd + '/' }
+)
+[System.IO.File]::WriteAllText($fluentConfPath, $confText, [System.Text.UTF8Encoding]::new($false))
+
+$remainingPosix = ([regex]::Matches($confText, '(?m)^\s*path\s+/opt/supra/')).Count
+if ($remainingPosix -gt 0) {
+    Warn "  $remainingPosix buffer path(s) still point at /opt/supra - check fluent.conf."
+} else {
+    Log "  Buffer paths rewritten to $bufferRoot"
+}
+
+foreach ($b in @("ied", "network", "windows", "other")) {
+    $bp = Join-Path $bufferRoot $b
+    if (-not (Test-Path $bp)) { New-Item -ItemType Directory -Path $bp -Force | Out-Null }
+}
+Log "  Buffer directories created."
+
+# ---- Validate the config before registering the service ----
+# A config error here would otherwise surface as a service that starts and
+# immediately dies, with the reason buried in the stderr log.
+$dryRunLog = Join-Path $env:TEMP "fluentd-dryrun.log"
+$prevEA = $ErrorActionPreference
+$ErrorActionPreference = "Continue"
+try {
+    & $fluentdExe --dry-run -c $fluentConfPath *> $dryRunLog
+    $dryRunOk = ($LASTEXITCODE -eq 0)
+} catch {
+    $dryRunOk = $false
+    "$_" | Out-File -FilePath $dryRunLog -Append
+} finally {
+    $ErrorActionPreference = $prevEA
+}
+if ($dryRunOk) {
+    Log "  fluent.conf verified (dry-run passed)."
+} else {
+    # Fail loud here rather than shipping a service that starts and immediately
+    # dies with the reason buried in a stderr log. This mirrors the Linux
+    # installer, which also treats a failed dry-run as fatal.
+    Err "  fluentd config dry-run FAILED:"
+    Get-Content $dryRunLog -Tail 30 -ErrorAction SilentlyContinue | ForEach-Object { Err "    $_" }
+    Err ""
+    Err "  Full log: $dryRunLog"
+    Err "  The collector would not start. Aborting so this is fixed now, not after first boot."
+    exit 1
+}
 
 $acl = Get-Acl $logCollectorDir
 $rule = New-Object System.Security.AccessControl.FileSystemAccessRule($SupraUser, "FullControl", "ContainerInherit,ObjectInherit", "None", "Allow")
 $acl.SetAccessRule($rule)
 Set-Acl -Path $logCollectorDir -AclObject $acl -ErrorAction SilentlyContinue
 Log "  Supra Log Collector installed to $logCollectorDir"
+
+# ---- Stage the index template installer ----
+# Must be run once after SupraSearch is up. Without it, OpenSearch guesses field
+# types and Fluentd starts failing with "400 - Rejected by OpenSearch" as soon as
+# a field arrives as a number in one event and a string in another.
+$templateSrc = Join-Path $ScriptDir "supra-index-template.ps1"
+if (Test-Path $templateSrc) {
+    Copy-Item $templateSrc -Destination $InstallDir -Force
+    Log "  Index template installer staged at $InstallDir\supra-index-template.ps1"
+} else {
+    Warn "  supra-index-template.ps1 not found in the bundle - index mappings will be guessed."
+}
 
 # ---- Register Windows Services via NSSM ----
 Log "Registering Windows services via NSSM..."
@@ -1097,13 +1234,21 @@ if ($fluentdExe) {
 
 # ---- Configure Windows Firewall ----
 Log "Configuring Windows Firewall rules..."
+# These mirror every listener in the packaged fluent.conf. Each syslog/JSON
+# source binds BOTH udp and tcp, so both need opening - NXLog uses om_tcp on
+# 1514, and rsyslog forwarding on 5140 may be either.
 $firewallRules = @(
     @{ Name = "Supra Search Engine";       Port = 9200;  Protocol = "TCP" }
     @{ Name = "Supra Dashboards";          Port = 5601;  Protocol = "TCP" }
-    @{ Name = "Supra Log Collector IED Syslog";     Port = 514;   Protocol = "UDP" }
-    @{ Name = "Supra Log Collector Windows JSON";   Port = 1514;  Protocol = "UDP" }
-    @{ Name = "Supra Log Collector Network Syslog"; Port = 2514;  Protocol = "UDP" }
-    @{ Name = "Supra Log Collector Forward";        Port = 24224; Protocol = "TCP" }
+    @{ Name = "Supra Log Collector IED Syslog UDP";     Port = 514;   Protocol = "UDP" }
+    @{ Name = "Supra Log Collector IED Syslog TCP";     Port = 514;   Protocol = "TCP" }
+    @{ Name = "Supra Log Collector Windows JSON UDP";   Port = 1514;  Protocol = "UDP" }
+    @{ Name = "Supra Log Collector Windows JSON TCP";   Port = 1514;  Protocol = "TCP" }
+    @{ Name = "Supra Log Collector Network Syslog UDP"; Port = 2514;  Protocol = "UDP" }
+    @{ Name = "Supra Log Collector Network Syslog TCP"; Port = 2514;  Protocol = "TCP" }
+    @{ Name = "Supra Log Collector Linux Syslog UDP";   Port = 5140;  Protocol = "UDP" }
+    @{ Name = "Supra Log Collector Linux Syslog TCP";   Port = 5140;  Protocol = "TCP" }
+    @{ Name = "Supra Log Collector Forward";            Port = 24224; Protocol = "TCP" }
 )
 
 foreach ($rule in $firewallRules) {
@@ -1132,11 +1277,23 @@ Write-Host ""
 Write-Host "Step 3: Place the license file:"
 Write-Host "  Copy-Item license.key -Destination $osInstallDir\config\supra-license\"
 Write-Host ""
-Write-Host "Step 4: Start services and initialize security (open a NEW terminal so PATH is updated):"
+Write-Host "Step 4: Verify the license before starting (checks type, expiry and signature):"
+Write-Host "  powershell -File $osInstallDir\config\supra-license\supra-license-info.ps1"
+Write-Host "  Exit code 0 = ACTIVE, 2 = EXPIRED or UNTRUSTED."
+Write-Host ""
+Write-Host "Step 5: Start services and initialize security (open a NEW terminal so PATH is updated):"
 Write-Host "  nssm start SupraSearch"
 Write-Host "  # Wait ~30 seconds for Search Engine to be ready, then initialize security:"
 Write-Host "  & '$osInstallDir\plugins\opensearch-security\tools\securityadmin.bat' -cd '$osInstallDir\config\opensearch-security\' -icl -nhnv -cacert '$osInstallDir\config\root-ca.pem' -cert '$osInstallDir\config\kirk.pem' -key '$osInstallDir\config\kirk-key.pem'"
 Write-Host "  nssm start SupraDashboards"
+Write-Host ""
+Write-Host "Step 6: Apply the Supra index template (REQUIRED - run once, after the"
+Write-Host "        securityadmin step above and BEFORE logs start flowing):"
+Write-Host "  powershell -File $InstallDir\supra-index-template.ps1"
+Write-Host "  Without it, field types are guessed and the collector will hit"
+Write-Host "  '400 - Rejected by OpenSearch' on the first type conflict."
+Write-Host ""
+Write-Host "Step 7: Start the log collector:"
 Write-Host "  nssm start SupraLogCollector"
 Write-Host ""
 Write-Host "NOTE: NSSM has been added to system PATH at $InstallDir\nssm" -ForegroundColor Cyan
@@ -1145,7 +1302,12 @@ Write-Host ""
 Write-Host "Services (Windows Services):"
 Write-Host "  SupraSearch          - Supra Search Engine  (https://localhost:9200)"
 Write-Host "  SupraDashboards      - Supra Dashboards     (http://localhost:5601)"
-Write-Host "  SupraLogCollector    - Supra Log Collector  (IEDs UDP/514, Windows UDP/1514, Network UDP/2514, Forward TCP/24224)"
+Write-Host "  SupraLogCollector    - Supra Log Collector"
+Write-Host "      IED syslog     udp+tcp/514   -> supra-ied-*"
+Write-Host "      Windows JSON   udp+tcp/1514  -> supra-windows-*"
+Write-Host "      Network syslog udp+tcp/2514  -> supra-network-*"
+Write-Host "      Linux syslog   udp+tcp/5140  -> supra-logs-*"
+Write-Host "      Fluentd fwd    tcp/24224"
 Write-Host ""
 Write-Host "Credentials:"
 Write-Host "  Username: admin"
@@ -1216,9 +1378,30 @@ foreach ($svc in @("SupraDashboards", "SupraLogCollector", "SupraSearch")) {
 }
 
 Write-Host "Removing firewall rules..."
-foreach ($ruleName in @("Supra Search Engine", "Supra Dashboards", "Supra Log Collector Syslog", "Supra Log Collector Forward")) {
+# Names must match install.ps1 exactly, otherwise rules are orphaned and keep
+# the collector ports open after uninstall.
+$ruleNames = @(
+    "Supra Search Engine"
+    "Supra Dashboards"
+    "Supra Log Collector IED Syslog UDP"
+    "Supra Log Collector IED Syslog TCP"
+    "Supra Log Collector Windows JSON UDP"
+    "Supra Log Collector Windows JSON TCP"
+    "Supra Log Collector Network Syslog UDP"
+    "Supra Log Collector Network Syslog TCP"
+    "Supra Log Collector Linux Syslog UDP"
+    "Supra Log Collector Linux Syslog TCP"
+    "Supra Log Collector Forward"
+    # Legacy names from earlier builds - removed so upgrades do not leave them behind.
+    "Supra Log Collector Syslog"
+    "Supra Log Collector IED Syslog"
+    "Supra Log Collector Windows JSON"
+    "Supra Log Collector Network Syslog"
+)
+foreach ($ruleName in $ruleNames) {
     Remove-NetFirewallRule -DisplayName $ruleName -ErrorAction SilentlyContinue
 }
+Write-Host "  Firewall rules removed."
 
 Write-Host "Removing NSSM from system PATH..."
 $nssmInstallDir = Join-Path $InstallDir "nssm"
@@ -1229,36 +1412,49 @@ if ($currentPath -like "*$nssmInstallDir*") {
     Write-Host "  NSSM removed from system PATH."
 }
 
-Write-Host "Uninstalling td-agent (Fluentd runtime)..."
+Write-Host "Uninstalling Fluentd runtime..."
 $tdKeys = @(
     "HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\*",
     "HKLM:\Software\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\*"
 )
+# "Fluent Package v5.x" is the current runtime; "Td-agent*" is matched too so
+# this uninstaller still cleans up servers built with an older installer.
 $tdEntry = Get-ItemProperty $tdKeys -ErrorAction SilentlyContinue |
-    Where-Object { $_.DisplayName -like "Td-agent*" } | Select-Object -First 1
+    Where-Object { $_.DisplayName -like "Fluent Package*" -or $_.DisplayName -like "Td-agent*" } |
+    Select-Object -First 1
 if ($tdEntry -and $tdEntry.PSChildName -match '^\{[0-9A-Fa-f-]+\}$') {
     try {
         $proc = Start-Process -FilePath "msiexec.exe" -ArgumentList "/x $($tdEntry.PSChildName) /quiet /norestart" -Wait -PassThru
         if ($proc.ExitCode -eq 0) {
-            Write-Host "  td-agent uninstalled."
+            Write-Host "  $($tdEntry.DisplayName) uninstalled."
         } else {
-            Write-Host "  td-agent uninstall returned exit $($proc.ExitCode)."
+            Write-Host "  Fluentd runtime uninstall returned exit $($proc.ExitCode)."
         }
     } catch {
-        Write-Host "  td-agent uninstall threw: $_"
+        Write-Host "  Fluentd runtime uninstall threw: $_"
     }
 } else {
-    Write-Host "  td-agent not found in installed programs, skipping."
+    Write-Host "  Fluentd runtime not found in installed programs, skipping."
 }
 
-# Remove any leftover td-agent folder (MSI uninstall leaves empty dirs/logs behind,
+# Remove any leftover runtime folder (MSI uninstall leaves empty dirs/logs behind,
 # which confuses the installer's presence check on the next install).
-if (Test-Path "C:\opt\td-agent") {
+#
+# Only ever remove a runtime WE installed. install.ps1 records that by dropping
+# .supra-installed into the runtime folder; if the marker is absent the Fluentd
+# install predates us (the operator already had one) and deleting it would
+# destroy unrelated software.
+foreach ($leftover in @("C:\opt\fluent", "C:\opt\td-agent")) {
+    if (-not (Test-Path $leftover)) { continue }
+    if (-not (Test-Path (Join-Path $leftover ".supra-installed"))) {
+        Write-Host "  Leaving $leftover in place - it was not installed by Supra."
+        continue
+    }
     try {
-        Remove-Item -Recurse -Force "C:\opt\td-agent" -ErrorAction Stop
-        Write-Host "  Leftover td-agent folder removed."
+        Remove-Item -Recurse -Force $leftover -ErrorAction Stop
+        Write-Host "  Leftover folder removed: $leftover"
     } catch {
-        Write-Host "  Could not remove C:\opt\td-agent (likely held open by a service). Delete it manually after a reboot."
+        Write-Host "  Could not remove $leftover (likely held open by a service). Delete it manually after a reboot."
     }
 }
 
@@ -1291,10 +1487,40 @@ Write-Host "[8/8] Creating installer package..."
 $outputZip = Join-Path $BaseDir "${PackageName}-${Version}-windows-x64.zip"
 if (Test-Path $outputZip) { Remove-Item $outputZip }
 
-Compress-Archive -Path $Staging -DestinationPath $outputZip -Force
+# Compress-Archive buffers in memory and is unusably slow at this size (>1 GB).
+# The payload is almost entirely pre-compressed zips and an MSI, so storing
+# without recompression is both far faster and no larger.
+#
+# Entries are written by hand rather than with ZipFile::CreateFromDirectory
+# because the .NET Framework build of that helper emits backslash separators,
+# which the ZIP spec forbids. Windows tolerates it; 7-Zip and every Unix
+# extractor produce one flatly-named file per entry instead of a tree.
+Add-Type -AssemblyName System.IO.Compression.FileSystem
+$archive = [System.IO.Compression.ZipFile]::Open($outputZip, [System.IO.Compression.ZipArchiveMode]::Create)
+try {
+    $stagingRoot = Split-Path -Parent $Staging
+    foreach ($file in Get-ChildItem -Path $Staging -Recurse -File) {
+        $rel = $file.FullName.Substring($stagingRoot.Length).TrimStart('\')
+        $entryName = $rel -replace '\\', '/'
+        $entry = $archive.CreateEntry($entryName, [System.IO.Compression.CompressionLevel]::NoCompression)
+        $entryStream = $entry.Open()
+        try {
+            $fileStream = [System.IO.File]::OpenRead($file.FullName)
+            try { $fileStream.CopyTo($entryStream) } finally { $fileStream.Dispose() }
+        } finally { $entryStream.Dispose() }
+    }
+} finally {
+    $archive.Dispose()
+}
 
 $finalSize = (Get-Item $outputZip).Length / 1MB
 $finalSizeStr = "{0:N1} MB" -f $finalSize
+
+# Emit a checksum alongside the package, matching the Linux build output, so the
+# transfer to the test machine can be verified.
+$sha = (Get-FileHash -Path $outputZip -Algorithm SHA256).Hash.ToLower()
+"$sha  $(Split-Path -Leaf $outputZip)" | Out-File -FilePath "${outputZip}.sha256" -Encoding ascii
+Write-Host "  SHA256: $sha"
 
 Write-Host ""
 Write-Host "============================================"
