@@ -33,6 +33,7 @@ $FluentdConf = Join-Path $BaseDir "fluent\fluent.conf"
 $LicenseValidatorDir = Join-Path $BaseDir "opensearch-license-validator"
 $IndexManagementDir = Join-Path $BaseDir "index-management"
 $IndexTemplateScript = Join-Path $BaseDir "supra-index-template.ps1"
+$InitSecurityScript = Join-Path $BaseDir "supra-init-security.ps1"
 $DashboardsReportingSrc = Join-Path $BaseDir "dashboards-reporting"
 $DashboardsSrc = Join-Path $BaseDir "OpenSearch-Dashboards"
 
@@ -155,6 +156,14 @@ if (-not (Test-Path $IndexTemplateScript)) {
     exit 1
 }
 Write-Host "  Index template script: OK"
+
+if (-not (Test-Path $InitSecurityScript)) {
+    Write-Host "ERROR: Security init script not found at $InitSecurityScript" -ForegroundColor Red
+    Write-Host "       Without it, securityadmin.bat has to be run by hand and fails with" -ForegroundColor Red
+    Write-Host "       'Unable to find java runtime' because no JAVA_HOME is set." -ForegroundColor Red
+    exit 1
+}
+Write-Host "  Security init script:  OK"
 
 # Download NSSM if not present
 if (-not (Test-Path $NssmZip)) {
@@ -354,6 +363,9 @@ Write-Host "  fluent.conf staged."
 Copy-Item $IndexTemplateScript -Destination $Staging
 Write-Host "  supra-index-template.ps1 staged."
 
+Copy-Item $InitSecurityScript -Destination $Staging
+Write-Host "  supra-init-security.ps1 staged."
+
 # Stage fluent-package MSI (includes fluent-plugin-opensearch pre-installed)
 Copy-Item $FluentPkgMsi -Destination (Join-Path $Staging "log-collector\")
 Write-Host "  fluent-package MSI staged: $FluentPkgMsiName"
@@ -489,10 +501,11 @@ Contents:
 Deployment (on each endpoint, as Administrator):
   1. Copy this folder to the endpoint (e.g. C:\supra-nxlog-agent)
   2. Open PowerShell as Administrator
-  3. Run:
-       .\install-nxlog.ps1 -SupraServerIP <your-supra-server-ip>
+  3. Run (-ExecutionPolicy Bypass is needed on a stock server, which refuses
+     to run unsigned scripts):
+       powershell -ExecutionPolicy Bypass -File .\install-nxlog.ps1 -SupraServerIP <your-supra-server-ip>
      Optional (only if the collector was moved off its default port):
-       .\install-nxlog.ps1 -SupraServerIP 10.0.0.5 -SupraPort 1514
+       powershell -ExecutionPolicy Bypass -File .\install-nxlog.ps1 -SupraServerIP 10.0.0.5 -SupraPort 1514
 
 Verifying:
   Get-Service nxlog
@@ -667,13 +680,6 @@ param(
 
 $ErrorActionPreference = "Stop"
 
-# ---- Ensure scripts can run on this machine ----
-$currentPolicy = Get-ExecutionPolicy -Scope LocalMachine
-if ($currentPolicy -eq "Restricted" -or $currentPolicy -eq "AllSigned") {
-    Write-Host "[INFO]  Setting ExecutionPolicy to RemoteSigned for LocalMachine..." -ForegroundColor Green
-    Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope LocalMachine -Force
-}
-
 $InstallDir = $InstallPath
 # ------------------------------------------------------------------------
 
@@ -688,6 +694,39 @@ $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 function Log($msg)  { Write-Host "[INFO]  $msg" -ForegroundColor Green }
 function Warn($msg) { Write-Host "[WARN]  $msg" -ForegroundColor Yellow }
 function Err($msg)  { Write-Host "[ERROR] $msg" -ForegroundColor Red }
+
+# ---- Ensure scripts can run on this machine ----
+# Test the EFFECTIVE policy, not the LocalMachine scope. A stock server leaves
+# LocalMachine "Undefined" while the effective policy is still Restricted, so
+# checking the scope alone matched nothing, set nothing, and every later
+# "powershell -File ...ps1" died with "running scripts is disabled on this
+# system". Set LocalMachine first and fall back to CurrentUser, because a
+# CurrentUser value overrides LocalMachine and would otherwise keep winning.
+$restrictive = @("Restricted", "AllSigned", "Undefined")
+if ((Get-ExecutionPolicy) -in $restrictive) {
+    foreach ($scope in @("LocalMachine", "CurrentUser")) {
+        try {
+            Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope $scope -Force -ErrorAction Stop
+            Log "  ExecutionPolicy set to RemoteSigned for $scope."
+        } catch {
+            Warn "  Could not set ExecutionPolicy for ${scope}: $($_.Exception.Message)"
+        }
+        if ((Get-ExecutionPolicy) -notin $restrictive) { break }
+    }
+}
+if ((Get-ExecutionPolicy) -in $restrictive) {
+    # Group Policy (MachinePolicy/UserPolicy scope) cannot be overridden here.
+    # Not fatal: every command this installer prints uses -ExecutionPolicy
+    # Bypass, which a policy-locked machine still honours for a single process.
+    Warn "  ExecutionPolicy is still $(Get-ExecutionPolicy) - most likely enforced by Group Policy."
+    Warn "  Run the Supra scripts with:  powershell -ExecutionPolicy Bypass -File <script>"
+}
+
+# Strip the Mark-of-the-Web from everything in the bundle. Files extracted from
+# a zip that was downloaded or copied off a network share are tagged as coming
+# from the internet, and RemoteSigned refuses to run unsigned scripts so tagged.
+Get-ChildItem -Path $ScriptDir -Recurse -Include *.ps1, *.psm1, *.bat, *.cmd -ErrorAction SilentlyContinue |
+    Unblock-File -ErrorAction SilentlyContinue
 
 Write-Host ""
 Write-Host "============================================"
@@ -1166,6 +1205,31 @@ if (Test-Path $templateSrc) {
     Warn "  supra-index-template.ps1 not found in the bundle - index mappings will be guessed."
 }
 
+# ---- Stage the security initializer ----
+# Wraps securityadmin.bat with the bundled JDK and this install's real paths.
+$initSecSrc = Join-Path $ScriptDir "supra-init-security.ps1"
+if (Test-Path $initSecSrc) {
+    Copy-Item $initSecSrc -Destination $InstallDir -Force
+    Log "  Security initializer staged at $InstallDir\supra-init-security.ps1"
+} else {
+    Warn "  supra-init-security.ps1 not found in the bundle - security must be initialized by hand."
+}
+
+# ---- Publish the bundled JDK to interactive shells ----
+# The NSSM services get OPENSEARCH_JAVA_HOME via AppEnvironmentExtra, but the
+# operator tools do not: securityadmin.bat resolves java ONLY from
+# OPENSEARCH_JAVA_HOME or JAVA_HOME and aborts with "Unable to find java
+# runtime" when neither is set. Persist it at machine scope (visible to new
+# terminals, like the NSSM PATH entry) and set it for this process too.
+$bundledJdk = Join-Path $osInstallDir "jdk"
+if (Test-Path (Join-Path $bundledJdk "bin\java.exe")) {
+    [Environment]::SetEnvironmentVariable("OPENSEARCH_JAVA_HOME", $bundledJdk, "Machine")
+    $env:OPENSEARCH_JAVA_HOME = $bundledJdk
+    Log "  OPENSEARCH_JAVA_HOME set to $bundledJdk (machine scope)."
+} else {
+    Warn "  Bundled JDK not found at $bundledJdk - securityadmin will need JAVA_HOME set manually."
+}
+
 # ---- Register Windows Services via NSSM ----
 Log "Registering Windows services via NSSM..."
 
@@ -1269,8 +1333,13 @@ Write-Host "============================================"
 Write-Host ""
 Write-Host "IMPORTANT: License activation required before starting services." -ForegroundColor Yellow
 Write-Host ""
+Write-Host "NOTE: every command below is shown with the paths for THIS install" -ForegroundColor Cyan
+Write-Host "      ($InstallDir) and with -ExecutionPolicy Bypass, which runs the" -ForegroundColor Cyan
+Write-Host "      script even where policy blocks scripts. Copy them from here," -ForegroundColor Cyan
+Write-Host "      not from the guide, which shows the C:\supra defaults." -ForegroundColor Cyan
+Write-Host ""
 Write-Host "Step 1: Get this machine's fingerprint:"
-Write-Host "  powershell -File $osInstallDir\config\supra-license\get-fingerprint.ps1"
+Write-Host "  powershell -ExecutionPolicy Bypass -File $osInstallDir\config\supra-license\get-fingerprint.ps1"
 Write-Host ""
 Write-Host "Step 2: Send the fingerprint (MFP) to your Supra vendor to receive a license.key file."
 Write-Host ""
@@ -1278,22 +1347,25 @@ Write-Host "Step 3: Place the license file:"
 Write-Host "  Copy-Item license.key -Destination $osInstallDir\config\supra-license\"
 Write-Host ""
 Write-Host "Step 4: Verify the license before starting (checks type, expiry and signature):"
-Write-Host "  powershell -File $osInstallDir\config\supra-license\supra-license-info.ps1"
+Write-Host "  powershell -ExecutionPolicy Bypass -File $osInstallDir\config\supra-license\supra-license-info.ps1"
 Write-Host "  Exit code 0 = ACTIVE, 2 = EXPIRED or UNTRUSTED."
 Write-Host ""
-Write-Host "Step 5: Start services and initialize security (open a NEW terminal so PATH is updated):"
+Write-Host "Step 5: Start the search engine (open a NEW terminal so PATH is updated):"
 Write-Host "  nssm start SupraSearch"
-Write-Host "  # Wait ~30 seconds for Search Engine to be ready, then initialize security:"
-Write-Host "  & '$osInstallDir\plugins\opensearch-security\tools\securityadmin.bat' -cd '$osInstallDir\config\opensearch-security\' -icl -nhnv -cacert '$osInstallDir\config\root-ca.pem' -cert '$osInstallDir\config\kirk.pem' -key '$osInstallDir\config\kirk-key.pem'"
-Write-Host "  nssm start SupraDashboards"
 Write-Host ""
-Write-Host "Step 6: Apply the Supra index template (REQUIRED - run once, after the"
-Write-Host "        securityadmin step above and BEFORE logs start flowing):"
-Write-Host "  powershell -File $InstallDir\supra-index-template.ps1"
+Write-Host "Step 6: Initialize security. This waits for the node, then runs"
+Write-Host "        securityadmin with the bundled JDK - do NOT call securityadmin.bat"
+Write-Host "        directly, it aborts with 'Unable to find java runtime':"
+Write-Host "  powershell -ExecutionPolicy Bypass -File $InstallDir\supra-init-security.ps1"
+Write-Host ""
+Write-Host "Step 7: Apply the Supra index template (REQUIRED - run once, after the"
+Write-Host "        security step above and BEFORE logs start flowing):"
+Write-Host "  powershell -ExecutionPolicy Bypass -File $InstallDir\supra-index-template.ps1"
 Write-Host "  Without it, field types are guessed and the collector will hit"
 Write-Host "  '400 - Rejected by OpenSearch' on the first type conflict."
 Write-Host ""
-Write-Host "Step 7: Start the log collector:"
+Write-Host "Step 8: Start the remaining services:"
+Write-Host "  nssm start SupraDashboards"
 Write-Host "  nssm start SupraLogCollector"
 Write-Host ""
 Write-Host "NOTE: NSSM has been added to system PATH at $InstallDir\nssm" -ForegroundColor Cyan
@@ -1326,7 +1398,7 @@ Write-Host ""
 Write-Host "NXLog endpoint kit:"
 Write-Host "  $ScriptDir\nxlog-agent\  (copy this folder to each Windows endpoint)"
 Write-Host "  On each endpoint (as Administrator):"
-Write-Host "    .\install-nxlog.ps1 -SupraServerIP <this-server-ip>"
+Write-Host "    powershell -ExecutionPolicy Bypass -File .\install-nxlog.ps1 -SupraServerIP <this-server-ip>"
 Write-Host ""
 Write-Host "Install directory: $InstallDir"
 Write-Host ""
@@ -1410,6 +1482,15 @@ if ($currentPath -like "*$nssmInstallDir*") {
     $newPath = ($currentPath.Split(';') | Where-Object { $_ -ne $nssmInstallDir }) -join ';'
     [Environment]::SetEnvironmentVariable("Path", $newPath, "Machine")
     Write-Host "  NSSM removed from system PATH."
+}
+
+# install.ps1 publishes the bundled JDK here so securityadmin.bat can find a
+# runtime. Only clear it if it still points inside the tree we are removing -
+# an operator may have repointed it at their own JDK.
+$javaHomeVar = [Environment]::GetEnvironmentVariable("OPENSEARCH_JAVA_HOME", "Machine")
+if ($javaHomeVar -and $javaHomeVar -like "$InstallDir*") {
+    [Environment]::SetEnvironmentVariable("OPENSEARCH_JAVA_HOME", $null, "Machine")
+    Write-Host "  OPENSEARCH_JAVA_HOME removed from system environment."
 }
 
 Write-Host "Uninstalling Fluentd runtime..."
@@ -1530,13 +1611,23 @@ Write-Host ""
 Write-Host "  Package: $outputZip"
 Write-Host "  Size:    $finalSizeStr"
 Write-Host ""
-Write-Host "  To install on a Windows Server:"
+Write-Host "  To install on a Windows Server (run PowerShell as Administrator):"
 Write-Host "    1. Copy the zip to the target machine"
-Write-Host "    2. Extract: Expand-Archive -Path ${PackageName}-${Version}-windows-x64.zip -DestinationPath ."
-Write-Host "    3. Install (as Administrator): .\${PackageName}\install.ps1"
+Write-Host "    2. Unblock and extract (Unblock-File strips the internet tag that"
+Write-Host "       otherwise blocks every script in the bundle):"
+Write-Host "       Unblock-File -Path ${PackageName}-${Version}-windows-x64.zip"
+Write-Host "       Expand-Archive -Path ${PackageName}-${Version}-windows-x64.zip -DestinationPath ."
+Write-Host "    3. Install:"
+Write-Host "       powershell -ExecutionPolicy Bypass -File .\${PackageName}\install.ps1"
+Write-Host "       # optional, to install somewhere other than C:\supra:"
+Write-Host "       powershell -ExecutionPolicy Bypass -File .\${PackageName}\install.ps1 -InstallPath D:\Supra"
+Write-Host ""
+Write-Host "  -ExecutionPolicy Bypass is required: a stock Windows Server refuses to"
+Write-Host "  run unsigned scripts, and install.ps1 cannot lift that restriction"
+Write-Host "  before it has been allowed to start."
 Write-Host ""
 Write-Host "  To uninstall:"
-Write-Host "    .\${PackageName}\uninstall.ps1"
+Write-Host "    powershell -ExecutionPolicy Bypass -File .\${PackageName}\uninstall.ps1"
 Write-Host ""
 
 # Cleanup build dir

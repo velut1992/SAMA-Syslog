@@ -154,14 +154,31 @@ Open PowerShell **as Administrator**:
 
 ```powershell
 cd C:\supra-installer
-.\install.ps1
+powershell -ExecutionPolicy Bypass -File .\install.ps1
 ```
 
 To install somewhere other than `C:\supra`:
 
 ```powershell
-.\install.ps1 -InstallPath D:\supra
+powershell -ExecutionPolicy Bypass -File .\install.ps1 -InstallPath D:\supra
 ```
+
+> **`-ExecutionPolicy Bypass` is required.** A stock Windows Server refuses to
+> run unsigned scripts, and `install.ps1` cannot lift that restriction before it
+> has been allowed to start. Without it you get:
+> `File ...install.ps1 cannot be loaded because running scripts is disabled on
+> this system`. The same applies to every Supra script below. If the zip was
+> downloaded or copied from a network share, also run
+> `Unblock-File -Path supra-installer-*.zip` **before** extracting, so the files
+> are not tagged as coming from the internet.
+>
+> The installer relaxes the machine policy to `RemoteSigned` for later runs, but
+> cannot do so for its own launch.
+
+> **Paths below use the `C:\supra` default.** If you installed elsewhere,
+> substitute your `-InstallPath` everywhere. The installer prints every command
+> with the correct paths for your install when it finishes — copy them from
+> there rather than from this guide.
 
 The installer will:
 
@@ -184,7 +201,7 @@ summary when it finishes.
 
 ```powershell
 # 1. Get this machine's fingerprint (MFP)
-powershell -File C:\supra\opensearch\config\supra-license\get-fingerprint.ps1
+powershell -ExecutionPolicy Bypass -File C:\supra\opensearch\config\supra-license\get-fingerprint.ps1
 
 # 2. Send the MFP to your Supra vendor and receive license.key in return.
 
@@ -192,7 +209,7 @@ powershell -File C:\supra\opensearch\config\supra-license\get-fingerprint.ps1
 Copy-Item .\license.key -Destination C:\supra\opensearch\config\supra-license\
 
 # 4. Confirm the license reads back as expected BEFORE starting the service
-powershell -File C:\supra\opensearch\config\supra-license\supra-license-info.ps1
+powershell -ExecutionPolicy Bypass -File C:\supra\opensearch\config\supra-license\supra-license-info.ps1
 ```
 
 The inspector prints the customer, license type (Permanent or Temporary),
@@ -221,28 +238,46 @@ must match the fingerprint from step 1**, or the search engine will refuse to st
 
 ### Step 5: Start Services and Initialize Security
 
-Open a **new** PowerShell window (so the updated PATH picks up `nssm`):
+Open a **new** PowerShell window (so the updated PATH picks up `nssm` and the
+`OPENSEARCH_JAVA_HOME` the installer sets):
 
 ```powershell
 # Start the search engine first
 nssm start SupraSearch
 
-# Wait ~30 seconds, then initialize the security index
-& 'C:\supra\opensearch\plugins\opensearch-security\tools\securityadmin.bat' `
-    -cd 'C:\supra\opensearch\config\opensearch-security\' `
-    -icl -nhnv `
-    -cacert 'C:\supra\opensearch\config\root-ca.pem' `
-    -cert   'C:\supra\opensearch\config\kirk.pem' `
-    -key    'C:\supra\opensearch\config\kirk-key.pem'
+# Initialize the security index
+powershell -ExecutionPolicy Bypass -File C:\supra\supra-init-security.ps1
 
 # Start the dashboards
 nssm start SupraDashboards
 ```
 
+`supra-init-security.ps1` waits for the node to accept connections, then runs
+`securityadmin.bat` with the bundled JDK and this installation's real paths. It
+is safe to re-run.
+
+> **Do not call `securityadmin.bat` directly.** It resolves the JVM only from
+> `OPENSEARCH_JAVA_HOME` or `JAVA_HOME` and aborts with `Unable to find java
+> runtime / OPENSEARCH_JAVA_HOME or JAVA_HOME must be defined` when neither is
+> set in your shell. It also needs six absolute paths that change with
+> `-InstallPath`. The wrapper handles both.
+>
+> If you must run it by hand, set the JDK first:
+>
+> ```powershell
+> $env:OPENSEARCH_JAVA_HOME = 'C:\supra\opensearch\jdk'
+> & 'C:\supra\opensearch\plugins\opensearch-security\tools\securityadmin.bat' `
+>     -cd 'C:\supra\opensearch\config\opensearch-security\' `
+>     -icl -nhnv `
+>     -cacert 'C:\supra\opensearch\config\root-ca.pem' `
+>     -cert   'C:\supra\opensearch\config\kirk.pem' `
+>     -key    'C:\supra\opensearch\config\kirk-key.pem'
+> ```
+
 ### Step 6: Apply the Index Template (Required)
 
 ```powershell
-powershell -File C:\supra\supra-index-template.ps1
+powershell -ExecutionPolicy Bypass -File C:\supra\supra-index-template.ps1
 ```
 
 This is not optional. It disables date/numeric type-guessing and maps every
@@ -254,7 +289,7 @@ and is safe to re-run.
 If you changed the admin password first:
 
 ```powershell
-powershell -File C:\supra\supra-index-template.ps1 -OsPass 'YourNewPassword'
+powershell -ExecutionPolicy Bypass -File C:\supra\supra-index-template.ps1 -OsPass 'YourNewPassword'
 ```
 
 ### Step 7: Start the Log Collector
@@ -307,7 +342,7 @@ sets `number_of_replicas: 0`).
 
 ```powershell
 # From the CLI
-powershell -File C:\supra\opensearch\config\supra-license\supra-license-info.ps1
+powershell -ExecutionPolicy Bypass -File C:\supra\opensearch\config\supra-license\supra-license-info.ps1
 
 # Or from the running node, via the plugin's REST endpoint
 curl.exe -sk -u admin:admin "https://localhost:9200/_supra/license?pretty"
@@ -581,11 +616,7 @@ curl.exe -sk -u admin:admin -X DELETE "https://localhost:9200/supra-windows-$(Ge
 3. Re-apply the security configuration:
 
 ```powershell
-& 'C:\supra\opensearch\plugins\opensearch-security\tools\securityadmin.bat' `
-    -cd 'C:\supra\opensearch\config\opensearch-security\' -icl -nhnv `
-    -cacert 'C:\supra\opensearch\config\root-ca.pem' `
-    -cert   'C:\supra\opensearch\config\kirk.pem' `
-    -key    'C:\supra\opensearch\config\kirk-key.pem'
+powershell -ExecutionPolicy Bypass -File C:\supra\supra-init-security.ps1
 ```
 
 4. Update `fluent.conf` ([Section 7.2](#72-changing-the-search-engine-password))
@@ -730,6 +761,78 @@ Also back up `C:\supra\opensearch\config\` (including `supra-license\`) and
 
 ## 14. Troubleshooting
 
+### "running scripts is disabled on this system"
+
+```
+File C:\supra\supra-index-template.ps1 cannot be loaded because running scripts
+is disabled on this system.
+    + FullyQualifiedErrorId : UnauthorizedAccess
+```
+
+The machine's PowerShell execution policy blocks unsigned scripts. Run any Supra
+script with an explicit bypass, which applies to that one process only:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File C:\supra\supra-index-template.ps1
+```
+
+To allow scripts for future sessions (the installer does this automatically, but
+Group Policy can override it):
+
+```powershell
+Get-ExecutionPolicy -List                                     # see which scope wins
+Set-ExecutionPolicy RemoteSigned -Scope LocalMachine -Force
+```
+
+If `Get-ExecutionPolicy -List` shows a value under `MachinePolicy` or
+`UserPolicy`, it is enforced by Group Policy and cannot be changed locally —
+keep using `-ExecutionPolicy Bypass`.
+
+A related failure: scripts extracted from a zip that was downloaded or copied
+from a network share carry a "came from the internet" tag, which `RemoteSigned`
+rejects. Clear it with:
+
+```powershell
+Get-ChildItem C:\supra -Recurse -Include *.ps1 | Unblock-File
+```
+
+### "Unable to find java runtime" from securityadmin.bat
+
+```
+Unable to find java runtime
+OPENSEARCH_JAVA_HOME or JAVA_HOME must be defined
+```
+
+`securityadmin.bat` resolves the JVM only from `OPENSEARCH_JAVA_HOME` or
+`JAVA_HOME`. The services get it from NSSM, but an interactive shell does not,
+so calling the batch file directly fails on a fresh install. Use the wrapper,
+which points at the bundled JDK and fills in this installation's paths:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File C:\supra\supra-init-security.ps1
+```
+
+If you installed outside `C:\supra`, the wrapper still works — it derives the
+paths from its own location. Pass `-OsHome` only when running it from elsewhere:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File D:\Syslog_Windows\supra-init-security.ps1 -OsHome D:\Syslog_Windows\opensearch
+```
+
+The installer also sets `OPENSEARCH_JAVA_HOME` at machine scope, so a **new**
+terminal picks it up automatically. Verify with:
+
+```powershell
+[Environment]::GetEnvironmentVariable('OPENSEARCH_JAVA_HOME','Machine')
+```
+
+### "The term ... securityadmin.bat is not recognized"
+
+The path does not exist — usually because the command was copied from this guide
+(which shows the `C:\supra` default) onto a machine installed elsewhere. Use the
+paths the installer printed when it finished, or just run
+`supra-init-security.ps1`, which needs no paths at all.
+
 ### SupraSearch will not start
 
 ```powershell
@@ -750,10 +853,10 @@ Common causes:
 
 ```powershell
 # What this machine reports
-powershell -File C:\supra\opensearch\config\supra-license\get-fingerprint.ps1
+powershell -ExecutionPolicy Bypass -File C:\supra\opensearch\config\supra-license\get-fingerprint.ps1
 
 # What the license was issued for
-powershell -File C:\supra\opensearch\config\supra-license\supra-license-info.ps1
+powershell -ExecutionPolicy Bypass -File C:\supra\opensearch\config\supra-license\supra-license-info.ps1
 ```
 
 The two fingerprints must match exactly. They will differ if the server's
@@ -855,6 +958,7 @@ rather than deleting indices by hand.
 | `C:\supra\dashboards\` | Dashboards install |
 | `C:\supra\log-collector\fluent.conf` | Collector config |
 | `C:\supra\supra-index-template.ps1` | Index template installer |
+| `C:\supra\supra-init-security.ps1` | Security initializer (wraps securityadmin.bat) |
 | `C:\supra\nssm\nssm.exe` | Service manager |
 | `C:\opt\fluent\` | Fluentd runtime |
 
@@ -901,7 +1005,7 @@ curl.exe -sk -u admin:admin "https://localhost:9200/_cat/plugins?v"
 
 ```powershell
 cd C:\supra-installer
-.\uninstall.ps1
+powershell -ExecutionPolicy Bypass -File .\uninstall.ps1
 ```
 
 This stops and removes the three services, removes the firewall rules,
