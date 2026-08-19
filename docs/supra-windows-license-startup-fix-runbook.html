@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Supra SIEM Platform</title>
+    <style>
+        @page { size: A4; margin: 20mm; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6; color: #333; max-width: 960px;
+            margin: 0 auto; padding: 20px 40px; background: #fff;
+        }
+        h1 { color: #1a237e; border-bottom: 3px solid #1a237e; padding-bottom: 10px; font-size: 2em; }
+        h2 {
+            color: #283593; border-bottom: 2px solid #c5cae9; padding-bottom: 8px;
+            margin-top: 40px; font-size: 1.5em; page-break-after: avoid;
+        }
+        h3 { color: #3949ab; margin-top: 25px; font-size: 1.2em; page-break-after: avoid; }
+        table {
+            border-collapse: collapse; width: 100%; margin: 15px 0;
+            font-size: 0.9em; page-break-inside: avoid;
+        }
+        th { background-color: #1a237e; color: white; padding: 10px 12px; text-align: left; font-weight: 600; }
+        td { padding: 8px 12px; border: 1px solid #ddd; }
+        tr:nth-child(even) { background-color: #f5f5f5; }
+        tr:hover { background-color: #e8eaf6; }
+        code {
+            background-color: #f5f5f5; padding: 2px 6px; border-radius: 3px;
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+            font-size: 0.9em; color: #c62828;
+        }
+        pre {
+            background-color: #263238; color: #eeffff; padding: 16px 20px;
+            border-radius: 6px; overflow-x: auto; font-size: 0.85em;
+            line-height: 1.5; page-break-inside: avoid;
+        }
+        pre code { background: none; color: #eeffff; padding: 0; font-size: 1em; }
+        blockquote {
+            border-left: 4px solid #ff6f00; margin: 15px 0; padding: 10px 20px;
+            background-color: #fff8e1; color: #e65100; font-weight: 500;
+        }
+        blockquote strong { color: #bf360c; }
+        a { color: #1565c0; text-decoration: none; }
+        a:hover { text-decoration: underline; }
+        hr { border: none; border-top: 2px solid #e0e0e0; margin: 30px 0; }
+        ul, ol { padding-left: 25px; }
+        li { margin-bottom: 4px; }
+        .header-bar {
+            background: linear-gradient(135deg, #1a237e, #283593); color: white;
+            padding: 30px 40px; margin: -20px -40px 30px -40px; text-align: center;
+        }
+        .header-bar h1 { color: white; border: none; margin: 0; font-size: 2.2em; }
+        .header-bar p { color: #c5cae9; margin: 5px 0 0 0; font-size: 1.1em; }
+        @media print {
+            body { padding: 0; max-width: none; }
+            .header-bar { margin: 0 0 30px 0; }
+            pre { white-space: pre-wrap; word-wrap: break-word; }
+            h2 { page-break-before: auto; }
+        }
+    </style>
+</head>
+<body>
+    <div class="header-bar">
+        <h1>Supra SIEM Platform</h1>
+        <p>Windows Search Engine Will Not Start — Field Runbook | Version 3.6.0 | August 2026</p>
+    </div>
+    <h1 id="supra-siem-windows-search-engine-will-not-start-licence-fingerprint-mismatch">Supra SIEM — Windows Search Engine Will Not Start (Licence Fingerprint Mismatch)</h1>
+<p><strong>Field runbook | Version 3.6.0 | 13 August 2026</strong></p>
+<p>Applies to a Windows installation of Supra SIEM 3.6.0 made with an installer<br />
+package built <strong>before 13 August 2026 19:55</strong> (SHA256 <code>0697a144…</code> or earlier),<br />
+where the licence is valid but the search engine never comes up.</p>
+<p>Estimated time: <strong>2 minutes.</strong> No reinstall. No new licence key.</p>
+<hr />
+<h2 id="1-symptoms">1. Symptoms</h2>
+<p>All three of these appear together, and only the first one is a real fault:</p>
+<table>
+<thead>
+<tr>
+<th>Symptom</th>
+<th>Where it appears</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>nssm start SupraSearch</code> reports success, but nothing ever listens on 9200</td>
+<td>service never becomes usable</td>
+</tr>
+<tr>
+<td><code>ERR: Seems there is no OpenSearch running on localhost:9200 - Will exit</code></td>
+<td><code>securityadmin</code> / <code>supra-init-security.ps1</code></td>
+</tr>
+<tr>
+<td><code>attempt 1/60 : no response yet (cluster starting); retrying in 5s...</code> repeating to 60</td>
+<td><code>supra-index-template.ps1</code></td>
+</tr>
+</tbody>
+</table>
+<p>The second and third are consequences of the first. Fix the first and both clear.</p>
+<p>The licence itself is <strong>not</strong> the problem. <code>supra-license-info.ps1</code> reports<br />
+<code>Overall status : ACTIVE</code> and <code>Signature : VALID</code>, and that report is accurate.</p>
+<hr />
+<h2 id="2-cause">2. Cause</h2>
+<p>The licence validator plugin runs inside the search engine's Java process. On<br />
+Windows it cannot shell out to PowerShell or <code>wmic</code> to read the CPU ID,<br />
+motherboard serial and disk serial, so all three resolve to <code>UNKNOWN</code> and the<br />
+plugin hashes the constant string:</p>
+<pre class="code"><code>sha256(&quot;UNKNOWN|UNKNOWN|UNKNOWN&quot;) = 691659e84797cd7d3e22021da866ede3661a4c68538a73da2990c634b460e259
+</code></pre>
+
+<p><code>get-fingerprint.ps1</code> — run by the operator, as an ordinary elevated script —<br />
+reads the real hardware and reports the true fingerprint. The vendor issues the<br />
+licence against that true value. The two never agree, so the plugin rejects the<br />
+licence and aborts node startup.</p>
+<p>The Linux installer never had this problem: it writes a <code>machine-id</code> cache file<br />
+that the plugin reads in preference to computing the value itself. The Windows<br />
+installer did not write that file. <strong>The fix is to create it.</strong></p>
+<blockquote>
+<p><strong>Note for the vendor:</strong> because the plugin computed the same constant on<br />
+every Windows host, any licence previously issued against a <em>Windows-reported</em><br />
+plugin fingerprint was not machine-bound at all. Reissue those against the<br />
+fingerprint from <code>get-fingerprint.ps1</code>.</p>
+</blockquote>
+<hr />
+<h2 id="3-before-you-start">3. Before you start</h2>
+<ul>
+<li>Open PowerShell <strong>as Administrator</strong>.</li>
+<li>The examples use the default install path <code>C:\supra</code>. If the site installed<br />
+  elsewhere, substitute that path throughout.</li>
+<li>Have this machine's fingerprint to hand. Print it with:</li>
+</ul>
+<pre class="code"><code class="language-powershell">powershell -ExecutionPolicy Bypass -File C:\supra\opensearch\config\supra-license\get-fingerprint.ps1
+</code></pre>
+
+<p>It must match <code>Bound to machine</code> in the licence:</p>
+<pre class="code"><code class="language-powershell">powershell -ExecutionPolicy Bypass -File C:\supra\opensearch\config\supra-license\supra-license-info.ps1
+</code></pre>
+
+<p>If those two do <strong>not</strong> match, stop — this runbook will not help, and the site<br />
+needs a licence reissued for the printed fingerprint.</p>
+<hr />
+<h2 id="4-step-1-confirm-the-cause">4. Step 1 — Confirm the cause</h2>
+<pre class="code"><code class="language-powershell">Select-String -Path C:\supra\opensearch\logs\supra*.log -Pattern &quot;License&quot; | Select-Object -Last 5
+Get-Content C:\supra\opensearch\logs\search-stderr.log -Tail 20
+</code></pre>
+
+<p>Expected:</p>
+<pre class="code"><code>License validation failed: License fingerprint mismatch!
+  Licensed for:  &lt;the fingerprint your vendor licensed&gt;
+  This machine:  691659e84797cd7d3e22021da866ede3661a4c68538a73da2990c634b460e259
+</code></pre>
+
+<p>If instead the log says <strong><code>There is insufficient memory for the Java Runtime
+Environment to continue</code></strong> or <strong><code>The paging file is too small for this operation
+to complete</code></strong>, this is a different fault — go to section 9.</p>
+<hr />
+<h2 id="5-step-2-stop-the-service">5. Step 2 — Stop the service</h2>
+<p>Repeated failed starts leave the service manager throttling restarts. In that<br />
+state a later <code>nssm start</code> reports success and does nothing, which is very<br />
+misleading. Always stop first.</p>
+<pre class="code"><code class="language-powershell">nssm stop SupraSearch
+</code></pre>
+
+<hr />
+<h2 id="6-step-3-write-the-fingerprint-cache">6. Step 3 — Write the fingerprint cache</h2>
+<p>Substitute the fingerprint printed in section 3.</p>
+<pre class="code"><code class="language-powershell">Set-Content -Path C:\supra\opensearch\config\supra-license\machine-id `
+  -Value &quot;PASTE-THE-64-CHARACTER-FINGERPRINT-HERE&quot; `
+  -NoNewline -Encoding ascii
+</code></pre>
+
+<blockquote>
+<p><strong><code>-Encoding ascii</code> is mandatory.</strong> PowerShell 5.1's <code>utf8</code> option writes a<br />
+byte-order mark, which the plugin's whitespace trim does not remove. The<br />
+comparison would still fail and the symptom would look unchanged.</p>
+</blockquote>
+<p>Verify the file is exactly 64 bytes:</p>
+<pre class="code"><code class="language-powershell">(Get-Item C:\supra\opensearch\config\supra-license\machine-id).Length
+</code></pre>
+
+<hr />
+<h2 id="7-step-4-start-the-search-engine">7. Step 4 — Start the search engine</h2>
+<pre class="code"><code class="language-powershell">nssm start SupraSearch
+Start-Sleep 60
+Get-NetTCPConnection -LocalPort 9200 -State Listen
+Select-String -Path C:\supra\opensearch\logs\supra*.log -Pattern &quot;license&quot; | Select-Object -Last 5
+</code></pre>
+
+<p>Success looks like this, and the port is listening:</p>
+<pre class="code"><code>[c.s.p.LicenseValidatorPlugin] [supra-node-1] Supra license validated successfully:
+[c.s.p.LicenseValidatorPlugin] [supra-node-1]   Customer:    &lt;customer&gt;
+[c.s.p.LicenseValidatorPlugin] [supra-node-1]   Tier:        standard
+[c.s.p.LicenseValidatorPlugin] [supra-node-1]   Expires:     &lt;date&gt;
+</code></pre>
+
+<p>On a reference run the node bound port 9200 <strong>49 seconds</strong> after start. Allow up<br />
+to 2 minutes on slower hardware before concluding it has failed.</p>
+<hr />
+<h2 id="8-step-5-security-index-template-remaining-services">8. Step 5 — Security, index template, remaining services</h2>
+<pre class="code"><code class="language-powershell">powershell -ExecutionPolicy Bypass -File C:\supra\supra-init-security.ps1
+</code></pre>
+
+<h3 id="if-that-fails-with-pkix-path-building-failed">If that fails with <code>PKIX path building failed</code></h3>
+<p>This is antivirus (Norton and similar) intercepting TLS on the loopback<br />
+interface and re-signing the node's certificate, so Java cannot build a trust<br />
+path to <code>root-ca.pem</code>. <strong>In most cases it does not matter.</strong> The node<br />
+initialises its own security index at first start. Check:</p>
+<pre class="code"><code class="language-powershell">curl.exe -sS -k -u admin:admin &quot;https://localhost:9200/_cat/indices/.opendistro_security?v&quot;
+</code></pre>
+
+<p>If the index exists with roughly 9 documents, security is initialised. Ignore<br />
+the error and continue. If it does not exist, exclude port 9200 from the<br />
+antivirus TLS/web shield and re-run <code>supra-init-security.ps1</code>.</p>
+<h3 id="then">Then</h3>
+<pre class="code"><code class="language-powershell">powershell -ExecutionPolicy Bypass -File C:\supra\supra-index-template.ps1
+nssm start SupraDashboards
+nssm start SupraLogCollector
+</code></pre>
+
+<p>The index template must be applied <strong>before</strong> logs start flowing. Without it<br />
+field types are guessed, and the collector begins failing with<br />
+<code>400 - Rejected by OpenSearch</code> at the first type conflict.</p>
+<hr />
+<h2 id="9-if-the-log-showed-a-memory-or-paging-file-error-instead">9. If the log showed a memory or paging-file error instead</h2>
+<p>The installer sizes the Java heap at 50% of installed RAM. Windows must back the<br />
+entire heap with commit charge, so on a machine with a small page file the<br />
+process dies before the search engine loads anything:</p>
+<pre class="code"><code>Native memory allocation (mmap) failed to map 8396996608 bytes
+The paging file is too small for this operation to complete (DOS error 1455)
+</code></pre>
+
+<p>Lower the heap:</p>
+<pre class="code"><code class="language-powershell">nssm stop SupraSearch
+notepad C:\supra\opensearch\config\jvm.options
+</code></pre>
+
+<p>Set both values to something the machine can commit — 2 GB is ample for a pilot,<br />
+and a production server should stay at 50% of RAM but needs a page file large<br />
+enough to back it:</p>
+<pre class="code"><code>-Xms2g
+-Xmx2g
+</code></pre>
+
+<p>Then:</p>
+<pre class="code"><code class="language-powershell">nssm start SupraSearch
+</code></pre>
+
+<hr />
+<h2 id="10-verification">10. Verification</h2>
+<pre class="code"><code class="language-powershell">curl.exe -sS -k -u admin:admin &quot;https://localhost:9200/_cluster/health?pretty&quot;
+curl.exe -sS -k -u admin:admin &quot;https://localhost:9200/_supra/license?pretty&quot;
+curl.exe -sS -k -u admin:admin &quot;https://localhost:9200/_cat/indices/supra-*?v&quot;
+</code></pre>
+
+<table>
+<thead>
+<tr>
+<th>Check</th>
+<th>Expected</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Cluster health</td>
+<td><code>"status" : "green"</code>, 1 node</td>
+</tr>
+<tr>
+<td>Licence endpoint</td>
+<td><code>"status" : "ACTIVE"</code>, <code>"signature_verified" : true</code></td>
+</tr>
+<tr>
+<td>Dashboards</td>
+<td><code>http://localhost:5601</code> loads the login page; sign in as <code>admin</code> / <code>admin</code></td>
+</tr>
+<tr>
+<td>Indices</td>
+<td><code>supra-*</code> indices appear once devices start sending logs</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>Use <code>curl.exe</code>, not <code>Invoke-RestMethod</code> or <code>Invoke-WebRequest</code>.</strong> The node<br />
+negotiates TLS 1.3, which PowerShell 5.1 (.NET Framework) does not support.<br />
+Every PowerShell web call fails with <em>"The underlying connection was closed"</em><br />
+no matter what certificate or <code>SecurityProtocol</code> settings are applied. This is<br />
+a limitation of the client, not a fault in the server.</p>
+</blockquote>
+<p>An end-to-end test, if the site wants one before connecting devices — send five<br />
+syslog datagrams and confirm they are indexed:</p>
+<pre class="code"><code class="language-powershell">$udp = New-Object System.Net.Sockets.UdpClient
+$msg = [Text.Encoding]::ASCII.GetBytes(&quot;&lt;134&gt;Aug 13 21:00:00 test-host SupraTest: end-to-end probe&quot;)
+1..5 | ForEach-Object { [void]$udp.Send($msg, $msg.Length, &quot;127.0.0.1&quot;, 514); Start-Sleep -Milliseconds 300 }
+$udp.Close()
+Start-Sleep 60
+curl.exe -sS -k -u admin:admin &quot;https://localhost:9200/_cat/indices/supra-ied-*?v&quot;
+</code></pre>
+
+<p><code>docs.count</code> should show the five documents.</p>
+<hr />
+<h2 id="11-aftercare">11. Aftercare</h2>
+<p>The repaired machine still carries the older <code>get-fingerprint.ps1</code>, which has no<br />
+switch for writing the cache. <strong>If its hardware changes</strong> — motherboard, CPU or<br />
+the first disk — the cached fingerprint will no longer describe the machine.<br />
+Repeat sections 5 to 7 with the newly printed fingerprint.</p>
+<p>Installer packages built from 13 August 2026 onward (SHA256 <code>b46d8ae0…</code> or<br />
+later) write this cache during installation, so a fresh install on a new machine<br />
+needs none of the above. Reinstalling an already-working machine is not<br />
+necessary to obtain this fix.</p>
+<hr />
+<h2 id="12-quick-reference">12. Quick reference</h2>
+<pre class="code"><code class="language-powershell"># 1. confirm
+Select-String -Path C:\supra\opensearch\logs\supra*.log -Pattern &quot;License&quot; | Select-Object -Last 5
+
+# 2. stop
+nssm stop SupraSearch
+
+# 3. cache the fingerprint (64 chars, ascii, no newline)
+Set-Content -Path C:\supra\opensearch\config\supra-license\machine-id `
+  -Value &quot;PASTE-THE-64-CHARACTER-FINGERPRINT-HERE&quot; -NoNewline -Encoding ascii
+
+# 4. start and confirm
+nssm start SupraSearch
+Start-Sleep 60
+Get-NetTCPConnection -LocalPort 9200 -State Listen
+
+# 5. finish the bring-up
+powershell -ExecutionPolicy Bypass -File C:\supra\supra-init-security.ps1
+powershell -ExecutionPolicy Bypass -File C:\supra\supra-index-template.ps1
+nssm start SupraDashboards
+nssm start SupraLogCollector
+</code></pre>
+</body>
+</html>
