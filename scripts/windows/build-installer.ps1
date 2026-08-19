@@ -920,9 +920,35 @@ if (Test-Path $pubKeySrc) {
     Log "  Public key installed."
 }
 $fpScriptSrc = Join-Path $ScriptDir "license-validator\get-fingerprint.ps1"
+$fpScript = Join-Path $licenseConfigDir "get-fingerprint.ps1"
 if (Test-Path $fpScriptSrc) {
     Copy-Item $fpScriptSrc -Destination $licenseConfigDir
     Log "  Fingerprint tool installed."
+}
+
+# ---- Cache the machine fingerprint for the license validator ----
+# The validator plugin runs inside the OpenSearch JVM, which cannot shell out to
+# PowerShell or wmic for the hardware CIM queries. Left to compute the
+# fingerprint itself it therefore gets UNKNOWN for CPU, board and disk, hashes
+# "UNKNOWN|UNKNOWN|UNKNOWN" and refuses to start the node with "License
+# fingerprint mismatch" - even though get-fingerprint.ps1, run by the operator,
+# reported the real MFP and the vendor issued the licence against it.
+# MachineFingerprint reads this cache first (same contract as Linux, where
+# supra-search.service writes it from a root ExecStartPre). Written here while
+# elevated, so the plugin sees exactly what the operator sent the vendor.
+$machineIdFile = Join-Path $licenseConfigDir "machine-id"
+if (Test-Path $fpScript) {
+    try {
+        & powershell -NoProfile -NonInteractive -ExecutionPolicy Bypass -File $fpScript -MachineIdFile $machineIdFile | Out-Null
+    } catch {
+        Warn "  Fingerprint tool failed: $_"
+    }
+    if (Test-Path $machineIdFile) {
+        Log "  Machine fingerprint cached: $((Get-Content $machineIdFile -Raw).Trim())"
+    } else {
+        Warn "  Machine fingerprint cache was not written to $machineIdFile."
+        Warn "  The search engine will reject the licence with a fingerprint mismatch."
+    }
 }
 $infoScriptSrc = Join-Path $ScriptDir "license-validator\supra-license-info.ps1"
 if (Test-Path $infoScriptSrc) {
@@ -1098,9 +1124,18 @@ if (Test-Path $fluentdCandidate) {
 # same way the Linux installer disables the packaged fluentd.service.
 $stockSvc = Get-Service -Name 'fluentdwinsvc' -ErrorAction SilentlyContinue
 if ($stockSvc) {
+    # Record the startup type before changing it, so uninstall.ps1 can put it
+    # back. Without this the operator's own Fluentd service is left Disabled
+    # after Supra is removed - we would have silently reconfigured software we
+    # do not own.
+    $prevStart = (Get-CimInstance Win32_Service -Filter "Name='fluentdwinsvc'" -ErrorAction SilentlyContinue).StartMode
+    if ($prevStart) {
+        $prevStart | Out-File -FilePath (Join-Path $InstallDir ".fluentdwinsvc-starttype") -Encoding ascii
+    }
     Stop-Service -Name 'fluentdwinsvc' -Force -ErrorAction SilentlyContinue
     Set-Service  -Name 'fluentdwinsvc' -StartupType Disabled -ErrorAction SilentlyContinue
     Log "  Stock 'fluentdwinsvc' service stopped and disabled (it would fight for the syslog ports)."
+    if ($prevStart) { Log "    Previous startup type '$prevStart' recorded for uninstall." }
 }
 
 if (-not (Test-Path $fluentdExe)) {
@@ -1253,6 +1288,19 @@ if (Test-Path $osBat) {
     & $NssmExe set "SupraSearch" AppStdout (Join-Path $osInstallDir "logs\search-stdout.log")
     & $NssmExe set "SupraSearch" AppStderr (Join-Path $osInstallDir "logs\search-stderr.log")
     & $NssmExe set "SupraSearch" AppEnvironmentExtra "OPENSEARCH_HOME=$osInstallDir" "OPENSEARCH_JAVA_HOME=$(Join-Path $osInstallDir 'jdk')"
+
+    # NOTE: the Linux unit refreshes the machine-id cache on every start via
+    # ExecStartPre. There is no equivalent here - NSSM only grew Start/Pre hooks
+    # (AppEvents) in 2.25, and the version bundled with this installer is 2.24,
+    # which rejects the parameter outright. The cache is therefore written once,
+    # by the installer, from the real hardware values.
+    #
+    # Consequence: after a hardware change - or on a disk cloned to another host -
+    # the cache still describes the ORIGINAL machine, so the licence keeps
+    # validating until it is refreshed. Re-run get-fingerprint.ps1 with
+    # -MachineIdFile after any hardware change to re-bind the node:
+    #   powershell -ExecutionPolicy Bypass -File <install>\opensearch\config\supra-license\get-fingerprint.ps1 `
+    #              -MachineIdFile <install>\opensearch\config\supra-license\machine-id
     Log "  SupraSearch service registered."
 } else {
     Warn "  Search engine binary not found. Service not registered."
@@ -1494,28 +1542,42 @@ if ($javaHomeVar -and $javaHomeVar -like "$InstallDir*") {
 }
 
 Write-Host "Uninstalling Fluentd runtime..."
-$tdKeys = @(
-    "HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\*",
-    "HKLM:\Software\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\*"
-)
-# "Fluent Package v5.x" is the current runtime; "Td-agent*" is matched too so
-# this uninstaller still cleans up servers built with an older installer.
-$tdEntry = Get-ItemProperty $tdKeys -ErrorAction SilentlyContinue |
-    Where-Object { $_.DisplayName -like "Fluent Package*" -or $_.DisplayName -like "Td-agent*" } |
+# Only ever remove a runtime WE installed. install.ps1 records that by dropping
+# .supra-installed into the runtime folder; when it finds a Fluentd already on
+# the machine it reuses it and writes no marker. Without this gate the MSI
+# uninstall below matches the operator's own "Fluent Package*" entry in
+# Add/Remove Programs and silently removes software that predates Supra.
+$supraOwnedRuntime = @("C:\opt\fluent", "C:\opt\td-agent") |
+    Where-Object { Test-Path (Join-Path $_ ".supra-installed") } |
     Select-Object -First 1
-if ($tdEntry -and $tdEntry.PSChildName -match '^\{[0-9A-Fa-f-]+\}$') {
-    try {
-        $proc = Start-Process -FilePath "msiexec.exe" -ArgumentList "/x $($tdEntry.PSChildName) /quiet /norestart" -Wait -PassThru
-        if ($proc.ExitCode -eq 0) {
-            Write-Host "  $($tdEntry.DisplayName) uninstalled."
-        } else {
-            Write-Host "  Fluentd runtime uninstall returned exit $($proc.ExitCode)."
-        }
-    } catch {
-        Write-Host "  Fluentd runtime uninstall threw: $_"
-    }
+
+if (-not $supraOwnedRuntime) {
+    Write-Host "  No Supra-installed Fluentd runtime (no .supra-installed marker)."
+    Write-Host "  Leaving the existing runtime and its Add/Remove Programs entry untouched."
 } else {
-    Write-Host "  Fluentd runtime not found in installed programs, skipping."
+    $tdKeys = @(
+        "HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\*",
+        "HKLM:\Software\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\*"
+    )
+    # "Fluent Package v5.x" is the current runtime; "Td-agent*" is matched too so
+    # this uninstaller still cleans up servers built with an older installer.
+    $tdEntry = Get-ItemProperty $tdKeys -ErrorAction SilentlyContinue |
+        Where-Object { $_.DisplayName -like "Fluent Package*" -or $_.DisplayName -like "Td-agent*" } |
+        Select-Object -First 1
+    if ($tdEntry -and $tdEntry.PSChildName -match '^\{[0-9A-Fa-f-]+\}$') {
+        try {
+            $proc = Start-Process -FilePath "msiexec.exe" -ArgumentList "/x $($tdEntry.PSChildName) /quiet /norestart" -Wait -PassThru
+            if ($proc.ExitCode -eq 0) {
+                Write-Host "  $($tdEntry.DisplayName) uninstalled."
+            } else {
+                Write-Host "  Fluentd runtime uninstall returned exit $($proc.ExitCode)."
+            }
+        } catch {
+            Write-Host "  Fluentd runtime uninstall threw: $_"
+        }
+    } else {
+        Write-Host "  Fluentd runtime not found in installed programs, skipping."
+    }
 }
 
 # Remove any leftover runtime folder (MSI uninstall leaves empty dirs/logs behind,
@@ -1537,6 +1599,29 @@ foreach ($leftover in @("C:\opt\fluent", "C:\opt\td-agent")) {
     } catch {
         Write-Host "  Could not remove $leftover (likely held open by a service). Delete it manually after a reboot."
     }
+}
+
+# install.ps1 disabled the stock 'fluentdwinsvc' so it could not fight for the
+# syslog ports, recording its previous startup type first. Put that back before
+# the install directory (which holds the record) is deleted - leaving another
+# product's service Disabled after an uninstall is not our call to make.
+Write-Host "Restoring the stock Fluentd service startup type..."
+$stockSvc = Get-Service -Name 'fluentdwinsvc' -ErrorAction SilentlyContinue
+$startTypeFile = Join-Path $InstallDir ".fluentdwinsvc-starttype"
+if ($stockSvc -and (Test-Path $startTypeFile)) {
+    $prev = (Get-Content $startTypeFile -Raw).Trim()
+    # Win32_Service.StartMode spells it "Auto"; Set-Service wants "Automatic".
+    $startTypeMap = @{ "Auto" = "Automatic"; "Automatic" = "Automatic"; "Manual" = "Manual"; "Disabled" = "Disabled" }
+    if ($startTypeMap.ContainsKey($prev)) {
+        Set-Service -Name 'fluentdwinsvc' -StartupType $startTypeMap[$prev] -ErrorAction SilentlyContinue
+        Write-Host "  fluentdwinsvc startup type restored to $($startTypeMap[$prev])."
+    } else {
+        Write-Host "  Recorded startup type '$prev' not recognised; leaving fluentdwinsvc as-is."
+    }
+} elseif ($stockSvc) {
+    Write-Host "  No recorded startup type for fluentdwinsvc; leaving it as-is."
+} else {
+    Write-Host "  No stock fluentdwinsvc service on this machine, skipping."
 }
 
 Write-Host "Removing installation directory contents..."
@@ -1620,7 +1705,11 @@ Write-Host "       Expand-Archive -Path ${PackageName}-${Version}-windows-x64.zi
 Write-Host "    3. Install:"
 Write-Host "       powershell -ExecutionPolicy Bypass -File .\${PackageName}\install.ps1"
 Write-Host "       # optional, to install somewhere other than C:\supra:"
-Write-Host "       powershell -ExecutionPolicy Bypass -File .\${PackageName}\install.ps1 -InstallPath D:\Supra"
+Write-Host "       powershell -ExecutionPolicy Bypass -File .\${PackageName}\install.ps1 -InstallPath E:\SupraSyslog"
+Write-Host ""
+Write-Host "  Pick a path that does NOT already hold data: uninstall.ps1 deletes"
+Write-Host "  everything under -InstallPath, and Windows paths are case-insensitive"
+Write-Host "  (D:\supra and D:\Supra are the same folder)."
 Write-Host ""
 Write-Host "  -ExecutionPolicy Bypass is required: a stock Windows Server refuses to"
 Write-Host "  run unsigned scripts, and install.ps1 cannot lift that restriction"
